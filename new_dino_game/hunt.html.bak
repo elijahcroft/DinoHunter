@@ -1,0 +1,1426 @@
+<meta charset="utf-8">
+<title>The Lancian Contract</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --ink:#17150F; --ink-2:#221F17; --paper:#E8DFC9; --paper-2:#CFC2A2;
+    --mud:#7A6341; --moss:#43593A; --rust:#A64B21; --bone:#C9BC98;
+    --hair:rgba(201,188,152,.30);
+    --sans:"Archivo Narrow","Helvetica Neue",Arial,sans-serif;
+    --serif:"Spectral",Georgia,"Times New Roman",serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--paper);font-family:var(--serif);overflow:hidden}
+  canvas{display:block}
+
+  /* ---------- shared chrome ---------- */
+  .panel{
+    background:rgba(23,21,15,.80);
+    border:1px solid var(--hair);
+    backdrop-filter:blur(6px);
+    padding:10px 13px;
+  }
+  .eyebrow{
+    font-family:var(--sans); font-weight:600; font-size:11px;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--bone);
+  }
+  .hud{position:fixed; inset:0; pointer-events:none; z-index:5}
+  .hud > *{pointer-events:auto}
+
+  /* ---------- stratigraphic header strip ---------- */
+  #strip{
+    position:fixed; top:0; left:0; right:0; height:30px;
+    display:flex; align-items:center; gap:0;
+    background:linear-gradient(to bottom,rgba(23,21,15,.92),rgba(23,21,15,.62));
+    border-bottom:1px solid var(--hair);
+    font-family:var(--sans); font-size:11px; letter-spacing:.15em;
+    text-transform:uppercase; color:var(--bone); z-index:6;
+  }
+  #strip span{padding:0 14px; border-right:1px solid var(--hair); white-space:nowrap}
+  #strip span:last-child{border-right:0; margin-left:auto; color:var(--paper)}
+  #strip b{color:var(--rust); font-weight:700}
+  @media (max-width:760px){ #strip .opt{display:none} }
+
+  /* ---------- field log ---------- */
+  #log{position:fixed; left:14px; bottom:14px; width:214px}
+  #log h2{
+    margin:0 0 8px; font-family:var(--sans); font-size:11px; font-weight:700;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--bone);
+    display:flex; justify-content:space-between; align-items:baseline;
+  }
+  #log h2 em{font-family:var(--mono); font-style:normal; font-size:11px; color:var(--rust); letter-spacing:0}
+  #log ol{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:1px}
+  #log li{
+    font-family:var(--serif); font-size:12.5px; font-style:italic;
+    color:rgba(232,223,201,.34); display:flex; gap:7px; align-items:baseline;
+    line-height:1.5; transition:color .5s ease;
+  }
+  #log li::before{content:"·"; font-style:normal; color:rgba(201,188,152,.35); width:8px; flex:none}
+  #log li.seen{color:var(--paper)}
+  #log li.seen::before{content:"✓"; font-size:10px; color:var(--rust)}
+
+  /* ---------- controls ---------- */
+  #keys{position:fixed; right:14px; bottom:14px; text-align:right;
+        font-family:var(--mono); font-size:11px; color:rgba(232,223,201,.6); line-height:1.9}
+  #keys kbd{
+    font-family:var(--mono); font-size:10px; color:var(--paper);
+    border:1px solid var(--hair); padding:1px 5px; margin-left:2px;
+    background:rgba(232,223,201,.06);
+  }
+
+  /* ---------- compass ---------- */
+  #compass{position:fixed; top:44px; left:50%; transform:translateX(-50%);
+    text-shadow:0 1px 6px rgba(23,21,15,.9);
+    font-family:var(--sans); font-size:11px; letter-spacing:.3em; color:rgba(232,223,201,.5);
+    text-transform:uppercase}
+  #compass b{color:var(--paper); font-weight:700}
+
+  /* ---------- the specimen card ---------- */
+  #card{
+    position:fixed; right:16px; top:50%; transform:translate(14px,-50%);
+    width:322px; max-width:calc(100vw - 32px);
+    background:var(--paper); color:var(--ink);
+    border:1px solid #b9a983;
+    box-shadow:0 18px 40px rgba(0,0,0,.55);
+    padding:0; opacity:0; visibility:hidden;
+    transition:opacity .35s ease, transform .35s ease, visibility .35s;
+  }
+  #card.on{opacity:1; visibility:visible; transform:translate(0,-50%)}
+  #card .top{padding:14px 16px 12px; border-bottom:2px solid var(--rust)}
+  #card .cat{
+    font-family:var(--mono); font-size:10px; letter-spacing:.1em;
+    color:var(--mud); display:flex; justify-content:space-between;
+  }
+  #card h3{
+    margin:5px 0 2px; font-family:var(--serif); font-style:italic; font-weight:600;
+    font-size:25px; line-height:1.05; letter-spacing:-.01em; text-wrap:balance;
+  }
+  #card .say{font-family:var(--sans); font-size:11.5px; letter-spacing:.11em;
+    text-transform:uppercase; color:var(--mud)}
+  #card .mean{margin:7px 0 0; font-size:13px; line-height:1.45; color:#4a4231}
+
+  #card dl{
+    margin:0; display:grid; grid-template-columns:auto 1fr; column-gap:12px; row-gap:0;
+    padding:11px 16px; border-bottom:1px solid #c6b795; background:rgba(122,99,65,.07);
+  }
+  #card dt{font-family:var(--sans); font-size:10px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--mud); align-self:center; padding:3px 0}
+  #card dd{margin:0; font-family:var(--mono); font-size:12px; font-variant-numeric:tabular-nums;
+    text-align:right; align-self:center; padding:3px 0}
+
+  #card .notes{padding:12px 16px 15px}
+  #card .notes .eyebrow{color:var(--rust); display:block; margin-bottom:8px}
+  #card ul{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:9px}
+  #card li{font-size:13.5px; line-height:1.5; color:#2c2820; padding-left:15px; position:relative}
+  #card li::before{
+    content:""; position:absolute; left:0; top:.62em; width:7px; height:1px; background:var(--rust);
+  }
+  @media (max-height:620px){ #card .mean{display:none} #card li{font-size:12.5px} }
+
+  /* ---------- opening plate ---------- */
+  #gate{
+    position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(120% 90% at 50% 40%,rgba(23,21,15,.72),rgba(23,21,15,.94));
+    padding:24px; transition:opacity .6s ease;
+  }
+  #gate.off{opacity:0; pointer-events:none}
+  #plate{max-width:610px; width:100%; text-align:left}
+  #plate .rule{height:1px; background:var(--hair); margin:18px 0}
+  #plate h1{
+    margin:10px 0 0; font-family:var(--serif); font-weight:300; font-size:clamp(38px,7vw,66px);
+    line-height:.98; letter-spacing:-.025em; text-wrap:balance;
+  }
+  #plate h1 i{font-weight:600; color:var(--rust); font-style:italic}
+  #plate p{font-size:15.5px; line-height:1.62; color:rgba(232,223,201,.82); max-width:60ch; margin:0}
+  #plate .flora{font-size:13px; line-height:1.6; color:rgba(232,223,201,.52); margin:12px 0 0}
+  #plate .flora i{font-style:italic}
+  #enter{
+    margin-top:22px; font-family:var(--sans); font-weight:600; font-size:13px;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--ink); background:var(--paper);
+    border:0; padding:13px 26px; cursor:pointer; transition:background .2s ease, transform .2s ease;
+  }
+  #enter:hover{background:#fff; transform:translateY(-1px)}
+  #enter:focus-visible{outline:2px solid var(--rust); outline-offset:3px}
+  #plate .fine{margin-top:14px; font-family:var(--mono); font-size:11px; color:rgba(232,223,201,.45)}
+
+  /* ---------- touch ---------- */
+  #stick{position:fixed; left:18px; bottom:18px; width:118px; height:118px; display:none;
+    border:1px solid var(--hair); border-radius:50%; z-index:7; touch-action:none;
+    background:rgba(23,21,15,.4)}
+  #stick i{position:absolute; left:50%; top:50%; width:44px; height:44px; margin:-22px 0 0 -22px;
+    border-radius:50%; background:rgba(232,223,201,.5)}
+  body.touch #stick{display:block}
+  body.touch #log{display:none}
+  body.touch #keys{display:none}
+
+  @media (prefers-reduced-motion:reduce){
+    #card,#gate,#enter{transition:none}
+  }
+</style>
+
+<style>
+  /* ================= hunt additions ================= */
+  :root{ --blood:#7d1f12; --gold:#C8A24B; }
+
+  /* reticle */
+  #retic{position:fixed; left:50%; top:50%; width:26px; height:26px; margin:-13px 0 0 -13px;
+    z-index:6; pointer-events:none; opacity:.85; transition:opacity .25s ease}
+  #retic i{position:absolute; background:rgba(232,223,201,.9); display:block}
+  #retic i:nth-child(1){left:12px; top:0;  width:1px; height:8px}
+  #retic i:nth-child(2){left:12px; bottom:0; width:1px; height:8px}
+  #retic i:nth-child(3){top:12px; left:0;  height:1px; width:8px}
+  #retic i:nth-child(4){top:12px; right:0; height:1px; width:8px}
+  body.aim #retic{opacity:1}
+  body.aim #retic i{background:var(--rust)}
+
+  /* vignette while shouldered */
+  #scope{position:fixed; inset:0; z-index:4; pointer-events:none; opacity:0;
+    transition:opacity .18s ease;
+    background:radial-gradient(circle at 50% 50%,transparent 26%,rgba(8,7,5,.55) 52%,rgba(8,7,5,.97) 76%)}
+  body.aim #scope{opacity:1}
+
+  /* wind + ammo readout */
+  #wind{position:fixed; top:44px; right:14px; text-align:right; z-index:6}
+  #wind .eyebrow{display:block; margin-bottom:3px}
+  #wind .val{font-family:var(--mono); font-size:13px; color:var(--paper); letter-spacing:.04em}
+  #wind .arrow{display:inline-block; transition:transform .5s ease; color:var(--rust); font-size:15px}
+  #wind .rel{font-family:var(--sans); font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+    margin-top:5px; padding:2px 6px; display:inline-block; border:1px solid var(--hair)}
+  #wind .rel.bad{color:#E5A08A; border-color:rgba(229,160,138,.5); background:rgba(166,75,33,.18)}
+  #wind .rel.good{color:#A9C08D; border-color:rgba(169,192,141,.4)}
+
+  #ammo{position:fixed; right:14px; bottom:92px; text-align:right; z-index:6;
+    font-family:var(--mono); font-size:12px; color:rgba(232,223,201,.75)}
+  #ammo b{color:var(--paper); font-size:15px; letter-spacing:.2em}
+  #ammo .cyc{color:var(--rust)}
+
+  /* alert meter for the quarry */
+  #quarry{position:fixed; left:50%; transform:translateX(-50%); bottom:22px; width:190px;
+    z-index:6; text-align:center; opacity:0; transition:opacity .4s ease}
+  #quarry.on{opacity:1}
+  #quarry .eyebrow{display:block; margin-bottom:5px; font-size:10px}
+  #quarry .bar{height:2px; background:rgba(232,223,201,.16); position:relative; overflow:hidden}
+  #quarry .bar i{position:absolute; left:0; top:0; bottom:0; width:0%;
+    background:var(--moss); transition:width .18s linear, background .3s ease}
+  #quarry.warn .bar i{background:var(--gold)}
+  #quarry.spook .bar i{background:var(--rust)}
+  #quarry .st{font-family:var(--sans); font-size:10px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--bone); margin-top:5px}
+
+  /* the guide's voice */
+  #guide{position:fixed; left:50%; transform:translateX(-50%); bottom:74px; z-index:7;
+    font-family:var(--serif); font-style:italic; font-size:15px; color:var(--paper);
+    text-shadow:0 2px 10px rgba(0,0,0,.95); opacity:0; transition:opacity .5s ease;
+    max-width:min(560px,86vw); text-align:center; line-height:1.45; pointer-events:none}
+  #guide.on{opacity:1}
+
+  /* hit flash */
+  #hit{position:fixed; inset:0; z-index:8; pointer-events:none; opacity:0;
+    background:radial-gradient(circle at 50% 50%,rgba(166,75,33,.16),transparent 62%)}
+  #hit.go{animation:hitf .5s ease-out}
+  @keyframes hitf{0%{opacity:1}100%{opacity:0}}
+
+  /* tracking log reuse */
+  #log li.hit::before{content:"✦"; color:var(--rust)}
+
+  /* end card */
+  #end{position:fixed; inset:0; z-index:22; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(120% 90% at 50% 40%,rgba(23,21,15,.86),rgba(23,21,15,.98));
+    padding:24px; opacity:0; visibility:hidden; transition:opacity .8s ease, visibility .8s}
+  #end.on{opacity:1; visibility:visible}
+  #end .sheet{max-width:520px; width:100%}
+  #end h2{margin:8px 0 0; font-family:var(--serif); font-weight:300; font-size:clamp(30px,5.4vw,46px);
+    line-height:1.02; letter-spacing:-.02em}
+  #end h2 i{color:var(--rust); font-weight:600}
+  #end .rule{height:1px; background:var(--hair); margin:16px 0}
+  #end dl{margin:0; display:grid; grid-template-columns:auto 1fr; column-gap:16px}
+  #end dt{font-family:var(--sans); font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--bone); padding:5px 0; border-bottom:1px solid rgba(201,188,152,.14)}
+  #end dd{margin:0; font-family:var(--mono); font-size:13px; text-align:right; color:var(--paper);
+    padding:5px 0; border-bottom:1px solid rgba(201,188,152,.14)}
+  #end p{font-size:14px; line-height:1.6; color:rgba(232,223,201,.72); margin:16px 0 0}
+  #end button{margin-top:20px; font-family:var(--sans); font-weight:600; font-size:12px;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--ink); background:var(--paper);
+    border:0; padding:12px 24px; cursor:pointer}
+</style>
+
+<div class="hud">
+  <div id="strip">
+    <span>Hell Creek Fm.</span>
+    <span class="opt">Eastern Montana</span>
+    <span><b>66.0 Ma</b></span>
+    <span class="opt">Lancian · licensed take</span>
+    <span id="clock">Contract 04 · one bull <i>Triceratops</i></span>
+  </div>
+  <div id="compass"><b>N</b></div>
+
+  <div id="wind" class="panel">
+    <span class="eyebrow">Wind</span>
+    <span class="val"><span class="arrow" id="warrow">↑</span> <span id="wdir">NNE</span> <span id="wspd">4.0</span> m/s</span>
+    <div class="rel" id="wrel">crosswind</div>
+  </div>
+
+  <div id="log" class="panel">
+    <h2>Field log <em id="tally">—</em></h2>
+    <ol id="roster"></ol>
+  </div>
+
+  <div id="ammo" class="panel">
+    <b id="rounds">● ●</b><br>
+    <span id="astate">.700 Nitro Express</span>
+  </div>
+
+  <div id="quarry">
+    <span class="eyebrow">Bull Triceratops</span>
+    <div class="bar"><i id="alertbar"></i></div>
+    <div class="st" id="alertst">Grazing</div>
+  </div>
+
+  <div id="keys" class="panel">
+    move<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · crouch<kbd>ctrl</kbd><br>
+    run<kbd>shift</kbd> · shoulder<kbd>RMB</kbd> · fire<kbd>LMB</kbd><br>
+    hold breath<kbd>space</kbd> · cycle bolt<kbd>R</kbd>
+  </div>
+
+  <div id="guide"></div>
+  <div id="retic"><i></i><i></i><i></i><i></i></div>
+  <div id="card" role="status" aria-live="polite"></div>
+  <div id="stick"><i></i></div>
+</div>
+<div id="scope"></div>
+<div id="hit"></div>
+
+<div id="end"><div class="sheet">
+  <div class="eyebrow">Contract closed</div>
+  <h2 id="endh">The animal is <i>down</i></h2>
+  <div class="rule"></div>
+  <dl id="endstats"></dl>
+  <p id="endp"></p>
+  <button id="again">Hunt again</button>
+</div></div>
+
+<div id="gate">
+  <div id="plate">
+    <div class="eyebrow">Chartered take · Lancian faunal stage · 66.0 Ma</div>
+    <h1>You have one <i>bull</i>, and two rounds</h1>
+    <div class="rule"></div>
+    <p>A humid coastal floodplain in what is now eastern Montana. Somewhere out along the
+      channel is a mature bull <i>Triceratops prorsus</i> — nine tonnes, and the most common
+      large animal in this formation. He is licensed to you. Nothing else here is.</p>
+    <p class="flora">He will smell you long before he sees you. Watch the wind, keep it in your
+      face, and stay low. A bull that is merely alert can be settled by standing still. A bull
+      that has your scent is gone.</p>
+    <p class="flora">Put the first round through the lungs, behind the shoulder. A gut shot
+      will not stop him — it will just make you walk a very long way.</p>
+    <button id="enter">Begin the stalk</button>
+    <div class="fine">WASD move · ctrl crouch · RMB shoulder · LMB fire · space hold breath</div>
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+if(!window.THREE){document.getElementById('plate').innerHTML='<p>Could not load the 3D library.</p>';return;}
+
+/* ============================================================
+   SPECIMEN RECORDS — Hell Creek Formation, Lancian faunal stage
+   ============================================================ */
+const SPECIES = {
+  trex:{
+    name:"Tyrannosaurus rex", say:"tie-RAN-oh-SORE-us", common:"Tyrant lizard king",
+    mean:"The apex predator of the formation, and the last large theropod on Earth. Adults took roughly two decades to reach full size.",
+    stats:[["Length","12.3 m"],["Hip height","3.7 m"],["Mass","≈ 8 000 kg"],["Bite force","≈ 35 000 N"],["Diet","Carnivore"]],
+    notes:[
+      "The spine is horizontal, head and tail balanced over the hips. The upright tail-dragging pose was abandoned in the 1970s and is skeletally impossible — the tail vertebrae will not bend that way.",
+      "Teeth sit behind scaly lips at rest. Exposed crocodile-style fangs would dry out the enamel; the tooth surface texture argues for lips.",
+      "Skin impressions from the neck, hip and tail are all scaly, so no shaggy coat here — but the arms are strong, and held with palms facing inward, never down."
+    ]},
+  trike:{
+    name:"Triceratops prorsus", say:"try-SERRA-tops", common:"Three-horned face",
+    mean:"The single most common large dinosaur in Hell Creek — more individuals have been collected than of any other big animal here.",
+    stats:[["Length","8.0 m"],["Shoulder height","2.9 m"],["Mass","≈ 9 000 kg"],["Skull","2.4 m"],["Diet","Low browser"]],
+    notes:[
+      "Forelimbs are held semi-erect: the elbows bow slightly outward and the hands point forward-and-out. Neither a sprawling lizard nor a columnar rhino.",
+      "Five fingers per hand, but only the inner three bear weight and carry hooves — the outer two are splints.",
+      "The frill is solid bone in this genus, edged with fused epoccipitals that give the margin its scalloped wave. Skin impressions show large, nipple-like scales on the flanks."
+    ]},
+  edmonto:{
+    name:"Edmontosaurus annectens", say:"ed-MON-toe-SORE-us", common:"Edmonton lizard",
+    mean:"A herding hadrosaur that grew as long as Tyrannosaurus. Bone beds preserve hundreds of individuals together.",
+    stats:[["Length","12.0 m"],["Hip height","3.3 m"],["Mass","≈ 7 600 kg"],["Teeth","≈ 1 000"],["Diet","Bulk herbivore"]],
+    notes:[
+      "Habitually quadrupedal. The forelimb ends in a fleshy mitten — the fingers are bound in a single pad, so there are no splayed dinosaur fingers pressing into the mud.",
+      "A soft fleshy comb crowns the skull, preserved in the “dinosaur mummy” specimens. It is not bone, and it was missed for a century.",
+      "It chews by letting the upper jaws flex outward as the lower jaw closes — pleurokinesis — not by grinding side to side like a cow."
+    ]},
+  anky:{
+    name:"Ankylosaurus magniventris", say:"an-KYE-loh-SORE-us", common:"Fused lizard, big belly",
+    mean:"The largest known ankylosaurid, and genuinely rare: it is known from only a handful of specimens.",
+    stats:[["Length","6.5 m"],["Width","1.7 m"],["Mass","≈ 5 000 kg"],["Club","≈ 25 kg"],["Diet","Low herbivore"]],
+    notes:[
+      "The armour is a mosaic of separate osteoderms set in the skin in rows, not a fused turtle shell. Small ossicles fill the gaps between the big keeled plates.",
+      "The tail club swings horizontally. The handle is locked rigid by interlocking vertebrae and ossified tendons, so it cannot whip — it is a mace, not a flail.",
+      "Its species name means “big belly” for good reason: a wide barrel gut for fermenting low, tough vegetation."
+    ]},
+  dakota:{
+    name:"Dakotaraptor steini", say:"da-KOH-ta-RAP-tor", common:"Dakota thief",
+    mean:"A giant dromaeosaur, far larger than the Velociraptor of the films and living 9 000 km away from it in time and place.",
+    stats:[["Length","4.6 m"],["Hip height","1.6 m"],["Mass","≈ 350 kg"],["Sickle claw","16 cm"],["Diet","Carnivore"]],
+    notes:[
+      "Fully feathered, with a true wing. Quill knobs are preserved on the ulna — the direct anchor points where large pennaceous feathers attached to bone.",
+      "The palms face each other, like a person about to clap. A dromaeosaur wrist physically cannot pronate into the downward-facing “bunny hands” of old artwork.",
+      "The sickle claw held on and pinned prey down. It was too blunt in cross-section to slit a hide open, and the foot was made for gripping."
+    ]},
+  anzu:{
+    name:"Anzu wylei", say:"AN-zoo", common:"Feathered demon of the mud",
+    mean:"A caenagnathid oviraptorosaur, nicknamed the “chicken from hell” when it was described in 2014.",
+    stats:[["Length","3.5 m"],["Hip height","1.5 m"],["Mass","≈ 250 kg"],["Crest","Hollow bone"],["Diet","Omnivore"]],
+    notes:[
+      "The plumage is not speculative. Close oviraptorosaur relatives are preserved with pennaceous feathers on the arms and a fan on the tail tip, used for display.",
+      "It is toothless: a sharp keratin beak, and a tall hollow crest above the eyes.",
+      "Fossil oviraptorosaurs have been found brooding nests, sitting with the arms folded over the eggs the way a bird covers a clutch."
+    ]},
+  pachy:{
+    name:"Pachycephalosaurus wyomingensis", say:"PACK-ee-KEF-uh-lo-SORE-us", common:"Thick-headed lizard",
+    mean:"A bipedal plant-eater carrying 25 cm of solid bone on the roof of its skull.",
+    stats:[["Length","4.5 m"],["Hip height","1.8 m"],["Mass","≈ 450 kg"],["Dome","25 cm thick"],["Diet","Mixed feeder"]],
+    notes:[
+      "Head-to-head ramming is contested. Some domes show healed injuries, but the neck joints are poorly built for absorbing a head-on hit — flank-butting fits the anatomy better.",
+      "“Dracorex” and “Stygimoloch” are almost certainly this animal as a juvenile and a subadult: the spikes shrink and the dome inflates with age.",
+      "Its teeth are small and leaf-shaped, so despite the armoured skull it was browsing on soft plants and possibly insects."
+    ]},
+  thescelo:{
+    name:"Thescelosaurus neglectus", say:"THESS-el-oh-SORE-us", common:"Wonderful, neglected lizard",
+    mean:"A small, heavy-bodied runner and one of the last non-avian dinosaurs — it is found right up against the impact boundary.",
+    stats:[["Length","3.5 m"],["Hip height","1.0 m"],["Mass","≈ 250 kg"],["Femur","44 cm"],["Diet","Low herbivore"]],
+    notes:[
+      "The tail is laced with a lattice of ossified tendons, holding it out as a rigid balance beam behind the hips.",
+      "Its huge nasal chambers and stout forelimbs hint at burrowing habits, matching close relatives found fossilised inside their own dens.",
+      "The famous “fossilised heart” found in one specimen was reexamined and is a concretion of sediment — a good reminder of how reconstruction gets corrected."
+    ]}
+};
+const ORDER = ["trex","trike","edmonto","anky","dakota","anzu","pachy","thescelo"];
+
+/* ============================================================
+   PROCEDURAL TEXTURES  (no external assets — CSP-safe)
+   ============================================================ */
+function cv(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
+function tex(c,rx,ry){const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;
+  if(rx)t.repeat.set(rx,ry||rx); t.anisotropy=4; t.encoding=THREE.sRGBEncoding; return t;}
+
+function noiseInto(ctx,w,h,a){
+  const d=ctx.getImageData(0,0,w,h);
+  for(let i=0;i<d.data.length;i+=4){
+    const n=(Math.random()-.5)*a;
+    d.data[i]+=n; d.data[i+1]+=n; d.data[i+2]+=n;
+  }
+  ctx.putImageData(d,0,0);
+}
+// mottled floodplain silt with scattered plant litter
+function groundTex(){
+  const c=cv(512,512), x=c.getContext('2d');
+  x.fillStyle='#6d5a3c'; x.fillRect(0,0,512,512);
+  for(let i=0;i<900;i++){
+    const r=6+Math.random()*46;
+    x.fillStyle=['rgba(92,105,64,.30)','rgba(120,98,60,.35)','rgba(58,66,42,.28)','rgba(146,126,86,.22)'][i%4];
+    x.beginPath(); x.ellipse(Math.random()*512,Math.random()*512,r,r*(.4+Math.random()*.8),Math.random()*3,0,6.3); x.fill();
+  }
+  for(let i=0;i<260;i++){ // leaf litter
+    x.strokeStyle='rgba(74,58,34,.5)'; x.lineWidth=1+Math.random()*2;
+    const px=Math.random()*512,py=Math.random()*512,a=Math.random()*6.3,l=4+Math.random()*13;
+    x.beginPath(); x.moveTo(px,py); x.lineTo(px+Math.cos(a)*l,py+Math.sin(a)*l); x.stroke();
+  }
+  noiseInto(x,512,512,26);
+  return tex(c,46,46);
+}
+// reptilian pebbled scales
+function scaleTex(base,dark){
+  const c=cv(256,256), x=c.getContext('2d');
+  x.fillStyle=base; x.fillRect(0,0,256,256);
+  for(let row=0;row<32;row++)for(let col=0;col<32;col++){
+    const px=col*8+(row%2?4:0), py=row*8, r=2.4+Math.random()*1.5;
+    x.fillStyle=Math.random()<.5?dark:base;
+    x.globalAlpha=.35+Math.random()*.4;
+    x.beginPath(); x.ellipse(px,py,r,r*.82,0,0,6.3); x.fill();
+  }
+  x.globalAlpha=1; noiseInto(x,256,256,16);
+  return tex(c,7,7);
+}
+// downy plumage: fine directional barbs
+function plumeTex(base,tip){
+  const c=cv(256,256), x=c.getContext('2d');
+  x.fillStyle=base; x.fillRect(0,0,256,256);
+  for(let i=0;i<2600;i++){
+    const px=Math.random()*256, py=Math.random()*256, l=7+Math.random()*13;
+    x.strokeStyle=Math.random()<.45?tip:base;
+    x.globalAlpha=.16+Math.random()*.3; x.lineWidth=1+Math.random();
+    x.beginPath(); x.moveTo(px,py);
+    x.quadraticCurveTo(px+3,py+l*.5,px+1.5,py+l); x.stroke();
+  }
+  x.globalAlpha=1; noiseInto(x,256,256,12);
+  return tex(c,5,5);
+}
+// a single pennaceous feather on transparent ground (alpha-tested card)
+function featherTex(shaft,vane,vane2){
+  const c=cv(128,256), x=c.getContext('2d');
+  x.clearRect(0,0,128,256);
+  for(let s=0;s<2;s++){
+    for(let i=0;i<150;i++){
+      const t=i/150, y=24+t*220;
+      const w=Math.sin(t*Math.PI*.92)*(s?40:30)*(1-t*.28);
+      x.strokeStyle=(i%7<3)?vane2:vane; x.lineWidth=2.2; x.globalAlpha=.85;
+      x.beginPath(); x.moveTo(64,y);
+      x.lineTo(64+(s?w:-w), y+11+w*.12); x.stroke();
+    }
+  }
+  x.globalAlpha=1; x.strokeStyle=shaft; x.lineWidth=3.4;
+  x.beginPath(); x.moveTo(64,14); x.lineTo(64,250); x.stroke();
+  const t=new THREE.CanvasTexture(c); t.anisotropy=4; t.encoding=THREE.sRGBEncoding; return t;
+}
+// fern / palm frond card
+function frondTex(a,b,pinnate){
+  const c=cv(128,256), x=c.getContext('2d');
+  x.clearRect(0,0,128,256);
+  x.strokeStyle=a; x.lineWidth=4;
+  x.beginPath(); x.moveTo(64,256); x.quadraticCurveTo(64,120,64,10); x.stroke();
+  const n=pinnate?26:15;
+  for(let i=0;i<n;i++){
+    const t=i/n, y=250-t*236, w=Math.sin((t+.06)*Math.PI*.95)*58*(pinnate?1:1.1);
+    x.strokeStyle=i%3===0?b:a; x.lineWidth=pinnate?4.5:9;
+    x.lineCap='round';
+    for(const s of [-1,1]){
+      x.beginPath(); x.moveTo(64,y);
+      x.quadraticCurveTo(64+s*w*.6,y-4,64+s*w,y-16-w*.16); x.stroke();
+    }
+  }
+  const t=new THREE.CanvasTexture(c); t.anisotropy=4; t.encoding=THREE.sRGBEncoding; return t;
+}
+function barkTex(){
+  const c=cv(128,256), x=c.getContext('2d');
+  x.fillStyle='#5d4630'; x.fillRect(0,0,128,256);
+  for(let i=0;i<170;i++){
+    x.strokeStyle=['#4a3624','#6d5439','#3d2d1e'][i%3]; x.lineWidth=1+Math.random()*4;
+    const px=Math.random()*128;
+    x.beginPath(); x.moveTo(px,0);
+    x.bezierCurveTo(px+8,85,px-8,170,px+Math.random()*10-5,256); x.stroke();
+  }
+  noiseInto(x,128,256,20);
+  return tex(c,3,1);
+}
+
+/* ============================================================
+   SCENE
+   ============================================================ */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9aa791);
+scene.fog = new THREE.FogExp2(0x93a189, 0.0062);
+
+const camera = new THREE.PerspectiveCamera(66, innerWidth/innerHeight, 0.1, 900);
+const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.86;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+// hazy subtropical light: strong low sun + green bounce from the canopy
+const sun = new THREE.DirectionalLight(0xffe4b5, 2.5);
+sun.position.set(-52, 64, 34); sun.castShadow = true;
+sun.shadow.mapSize.set(2048,2048);
+const sc = sun.shadow.camera;
+sc.left=-46; sc.right=46; sc.top=46; sc.bottom=-46; sc.near=1; sc.far=200;
+sun.shadow.bias = -0.0016;
+scene.add(sun); scene.add(sun.target);
+scene.add(new THREE.HemisphereLight(0x9fb3c4, 0x3c4a2a, 0.85));
+const fill = new THREE.DirectionalLight(0x8fa9c4, 0.30); fill.position.set(40,26,-40); scene.add(fill);
+
+/* ---------- terrain: floodplain cut by a meandering channel ---------- */
+const RIVER = x => Math.sin(x*0.021)*22 + Math.cos(x*0.047)*7;   // channel centre-line in z
+function channel(x,z){
+  const d = Math.abs(z - RIVER(x));
+  return Math.max(0, 1 - d/15);
+}
+function ground(x,z){
+  const g = Math.sin(x*0.031)*1.5 + Math.cos(z*0.027)*1.25
+          + Math.sin((x*0.7+z)*0.013)*2.4 + Math.cos((x-z*0.8)*0.008)*3.1;
+  const c = channel(x,z);
+  return g*(1-c*0.85) - Math.pow(c,1.5)*4.6;
+}
+const SIZE=440, SEG=190;
+const tGeo = new THREE.PlaneGeometry(SIZE,SIZE,SEG,SEG);
+tGeo.rotateX(-Math.PI/2);
+{
+  const p = tGeo.attributes.position;
+  for(let i=0;i<p.count;i++) p.setY(i, ground(p.getX(i), p.getZ(i)));
+  tGeo.computeVertexNormals();
+}
+const terrain = new THREE.Mesh(tGeo, new THREE.MeshStandardMaterial({
+  map:groundTex(), color:0x9a8a67, roughness:.99, metalness:0
+}));
+terrain.receiveShadow = true;
+scene.add(terrain);
+
+// river surface
+const water = new THREE.Mesh(
+  new THREE.PlaneGeometry(SIZE, SIZE, 1, 1),
+  new THREE.MeshStandardMaterial({color:0x3f4a3c, roughness:.42, metalness:.10,
+    transparent:true, opacity:.90})
+);
+water.rotation.x = -Math.PI/2; water.position.y = -1.55;
+scene.add(water);
+
+/* ============================================================
+   GEOMETRY BUILDERS
+   sections run along local +Z; cross-sections are ellipses.
+   ============================================================ */
+const RAD = 12;
+function loft(sections, mat){
+  const pos=[], uv=[], idx=[];
+  sections.forEach((s,i)=>{
+    for(let j=0;j<=RAD;j++){
+      const a = j/RAD*Math.PI*2;
+      pos.push(Math.cos(a)*s.rx, (s.y||0)+Math.sin(a)*s.ry, s.z);
+      uv.push(j/RAD, i/(sections.length-1));
+    }
+  });
+  for(let i=0;i<sections.length-1;i++)for(let j=0;j<RAD;j++){
+    const a=i*(RAD+1)+j, b=a+1, c=a+RAD+1, d=c+1;
+    idx.push(a,b,c, b,d,c);   // outward winding: hell-creek had these inside-out
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv,2));
+  g.setIndex(idx); g.computeVertexNormals();
+  const m = new THREE.Mesh(g, mat); m.castShadow = true; return m;
+}
+// smooth taper between two radii over n sub-sections, with an optional arc
+function taper(len, r0, r1, mat, squash, bow, n){
+  n = n||5; const s=[];
+  for(let i=0;i<=n;i++){
+    const t=i/n, r=r0+(r1-r0)*t;
+    s.push({z:len*t, y:bow?Math.sin(t*Math.PI)*bow:0, rx:r, ry:r*(squash||1)});
+  }
+  return loft(s, mat);
+}
+// articulated chain: each link is a pivot whose child cone runs +Z
+function chain(links, mat, squash){
+  const root=new THREE.Object3D(); const joints=[]; let cur=root;
+  links.forEach(l=>{
+    const j=new THREE.Object3D(); cur.add(j); joints.push(j);
+    j.add(taper(l.len*1.14, l.r0, l.r1, mat, squash||1, 0, 3));  // overlap so joints don't gap
+    const nxt=new THREE.Object3D(); nxt.position.z=l.len; j.add(nxt); cur=nxt;
+  });
+  return {root, joints, tip:cur};
+}
+function ball(r, mat, sx, sy, sz){
+  const m=new THREE.Mesh(new THREE.SphereGeometry(r,14,10), mat);
+  m.scale.set(sx||1, sy||1, sz||1); m.castShadow=true; return m;
+}
+function box(w,h,d,mat){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat); m.castShadow=true; return m;
+}
+/* a limb: femur → tibia → metatarsus → foot, hanging downward.
+   returns pivots so a walk cycle can drive flexion about X. */
+function leg(mat, seg, footL, footW, digits){
+  const hip = new THREE.Object3D();
+  hip.rotation.x = Math.PI/2;                      // point the chain down
+  const c = chain(seg, mat, 0.86);
+  hip.add(c.root);
+  // inside a leg frame, local +Y points forward and local +Z points down
+  const foot = new THREE.Object3D(); c.tip.add(foot);
+  const f = box(footW, footL*0.85, footL*0.26, mat);
+  f.position.set(0, footL*0.38, footL*0.10); foot.add(f);
+  if(digits) for(let i=0;i<3;i++){
+    const d = taper(footL*0.55, footW*0.21, footW*0.07, mat, 1, 0, 2);
+    d.rotation.set(-Math.PI/2, (i-1)*0.34, 0);
+    d.position.set(0, footL*0.52, footL*0.13); foot.add(d);
+  }
+  return {hip, j:c.joints, foot};
+}
+/* feather card: alpha-tested plane, doubled */
+function feather(len, wid, t){
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(wid,len),
+    new THREE.MeshStandardMaterial({map:t, transparent:true, alphaTest:.42,
+      side:THREE.DoubleSide, roughness:.9}));
+  m.geometry.translate(0, len/2, 0);
+  return m;
+}
+
+/* ============================================================
+   HUNT — tuning
+   ============================================================ */
+scene.fog = new THREE.FogExp2(0x93a189, 0.0058);   // open it up; we need to see the animal
+
+const MAPR = 205;                                   // playable radius
+const clampMap = v => Math.max(-MAPR, Math.min(MAPR, v));
+
+const WOUND = {
+  brain:{run:0,   lethal:true,  instant:true, rate:0,   col:0xb02318, blood:"—",                          note:"Straight through the braincase."},
+  spine:{run:0,   lethal:true,  instant:true, rate:0,   col:0xb02318, blood:"—",                          note:"Spine severed over the shoulder."},
+  heart:{run:44,  lethal:true,  rate:4.6, col:0xc02a18, blood:"bright arterial, pumping",                 note:"Through the heart. He did not go far."},
+  lung:{ run:88,  lethal:true,  rate:3.4, col:0xb02318, blood:"bright and frothy — lung",                 note:"Both lungs. The froth in the blood told you it was over."},
+  neck:{ run:26,  lethal:true,  rate:5.0, col:0xc02a18, blood:"heavy, arterial",                          note:"Through the neck."},
+  gut:{  run:250, lethal:false, rate:1.1, col:0x53180f, blood:"dark, thin, stinking of stomach",          note:"A gut shot. He carried it for a quarter mile."},
+  leg:{  run:135, lethal:false, rate:1.5, col:0x8a2415, blood:"thin and smeared where the leg swings",    note:"You broke a leg. He can still travel."},
+  frill:{run:190, lethal:false, rate:0,   col:0x8a2415, blood:"none — solid bone",                        note:"The round flattened on the frill. Nine feet of solid bone."}
+};
+const ZONE_LABEL = {brain:"Braincase",spine:"Spine",heart:"Heart",lung:"Lungs",neck:"Neck",gut:"Gut",leg:"Foreleg",frill:"Frill (bone)"};
+
+/* ============================================================
+   VEGETATION — cover, and most of what sells the place
+   ============================================================ */
+const fernT = frondTex('#4d6b33','#6d8a3f',true);
+const palmT = frondTex('#3f5f2e','#5a7d38',false);
+const barkM = new THREE.MeshStandardMaterial({map:barkTex(), roughness:.95});
+
+function frondCard(t,len,wid){
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(wid,len),
+    new THREE.MeshStandardMaterial({map:t,transparent:true,alphaTest:.45,
+      side:THREE.DoubleSide,roughness:.92}));
+  m.geometry.translate(0,len/2,0);
+  return m;
+}
+// low fern clump: three crossed cards
+function fernClump(s){
+  const g = new THREE.Group();
+  for(let i=0;i<3;i++){
+    const f = frondCard(fernT, 1.5*s, 1.1*s);
+    f.rotation.y = i*1.05 + Math.random();
+    f.rotation.z = (Math.random()-.5)*.4;
+    g.add(f);
+  }
+  return g;
+}
+function tree(s){
+  const g = new THREE.Group();
+  const h = 9*s;
+  const trunk = taper(h, .42*s, .17*s, barkM, 1, 0, 4);
+  trunk.rotation.x = -Math.PI/2;                     // taper runs +Z; stand it up
+  g.add(trunk);
+  for(let i=0;i<7;i++){
+    const f = frondCard(palmT, 4.2*s, 3.0*s);
+    f.position.y = h - .5*s;
+    f.rotation.y = i*.9;
+    f.rotation.x = -.5 - Math.random()*.5;
+    g.add(f);
+  }
+  return g;
+}
+const veg = new THREE.Group(); scene.add(veg);
+for(let i=0;i<190;i++){
+  const x=(Math.random()-.5)*400, z=(Math.random()-.5)*400;
+  const gy = ground(x,z);
+  if(gy < -1.3) continue;                            // not in the channel
+  const c = fernClump(.75+Math.random()*1.15);
+  c.position.set(x, gy-.06, z);
+  veg.add(c);
+}
+for(let i=0;i<26;i++){
+  const x=(Math.random()-.5)*380, z=(Math.random()-.5)*380;
+  const gy = ground(x,z);
+  if(gy < -0.9) continue;
+  const t = tree(.8+Math.random()*.7);
+  t.position.set(x, gy, z);
+  veg.add(t);
+}
+
+/* ============================================================
+   TRICERATOPS PRORSUS
+   local +Z is forward. Built to the record: 8 m, 2.9 m at the shoulder.
+   ============================================================ */
+const hideM  = new THREE.MeshStandardMaterial({map:scaleTex('#574c37','#332b1e'), roughness:.94});
+const boneM  = new THREE.MeshStandardMaterial({color:0x8a7c60, roughness:.80});
+const hornM  = new THREE.MeshStandardMaterial({color:0x6f6550, roughness:.60});
+const frillM = new THREE.MeshStandardMaterial({map:scaleTex('#6b5c42','#443a29'), roughness:.92});
+const quillM = new THREE.MeshStandardMaterial({color:0x34291b, roughness:.88});
+const quillG = new THREE.ConeGeometry(.018, 1, 5);
+quillG.translate(0, .5, 0);                         // pivot each bristle at the skin
+
+// Psittacosaurus-inspired display bristles. Parenting them to individual
+// joints keeps the new silhouette locked to the existing tail animation.
+function addTrikeTailQuills(tail, links){
+  const quills = [];
+  const counts = [6,5,4];
+  const total = links.reduce((sum,link)=>sum+link.len, 0);
+  let before = 0;
+  links.forEach((link,segment)=>{
+    const count = counts[segment] || 4;
+    for(let i=0;i<count;i++){
+      const u = (i+.45)/(count+.15);
+      const progress = (before+u*link.len)/total;
+      const radius = THREE.MathUtils.lerp(link.r0, link.r1, u);
+      const length = .30 + Math.sin(progress*Math.PI)*.30;
+      const stagger = ((i+segment)%3-1)*.042*(1-progress*.35);
+      const q = new THREE.Mesh(quillG, quillM);
+      q.position.set(stagger, radius*.92*.98, u*link.len);
+      q.rotation.set(.10+progress*.24, -stagger*.8, stagger*.75);
+      q.scale.set(1+(i%2)*.12, length, 1+(i%2)*.12);
+      q.castShadow = true;
+      tail.joints[segment].add(q);
+      quills.push(q);
+    }
+    before += link.len;
+  });
+  return quills;
+}
+
+function scallopedFrill(R){
+  // solid bone plate; the wavy margin is the fused epoccipitals
+  const sh = new THREE.Shape();
+  sh.moveTo(-R*0.34, -R*0.30);
+  const N = 46;
+  for(let i=0;i<=N;i++){
+    const a = -Math.PI*0.90 + (i/N)*Math.PI*1.80;    // sweep over the top
+    const scal = 1 + Math.sin(i/N*Math.PI*9)*0.035;  // epoccipital wave
+    sh.lineTo(Math.sin(a)*R*0.80*scal, Math.cos(a)*R*scal - R*0.06);
+  }
+  sh.lineTo(R*0.34, -R*0.30);
+  const g = new THREE.ExtrudeGeometry(sh, {depth:R*0.075, bevelEnabled:true,
+    bevelThickness:R*0.03, bevelSize:R*0.035, bevelSegments:2, curveSegments:2});
+  g.center();
+  const m = new THREE.Mesh(g, frillM); m.castShadow = true; return m;
+}
+
+function buildTrike(){
+  const root = new THREE.Group();
+  const body = new THREE.Group(); body.position.y = 1.86; root.add(body);
+
+  // ---- barrel: the "big belly" ceratopsian torso
+  body.add(loft([
+    {z:-2.20, rx:.52, ry:.56}, {z:-1.50, rx:.86, ry:.92},
+    {z:-0.60, rx:1.08, ry:1.12},{z: 0.30, rx:1.16, ry:1.16},
+    {z: 1.00, rx:1.14, ry:1.22, y:.06},{z: 1.60, rx:.98, ry:1.10, y:.04},
+    {z: 2.10, rx:.70, ry:.76},{z: 2.40, rx:.54, ry:.58}
+  ], hideM));
+
+  // ---- tail: short, held clear of the ground
+  const tailLinks = [{len:.72,r0:.50,r1:.38},{len:.62,r0:.38,r1:.26},{len:.52,r0:.26,r1:.10}];
+  const tail = chain(tailLinks, hideM, .92);
+  tail.root.rotation.y = Math.PI;                    // run it backwards
+  tail.root.position.z = -2.15;
+  body.add(tail.root);
+  addTrikeTailQuills(tail, tailLinks);
+
+  // ---- head assembly
+  const neck = new THREE.Group();
+  neck.position.set(0, -.10, 2.25); body.add(neck);
+  const skull = new THREE.Group(); skull.scale.setScalar(1.28); neck.add(skull);
+
+  const frill = scallopedFrill(0.80);
+  frill.position.set(0, .50, -.10);
+  frill.rotation.x = -0.80;
+  frill.scale.set(1.30, .92, 1);                          // laid back over the neck
+  skull.add(frill);
+
+  skull.add(ball(.52, hideM, .82, .86, 1.25));       // cranium
+  const face = taper(1.05, .40, .17, hideM, .80, 0, 4);
+  face.position.set(0, -.10, .42); skull.add(face);
+  const beak = taper(.34, .17, .03, boneM, .70, 0, 3);
+  beak.position.set(0, -.13, 1.44); beak.rotation.x = .30; skull.add(beak);
+
+  // brow horns — a metre of core bone each, sweeping forward
+  for(const s of [-1,1]){
+    const h = taper(.86, .105, .014, hornM, 1, .09, 5);
+    h.position.set(s*.34, .30, .52);
+    h.rotation.set(-1.16, s*.16, 0);
+    skull.add(h);
+  }
+  const nose = taper(.30, .10, .02, hornM, 1, 0, 3);
+  nose.position.set(0, .10, 1.06); nose.rotation.x = -1.05; skull.add(nose);
+  for(const s of [-1,1]){
+    const e = ball(.062, new THREE.MeshStandardMaterial({color:0x140f0a, roughness:.28}));
+    e.position.set(s*.40, .10, .62); skull.add(e);
+  }
+
+  // ---- limbs. hind columnar, fore semi-erect with the elbow bowed out
+  const HIND = [{len:.82,r0:.44,r1:.34},{len:.70,r0:.35,r1:.27},{len:.34,r0:.28,r1:.24}];
+  const FORE = [{len:.72,r0:.42,r1:.33},{len:.64,r0:.34,r1:.26},{len:.32,r0:.27,r1:.23}];
+  const legs = [];
+  for(const s of [-1,1]){
+    const L = leg(hideM, HIND, .46, .52, 3);
+    L.hip.position.set(s*.80, 0, -1.15);
+    body.add(L.hip); legs.push({L, s, fore:false, base:0});
+  }
+  for(const s of [-1,1]){
+    const L = leg(hideM, FORE, .44, .50, 3);
+    L.hip.position.set(s*.74, -.18, 1.35);
+    L.hip.rotation.z = s*0.13;                       // elbows bow outward
+    body.add(L.hip); legs.push({L, s, fore:true, base:0});
+  }
+
+  // ---- hit zones (invisible, raycast targets)
+  const zones = [];
+  const ZM = new THREE.MeshBasicMaterial({visible:false});
+  function zone(name, w,h,d, x,y,z, parent){
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), ZM);
+    m.position.set(x,y,z); m.userData.zone = name;
+    (parent||body).add(m); zones.push(m); return m;
+  }
+  zone('spine', 1.30,.46,3.20,  0, .82,  .05);
+  zone('lung',  2.05,1.05,1.55, 0, .10, 1.00);
+  zone('heart', 1.35,.70,.80,   0,-.62,  .95);
+  zone('gut',   2.10,1.55,2.20, 0,-.18, -.85);
+  zone('neck',  .95,.85,.70,    0,-.10, 2.30);
+  zone('brain', .52,.44,.55,    0, .10,  .12, skull);
+  zone('frill', 1.65,1.45,.22,  0, .62,  .16, skull);
+  for(const g of legs){
+    zone('leg', .52,1.70,.55, g.L.hip.position.x, g.L.hip.position.y-.85, g.L.hip.position.z);
+  }
+
+  root.traverse(o=>{ if(o.isMesh && o.material!==ZM) o.castShadow = true; });
+  return {root, body, neck, skull, tail, legs, zones};
+}
+
+const trike = buildTrike();
+scene.add(trike.root);
+
+/* ============================================================
+   THE ANIMAL — state, senses, movement
+   ============================================================ */
+const A = {
+  pos:new THREE.Vector3(), yaw:0, speed:0,
+  state:'graze',            // graze | alert | flee | down
+  alert:0, phase:0, graze:0,
+  wound:null, hitZone:null, runLeft:0, tracked:0,
+  bleedAcc:0, settle:0, lastBlood:new THREE.Vector3()
+};
+// place him 95 m out on a random bearing, clear of the channel
+(function place(){
+  for(let i=0;i<300;i++){
+    const a = Math.random()*Math.PI*2, d = 88+Math.random()*22;
+    const x = Math.cos(a)*d, z = Math.sin(a)*d;
+    if(Math.abs(z-RIVER(x)) < 20) continue;          // not standing in the river
+    A.pos.set(x, ground(x,z), z); A.yaw = Math.random()*Math.PI*2; return;
+  }
+  A.pos.set(90, ground(90,20), 20);
+})();
+
+function animalStep(dt, t){
+  // --- terrain follow + slope pitch
+  A.pos.y = ground(A.pos.x, A.pos.z);
+  trike.root.position.copy(A.pos);
+  trike.root.rotation.y = A.yaw;
+  const fx = A.pos.x + Math.sin(A.yaw)*2.4, fz = A.pos.z + Math.cos(A.yaw)*2.4;
+  const bx = A.pos.x - Math.sin(A.yaw)*2.4, bz = A.pos.z - Math.cos(A.yaw)*2.4;
+  trike.root.rotation.x = Math.atan2(ground(bx,bz)-ground(fx,fz), 4.8) * 0.8;
+
+  // --- gait
+  const moving = A.speed > .05;
+  if(moving){
+    A.phase += dt * (2.0 + A.speed*0.9);
+    const amp = A.state==='flee' ? .42 : .26;
+    trike.legs.forEach((g,i)=>{
+      const off = [0, Math.PI, Math.PI*1.15, Math.PI*0.15][i];  // diagonal couplets
+      const p = A.phase + off;
+      g.L.j[0].rotation.x = g.base + Math.sin(p)*amp;
+      g.L.j[1].rotation.x = (Math.sin(p-1.0)*.5+.5) * amp*1.15;
+      g.L.j[2].rotation.x = -Math.sin(p+.6)*amp*.45;
+    });
+    trike.body.position.y = 1.86 + Math.sin(A.phase*2)*0.035*(A.speed*0.4+0.5);
+  } else {
+    trike.legs.forEach(g=>{
+      g.L.j[0].rotation.x += (g.base - g.L.j[0].rotation.x)*Math.min(1,dt*4);
+      g.L.j[1].rotation.x += (0 - g.L.j[1].rotation.x)*Math.min(1,dt*4);
+      g.L.j[2].rotation.x += (0 - g.L.j[2].rotation.x)*Math.min(1,dt*4);
+    });
+    trike.body.position.y += (1.86 - trike.body.position.y)*Math.min(1,dt*4);
+  }
+
+  // --- head carriage reads the state at a glance
+  let wantNeck, wantSkull;
+  if(A.state==='down'){ wantNeck = 0.55; wantSkull = 0.2; }
+  else if(A.state==='graze'){ wantNeck = 0.46 + Math.sin(t*0.5)*0.16; wantSkull = 0.30; }
+  else if(A.state==='alert'){ wantNeck = -0.22; wantSkull = -0.16; }
+  else { wantNeck = -0.05; wantSkull = 0.10; }
+  trike.neck.rotation.x  += (wantNeck  - trike.neck.rotation.x )*Math.min(1,dt*2.2);
+  trike.skull.rotation.x += (wantSkull - trike.skull.rotation.x)*Math.min(1,dt*2.2);
+  trike.tail.joints[0].rotation.y = Math.sin(t*0.8)*0.10;
+  trike.tail.joints[1].rotation.y = Math.sin(t*0.8-0.6)*0.14;
+}
+
+/* ============================================================
+   WIND — the thing that actually decides this hunt
+   ============================================================ */
+const W = {ang: Math.random()*Math.PI*2, spd: 3.4, target: 0, swing: 8+Math.random()*14};
+W.target = W.ang;
+const windVec = new THREE.Vector3();                 // direction the wind BLOWS TOWARD
+function windStep(dt){
+  W.swing -= dt;
+  if(W.swing <= 0){                                  // periodic genuine shift
+    W.target = W.ang + (Math.random()-.5)*1.9;
+    W.spd = 1.8 + Math.random()*4.4;
+    W.swing = 16 + Math.random()*22;
+    if(started) say("The wind's swinging. Check it before you move.");
+  }
+  W.ang += (W.target - W.ang) * Math.min(1, dt*0.35);
+  W.ang += Math.sin(performance.now()*0.00023)*dt*0.09;
+  windVec.set(Math.sin(W.ang), 0, Math.cos(W.ang));
+}
+const COMPASS = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+function bearing(x,z){                               // -Z is north
+  let d = Math.atan2(x, -z) * 180/Math.PI;
+  return (d+360)%360;
+}
+const card16 = d => COMPASS[Math.round(d/22.5)%16];
+
+/* ============================================================
+   PLAYER
+   ============================================================ */
+const P = {
+  pos:new THREE.Vector3(0,0,0), yaw:0, pitch:0,
+  crouch:false, run:false, speed:0, still:0,
+  aim:false, aimT:0, breath:0, breathing:false, gasp:0,
+  rounds:2, chambered:true, cycling:0, recoil:0, recoilV:0,
+  fired:0, shotDist:0
+};
+(function placePlayer(){
+  const a = bearing(A.pos.x, A.pos.z)*Math.PI/180;
+  P.pos.set(0,0,0);
+  P.yaw = Math.atan2(-(A.pos.x - P.pos.x), -(A.pos.z - P.pos.z));  // start facing him
+})();
+
+const keys = {};
+addEventListener('keydown', e=>{
+  keys[e.code]=true;
+  if(e.code==='KeyR') cycleBolt();
+  if(e.code==='Space'){ P.breathing = true; e.preventDefault(); }
+});
+addEventListener('keyup', e=>{
+  keys[e.code]=false;
+  if(e.code==='Space') P.breathing = false;
+});
+const cv3 = renderer.domElement;
+cv3.addEventListener('mousedown', e=>{
+  if(document.pointerLockElement !== cv3) return;
+  if(e.button===2){ P.aim = true; }
+  if(e.button===0){ fire(); }
+});
+addEventListener('mouseup', e=>{ if(e.button===2) P.aim=false; });
+cv3.addEventListener('contextmenu', e=>e.preventDefault());
+addEventListener('mousemove', e=>{
+  if(document.pointerLockElement !== cv3) return;
+  const s = (P.aim ? 0.0009 : 0.0022);
+  P.yaw   -= e.movementX * s;
+  P.pitch -= e.movementY * s;
+  P.pitch = Math.max(-1.35, Math.min(1.35, P.pitch));
+});
+
+function playerStep(dt){
+  P.crouch = !!keys['ControlLeft'] || !!keys['ControlRight'] || !!keys['KeyC'];
+  P.run    = (!!keys['ShiftLeft'] || !!keys['ShiftRight']) && !P.crouch && !P.aim;
+
+  let f=0, r=0;
+  if(keys['KeyW']) f+=1; if(keys['KeyS']) f-=1;
+  if(keys['KeyD']) r+=1; if(keys['KeyA']) r-=1;
+
+  let sp = P.crouch ? 1.35 : (P.run ? 5.6 : 2.9);
+  if(P.aim) sp *= 0.42;
+  const gy = ground(P.pos.x, P.pos.z);
+  if(gy < -1.2) sp *= 0.45;                          // wading the channel
+
+  if(f||r){
+    const l = Math.hypot(f,r); f/=l; r/=l;
+    const sy = Math.sin(P.yaw), cy = Math.cos(P.yaw);
+    P.pos.x = clampMap(P.pos.x + (-sy*f + cy*r) * sp * dt);
+    P.pos.z = clampMap(P.pos.z + (-cy*f - sy*r) * sp * dt);
+    P.speed = sp; P.still = 0;
+  } else {
+    P.speed = 0; P.still += dt;
+  }
+
+  // eye height, with a walk bob
+  const eye = P.crouch ? 1.02 : 1.68;
+  const bob = P.speed>0 ? Math.sin(performance.now()*0.009*(P.run?1.5:1))*(P.run?0.055:0.028) : 0;
+  P.pos.y = ground(P.pos.x,P.pos.z) + eye + bob;
+
+  // --- shouldering the rifle
+  P.aimT += ((P.aim?1:0) - P.aimT) * Math.min(1, dt*7);
+  camera.fov = 66 - 43*P.aimT;
+  camera.updateProjectionMatrix();
+  document.body.classList.toggle('aim', P.aim);
+
+  // --- breath
+  if(P.breathing && P.gasp<=0 && P.aim){
+    P.breath += dt;
+    if(P.breath > 5.2){ P.gasp = 3.4; P.breath = 0; P.breathing = false; }
+  } else {
+    P.breath = Math.max(0, P.breath - dt*1.6);
+  }
+  P.gasp = Math.max(0, P.gasp - dt);
+
+  // --- sway: settles the longer you hold still, spikes after a gasp
+  const held = P.breathing && P.gasp<=0;
+  let amp = 0.0075;
+  amp *= held ? 0.16 : 1;
+  amp *= P.gasp>0 ? 3.0 : 1;
+  amp *= 1 + Math.min(1.6, P.speed*0.4);
+  amp *= Math.max(0.45, 1 - Math.min(1, P.still*0.35)*0.55);
+  const tt = performance.now()*0.001;
+  const swayY = Math.sin(tt*1.71)*amp + Math.sin(tt*0.63)*amp*0.62;
+  const swayP = Math.cos(tt*1.29)*amp*0.8 + Math.sin(tt*0.44)*amp*0.55;
+
+  // --- recoil recovery
+  P.recoilV += (0 - P.recoil) * dt * 26;
+  P.recoilV *= Math.pow(0.0022, dt);
+  P.recoil  += P.recoilV * dt;
+  if(P.cycling>0) P.cycling = Math.max(0, P.cycling-dt);
+
+  camera.position.copy(P.pos);
+  camera.rotation.set(0,0,0,'YXZ');
+  camera.rotation.order = 'YXZ';
+  camera.rotation.y = P.yaw + swayY*P.aimT;
+  camera.rotation.x = P.pitch + P.recoil + swayP*P.aimT;
+}
+
+/* ============================================================
+   SENSES — scent, sight, sound
+   ============================================================ */
+function sensesStep(dt){
+  if(A.state==='down') return;
+  const to = new THREE.Vector3().subVectors(P.pos, A.pos); to.y = 0;
+  const dist = to.length();
+  if(dist < 0.001) return;
+  const dir = to.clone().divideScalar(dist);
+
+  let gain = 0;
+
+  // scent: the wind carries you to him. dominant sense, works blind.
+  const scentAlign = Math.max(0, -windVec.dot(dir));   // wind blowing you -> him
+  if(dist < 78){
+    const prox = 1 - dist/78;
+    gain += scentAlign * prox * (0.85 + W.spd*0.10) * 1.55;
+  }
+
+  // sight: laterally-set eyes, wide arc, poor at picking out a still shape
+  const fwd = new THREE.Vector3(Math.sin(A.yaw),0,Math.cos(A.yaw));
+  const cone = fwd.dot(dir);                           // 1 = dead ahead
+  if(cone > -0.25 && dist < 95){
+    const prox = 1 - dist/95;
+    const arc  = Math.max(0, (cone+0.25)/1.25);
+    const mot  = P.speed>4 ? 1.0 : P.speed>1.8 ? 0.55 : P.speed>0 ? 0.28 : 0.05;
+    const low  = P.crouch ? 0.45 : 1;
+    gain += arc * prox * prox * mot * low * 1.35;
+  }
+
+  // sound: gait against wet floodplain
+  const noise = P.speed===0 ? 0 : (P.crouch ? 9 : P.run ? 46 : 22);
+  if(noise>0 && dist < noise) gain += (1 - dist/noise) * 0.85;
+
+  if(gain > 0) A.alert += gain*dt;
+  else         A.alert -= dt * (A.state==='alert' ? 0.16 : 0.28);
+  A.alert = Math.max(0, Math.min(1.35, A.alert));
+
+  if(A.wound) A.alert = 1.35;                          // a hit animal never settles
+
+  const was = A.state;
+  if(A.state !== 'flee'){
+    if(A.alert >= 1.0){ startFlee(dir.clone().negate()); }
+    else if(A.alert > 0.42) A.state = 'alert';
+    else A.state = 'graze';
+  }
+  if(was==='graze' && A.state==='alert') say("He's got his head up. Don't move.");
+  if(was==='alert' && A.state==='graze') say("He's settled. Go now, and go low.");
+
+  // behaviour per state
+  if(A.state==='graze'){
+    A.speed += (0.55 - A.speed)*Math.min(1,dt*1.2);
+    A.graze -= dt;
+    if(A.graze<=0){ A.graze = 4+Math.random()*7; A.yaw += (Math.random()-.5)*1.3; }
+    if(A.speed>0.05){
+      A.pos.x = clampMap(A.pos.x + Math.sin(A.yaw)*A.speed*dt);
+      A.pos.z = clampMap(A.pos.z + Math.cos(A.yaw)*A.speed*dt);
+    }
+  } else if(A.state==='alert'){
+    A.speed += (0 - A.speed)*Math.min(1,dt*3);
+    const want = Math.atan2(dir.x, dir.z);             // square up to the threat
+    A.yaw += angDiff(want, A.yaw)*Math.min(1,dt*1.1);
+  } else if(A.state==='flee'){
+    fleeStep(dt);
+  }
+}
+function angDiff(a,b){ let d=(a-b)%(Math.PI*2); if(d>Math.PI)d-=Math.PI*2; if(d<-Math.PI)d+=Math.PI*2; return d; }
+
+function startFlee(away){
+  if(A.state==='flee') return;
+  A.state = 'flee';
+  A.fleeYaw = Math.atan2(away.x, away.z);
+  if(A.runLeft<=0) A.runLeft = 120;                    // unhurt: he just leaves
+  say(A.wound ? "He's running. Mark where he goes in." : "He's blown out. He has your scent.");
+}
+function fleeStep(dt){
+  const top = A.wound && A.wound.lethal ? 8.2 : (A.wound && A.hitZone==='leg' ? 4.4 : 9.4);
+  A.speed += (top - A.speed)*Math.min(1,dt*1.4);
+  A.fleeYaw += Math.sin(performance.now()*0.0004)*dt*0.5;   // he doesn't run a straight line
+  // turn away from the map edge
+  const r = Math.hypot(A.pos.x, A.pos.z);
+  if(r > MAPR-25) A.fleeYaw += angDiff(Math.atan2(-A.pos.x,-A.pos.z), A.fleeYaw)*dt*1.6;
+  A.yaw += angDiff(A.fleeYaw, A.yaw)*Math.min(1,dt*2.4);
+
+  const step = A.speed*dt;
+  A.pos.x = clampMap(A.pos.x + Math.sin(A.yaw)*step);
+  A.pos.z = clampMap(A.pos.z + Math.cos(A.yaw)*step);
+  A.runLeft -= step;
+  if(A.wound) { A.tracked += step; bleed(step); }
+
+  if(A.runLeft <= 0){
+    if(A.wound && A.wound.lethal){ goDown(); }
+    else {
+      A.state = 'alert'; A.speed = 0; A.alert = 0.9;
+      if(!A.wound) say("He's stopped. You can still work back onto him.");
+      else say("He's stopped, and he's still on his feet. You'll need another round.");
+    }
+  }
+}
+function goDown(){
+  A.state='down'; A.speed=0;
+  trike.root.rotation.z = 1.42;                        // over onto his side
+  trike.root.position.y = A.pos.y + 0.5;
+  logLine("Animal down · "+Math.round(A.tracked)+" m tracked", true);
+  say("He's down. Walk up on him from behind.");
+}
+
+/* ============================================================
+   BLOOD
+   ============================================================ */
+const bloodG = new THREE.Group(); scene.add(bloodG);
+function bleed(step){
+  if(!A.wound || A.wound.rate<=0) return;
+  A.bleedAcc += step;
+  const every = 14 / A.wound.rate;                     // heavier wound, denser sign
+  if(A.bleedAcc < every) return;
+  A.bleedAcc = 0;
+  const n = 1 + Math.floor(A.wound.rate*0.7);
+  for(let i=0;i<n;i++){
+    const r = 0.10 + Math.random()*0.13*A.wound.rate;
+    const m = new THREE.Mesh(new THREE.CircleGeometry(r, 7),
+      new THREE.MeshBasicMaterial({color:A.wound.col, transparent:true,
+        opacity:.55+Math.random()*.3, depthWrite:false}));
+    m.rotation.x = -Math.PI/2;
+    const ox=(Math.random()-.5)*2.4, oz=(Math.random()-.5)*2.4;
+    m.position.set(A.pos.x+ox, ground(A.pos.x+ox,A.pos.z+oz)+0.035, A.pos.z+oz);
+    bloodG.add(m);
+  }
+}
+
+/* ============================================================
+   THE RIFLE
+   ============================================================ */
+const ray = new THREE.Raycaster();
+function cycleBolt(){
+  if(!started || P.chambered || P.rounds<=0 || P.cycling>0) return;
+  P.cycling = 1.4;
+  setTimeout(()=>{ if(P.rounds>0){ P.chambered = true; } }, 1400);
+}
+function fire(){
+  if(!started || ended) return;
+  if(!P.chambered){ say(P.rounds>0 ? "Empty chamber — work the bolt." : "You're out."); return; }
+  P.chambered = false; P.rounds--; P.fired++;
+  P.recoilV += 2.6; P.recoil += 0.052;                 // muzzle climb
+  const hf = document.getElementById('hit');
+
+  ray.setFromCamera({x:0,y:0}, camera);
+  ray.far = 400;
+  const hits = ray.intersectObjects(trike.zones, false);
+  if(hits.length===0){
+    logLine("Shot "+P.fired+" · clean miss");
+    say("Over the top of him. That's one round gone.");
+    if(A.state!=='flee'){
+      const away = new THREE.Vector3().subVectors(A.pos,P.pos).setY(0).normalize();
+      A.alert = 1.35; startFlee(away);
+    }
+    setTimeout(()=>cycleBolt(), 260);
+    return;
+  }
+  const zone = hits[0].object.userData.zone;
+  const w = WOUND[zone];
+  const dist = P.pos.distanceTo(A.pos);
+  if(P.fired===1) P.shotDist = dist;
+
+  hf.classList.remove('go'); void hf.offsetWidth; hf.classList.add('go');
+  logLine("Shot "+P.fired+" · "+ZONE_LABEL[zone]+" · "+Math.round(dist)+" m", true);
+
+  // a later, better-placed round supersedes a poor first one
+  if(!A.wound || (!A.wound.lethal && w.lethal) || (w.lethal && w.run < A.wound.run)){
+    A.wound = w; A.hitZone = zone;
+    A.runLeft = w.run;
+  } else {
+    A.runLeft = Math.max(0, A.runLeft * 0.45);
+  }
+  logLine("Blood: "+w.blood);
+
+  if(w.instant){ A.state='flee'; A.runLeft=0; goDown(); }
+  else {
+    const away = new THREE.Vector3().subVectors(A.pos,P.pos).setY(0).normalize();
+    A.state='graze'; startFlee(away);
+  }
+  setTimeout(()=>cycleBolt(), 260);
+}
+
+/* ============================================================
+   HUD
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const elGuide=$('guide'), elRoster=$('roster'), elTally=$('tally');
+let guideT = 0, logN = 0;
+function say(txt){
+  elGuide.textContent = txt;
+  elGuide.classList.add('on');
+  guideT = 4.6;
+}
+function logLine(txt, mark){
+  const li = document.createElement('li');
+  if(mark) li.className = 'hit';
+  const h = new Date(Date.now());
+  li.textContent = txt;
+  elRoster.appendChild(li);
+  while(elRoster.children.length > 7) elRoster.removeChild(elRoster.firstChild);
+  logN++;
+  elTally.textContent = logN + " entries";
+}
+
+function hudStep(dt){
+  // compass
+  const bDeg = (Math.atan2(Math.sin(P.yaw), Math.cos(P.yaw))*180/Math.PI + 360) % 360;
+  const look = (180 - bDeg + 360) % 360;              // yaw 0 faces -Z = north
+  $('compass').innerHTML = "<b>"+card16(look)+"</b>";
+
+  // wind readout
+  const wd = (Math.atan2(windVec.x, -windVec.z)*180/Math.PI + 360)%360;
+  $('wdir').textContent = card16((wd+180)%360);       // reported as the direction it comes FROM
+  $('wspd').textContent = W.spd.toFixed(1);
+  $('warrow').style.transform = "rotate("+(wd - look)+"deg)";
+
+  const to = new THREE.Vector3().subVectors(A.pos,P.pos).setY(0);
+  const dist = to.length();
+  const dir = dist>0.01 ? to.clone().divideScalar(dist) : new THREE.Vector3(0,0,1);
+  const carry = windVec.dot(dir);                     // +1 = wind carries you straight to him
+  const rel = $('wrel');
+  if(carry > 0.45){ rel.textContent = "carrying to him"; rel.className = "rel bad"; }
+  else if(carry < -0.45){ rel.textContent = "in your face"; rel.className = "rel good"; }
+  else { rel.textContent = "crosswind"; rel.className = "rel"; }
+
+  // ammo
+  $('rounds').textContent = (P.chambered ? "●" : "○") + " " + (P.rounds>(P.chambered?1:0) ? "●" : "○");
+  $('astate').textContent = P.cycling>0 ? "cycling bolt…"
+    : P.rounds===0 && !P.chambered ? "out of ammunition"
+    : P.chambered ? ".700 Nitro Express" : "press R — work the bolt";
+  $('astate').className = P.cycling>0 ? 'cyc' : '';
+
+  // quarry alert meter — only once you can actually see him
+  const q = $('quarry');
+  const visible = dist < 130;
+  q.classList.toggle('on', visible && !ended);
+  if(visible){
+    const pct = Math.min(1, A.alert/1.0)*100;
+    $('alertbar').style.width = pct+"%";
+    q.classList.toggle('warn', A.alert>0.42 && A.alert<1);
+    q.classList.toggle('spook', A.alert>=1);
+    $('alertst').textContent =
+      A.state==='down' ? "Down · "+Math.round(dist)+" m" :
+      A.state==='flee' ? "Running · "+Math.round(dist)+" m" :
+      A.state==='alert'? "Alert · "+Math.round(dist)+" m" :
+                         "Grazing · "+Math.round(dist)+" m";
+  }
+
+  // breath bar rides the reticle
+  $('retic').style.opacity = P.aim ? (P.breathing && P.gasp<=0 ? 1 : .8) : .5;
+
+  if(guideT>0){ guideT-=dt; if(guideT<=0) elGuide.classList.remove('on'); }
+}
+
+/* ============================================================
+   ENDINGS
+   ============================================================ */
+let ended = false;
+function finish(ok, head, para){
+  if(ended) return; ended = true;
+  document.exitPointerLock && document.exitPointerLock();
+  $('endh').innerHTML = head;
+  $('endp').textContent = para;
+  const rows = [
+    ["Quarry","Triceratops prorsus"],
+    ["Shot placement", A.hitZone ? ZONE_LABEL[A.hitZone] : "—"],
+    ["Shot distance", P.shotDist ? Math.round(P.shotDist)+" m" : "—"],
+    ["Rounds fired", String(P.fired)],
+    ["Distance tracked", Math.round(A.tracked)+" m"],
+    ["Time afield", fmtTime(clockT)]
+  ];
+  $('endstats').innerHTML = rows.map(r=>"<dt>"+r[0]+"</dt><dd>"+r[1]+"</dd>").join("");
+  $('end').classList.add('on');
+}
+function fmtTime(s){
+  const m = Math.floor(s/60), ss = Math.floor(s%60);
+  return m+" min "+(ss<10?"0":"")+ss+" s";
+}
+$('again').addEventListener('click', ()=>location.reload());
+
+function checkEnd(){
+  if(ended) return;
+  const dist = P.pos.distanceTo(A.pos);
+  if(A.state==='down' && dist < 8){
+    finish(true, "The animal is <i>down</i>", A.wound.note+" Nine tonnes of Triceratops, and the light going out of the floodplain behind you.");
+  }
+  // out of ammunition with a live, wounded animal
+  if(P.rounds===0 && !P.chambered && A.state!=='down'){
+    if(A.wound && !A.wound.lethal && A.state==='alert'){
+      finish(false, "You <i>wounded</i> him", A.wound.note+" You have nothing left to finish it with. This is the outcome every hunter is supposed to fear, and it is on you.");
+    } else if(!A.wound && A.state!=='flee' && A.alert<0.5){
+      finish(false, "Two rounds, <i>no</i> animal", "You emptied the rifle into the floodplain. He is still out there, and he will not let you near him again.");
+    }
+  }
+}
+
+/* ============================================================
+   GATE + LOOP
+   ============================================================ */
+let started = false, clockT = 0;
+$('enter').addEventListener('click', ()=>{
+  $('gate').classList.add('off');
+  cv3.requestPointerLock();
+  started = true;
+  const b = bearing(A.pos.x - P.pos.x, A.pos.z - P.pos.z);
+  logLine("Fresh sign · bearing "+card16(b)+" · "+Math.round(P.pos.distanceTo(A.pos))+" m");
+  say("He's out there about "+Math.round(P.pos.distanceTo(A.pos))+" metres, bearing "+card16(b)+". Keep the wind in your face.");
+});
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+// keep the shadow frustum on the player
+function sunStep(){
+  sun.position.set(P.pos.x-52, 64, P.pos.z+34);
+  sun.target.position.set(P.pos.x, 0, P.pos.z);
+  sun.target.updateMatrixWorld();
+}
+
+let last = performance.now();
+function tick(now){
+  requestAnimationFrame(tick);
+  let dt = (now-last)/1000; last = now;
+  dt = Math.min(dt, 0.05);
+  const t = now*0.001;
+
+  windStep(dt);
+  if(started && !ended){
+    clockT += dt;
+    playerStep(dt);
+    sensesStep(dt);
+    checkEnd();
+  }
+  animalStep(dt, t);
+  sunStep();
+  hudStep(dt);
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(tick);
+
+})();
+</script>

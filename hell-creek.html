@@ -1,0 +1,1668 @@
+<meta charset="utf-8">
+<title>Hell Creek Field Station</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --ink:#17150F; --ink-2:#221F17; --paper:#E8DFC9; --paper-2:#CFC2A2;
+    --mud:#7A6341; --moss:#43593A; --rust:#A64B21; --bone:#C9BC98;
+    --hair:rgba(201,188,152,.30);
+    --sans:"Archivo Narrow","Helvetica Neue",Arial,sans-serif;
+    --serif:"Spectral",Georgia,"Times New Roman",serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--paper);font-family:var(--serif);overflow:hidden}
+  canvas{display:block}
+
+  /* ---------- shared chrome ---------- */
+  .panel{
+    background:rgba(23,21,15,.80);
+    border:1px solid var(--hair);
+    backdrop-filter:blur(6px);
+    padding:10px 13px;
+  }
+  .eyebrow{
+    font-family:var(--sans); font-weight:600; font-size:11px;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--bone);
+  }
+  .hud{position:fixed; inset:0; pointer-events:none; z-index:5}
+  .hud > *{pointer-events:auto}
+
+  /* ---------- stratigraphic header strip ---------- */
+  #strip{
+    position:fixed; top:0; left:0; right:0; height:30px;
+    display:flex; align-items:center; gap:0;
+    background:linear-gradient(to bottom,rgba(23,21,15,.92),rgba(23,21,15,.62));
+    border-bottom:1px solid var(--hair);
+    font-family:var(--sans); font-size:11px; letter-spacing:.15em;
+    text-transform:uppercase; color:var(--bone); z-index:6;
+  }
+  #strip span{padding:0 14px; border-right:1px solid var(--hair); white-space:nowrap}
+  #strip span:last-child{border-right:0; margin-left:auto; color:var(--paper)}
+  #strip b{color:var(--rust); font-weight:700}
+  @media (max-width:760px){ #strip .opt{display:none} }
+
+  /* ---------- field log ---------- */
+  #log{position:fixed; left:14px; bottom:14px; width:214px}
+  #log h2{
+    margin:0 0 8px; font-family:var(--sans); font-size:11px; font-weight:700;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--bone);
+    display:flex; justify-content:space-between; align-items:baseline;
+  }
+  #log h2 em{font-family:var(--mono); font-style:normal; font-size:11px; color:var(--rust); letter-spacing:0}
+  #log ol{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:1px}
+  #log li{
+    font-family:var(--serif); font-size:12.5px; font-style:italic;
+    color:rgba(232,223,201,.34); display:flex; gap:7px; align-items:baseline;
+    line-height:1.5; transition:color .5s ease;
+  }
+  #log li::before{content:"·"; font-style:normal; color:rgba(201,188,152,.35); width:8px; flex:none}
+  #log li.seen{color:var(--paper)}
+  #log li.seen::before{content:"✓"; font-size:10px; color:var(--rust)}
+
+  /* ---------- controls ---------- */
+  #keys{position:fixed; right:14px; bottom:14px; text-align:right;
+        font-family:var(--mono); font-size:11px; color:rgba(232,223,201,.6); line-height:1.9}
+  #keys kbd{
+    font-family:var(--mono); font-size:10px; color:var(--paper);
+    border:1px solid var(--hair); padding:1px 5px; margin-left:2px;
+    background:rgba(232,223,201,.06);
+  }
+
+  /* ---------- compass ---------- */
+  #compass{position:fixed; top:44px; left:50%; transform:translateX(-50%);
+    text-shadow:0 1px 6px rgba(23,21,15,.9);
+    font-family:var(--sans); font-size:11px; letter-spacing:.3em; color:rgba(232,223,201,.5);
+    text-transform:uppercase}
+  #compass b{color:var(--paper); font-weight:700}
+
+  /* ---------- the specimen card ---------- */
+  #card{
+    position:fixed; right:16px; top:50%; transform:translate(14px,-50%);
+    width:322px; max-width:calc(100vw - 32px);
+    background:var(--paper); color:var(--ink);
+    border:1px solid #b9a983;
+    box-shadow:0 18px 40px rgba(0,0,0,.55);
+    padding:0; opacity:0; visibility:hidden;
+    transition:opacity .35s ease, transform .35s ease, visibility .35s;
+  }
+  #card.on{opacity:1; visibility:visible; transform:translate(0,-50%)}
+  #card .top{padding:14px 16px 12px; border-bottom:2px solid var(--rust)}
+  #card .cat{
+    font-family:var(--mono); font-size:10px; letter-spacing:.1em;
+    color:var(--mud); display:flex; justify-content:space-between;
+  }
+  #card h3{
+    margin:5px 0 2px; font-family:var(--serif); font-style:italic; font-weight:600;
+    font-size:25px; line-height:1.05; letter-spacing:-.01em; text-wrap:balance;
+  }
+  #card .say{font-family:var(--sans); font-size:11.5px; letter-spacing:.11em;
+    text-transform:uppercase; color:var(--mud)}
+  #card .mean{margin:7px 0 0; font-size:13px; line-height:1.45; color:#4a4231}
+
+  #card dl{
+    margin:0; display:grid; grid-template-columns:auto 1fr; column-gap:12px; row-gap:0;
+    padding:11px 16px; border-bottom:1px solid #c6b795; background:rgba(122,99,65,.07);
+  }
+  #card dt{font-family:var(--sans); font-size:10px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--mud); align-self:center; padding:3px 0}
+  #card dd{margin:0; font-family:var(--mono); font-size:12px; font-variant-numeric:tabular-nums;
+    text-align:right; align-self:center; padding:3px 0}
+
+  #card .notes{padding:12px 16px 15px}
+  #card .notes .eyebrow{color:var(--rust); display:block; margin-bottom:8px}
+  #card ul{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:9px}
+  #card li{font-size:13.5px; line-height:1.5; color:#2c2820; padding-left:15px; position:relative}
+  #card li::before{
+    content:""; position:absolute; left:0; top:.62em; width:7px; height:1px; background:var(--rust);
+  }
+  @media (max-height:620px){ #card .mean{display:none} #card li{font-size:12.5px} }
+
+  /* ---------- opening plate ---------- */
+  #gate{
+    position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(120% 90% at 50% 40%,rgba(23,21,15,.72),rgba(23,21,15,.94));
+    padding:24px; transition:opacity .6s ease;
+  }
+  #gate.off{opacity:0; pointer-events:none}
+  #plate{max-width:610px; width:100%; text-align:left}
+  #plate .rule{height:1px; background:var(--hair); margin:18px 0}
+  #plate h1{
+    margin:10px 0 0; font-family:var(--serif); font-weight:300; font-size:clamp(38px,7vw,66px);
+    line-height:.98; letter-spacing:-.025em; text-wrap:balance;
+  }
+  #plate h1 i{font-weight:600; color:var(--rust); font-style:italic}
+  #plate p{font-size:15.5px; line-height:1.62; color:rgba(232,223,201,.82); max-width:60ch; margin:0}
+  #plate .flora{font-size:13px; line-height:1.6; color:rgba(232,223,201,.52); margin:12px 0 0}
+  #plate .flora i{font-style:italic}
+  #enter{
+    margin-top:22px; font-family:var(--sans); font-weight:600; font-size:13px;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--ink); background:var(--paper);
+    border:0; padding:13px 26px; cursor:pointer; transition:background .2s ease, transform .2s ease;
+  }
+  #enter:hover{background:#fff; transform:translateY(-1px)}
+  #enter:focus-visible{outline:2px solid var(--rust); outline-offset:3px}
+  #plate .fine{margin-top:14px; font-family:var(--mono); font-size:11px; color:rgba(232,223,201,.45)}
+
+  /* ---------- touch ---------- */
+  #stick{position:fixed; left:18px; bottom:18px; width:118px; height:118px; display:none;
+    border:1px solid var(--hair); border-radius:50%; z-index:7; touch-action:none;
+    background:rgba(23,21,15,.4)}
+  #stick i{position:absolute; left:50%; top:50%; width:44px; height:44px; margin:-22px 0 0 -22px;
+    border-radius:50%; background:rgba(232,223,201,.5)}
+  body.touch #stick{display:block}
+  body.touch #log{display:none}
+  body.touch #keys{display:none}
+
+  @media (prefers-reduced-motion:reduce){
+    #card,#gate,#enter{transition:none}
+  }
+</style>
+
+<div class="hud">
+  <div id="strip">
+    <span>Hell Creek Fm.</span>
+    <span class="opt">Eastern Montana</span>
+    <span><b>66.0 Ma</b></span>
+    <span class="opt">Late Maastrichtian</span>
+    <span id="clock">Warm temperate floodplain · 24 °C</span>
+  </div>
+  <div id="compass"><b>N</b></div>
+  <div id="log" class="panel">
+    <h2>Field log <em id="tally">0 / 8</em></h2>
+    <ol id="roster"></ol>
+  </div>
+  <div id="keys" class="panel">
+    move<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><br>
+    run<kbd>shift</kbd> · look<kbd>mouse</kbd><br>
+    release cursor<kbd>esc</kbd>
+  </div>
+  <div id="card" role="status" aria-live="polite"></div>
+  <div id="stick"><i></i></div>
+</div>
+
+<div id="gate">
+  <div id="plate">
+    <div class="eyebrow">A walkable reconstruction · 66 million years ago</div>
+    <h1>Hell Creek, the <i>last</i> summer</h1>
+    <div class="rule"></div>
+    <p>You are standing on a humid coastal floodplain in what is now eastern Montana, a few
+      thousand years before the Chicxulub impact. Everything alive here lived here together —
+      no <i>Stegosaurus</i>, no <i>Velociraptor</i>, no animals borrowed from other continents or
+      other tens of millions of years. Eight species, built to current evidence: horizontal spines,
+      lipped teeth, feathers where feathers are known, and no pronated “bunny hands” anywhere.</p>
+    <p class="flora">Underfoot and overhead: <i>Metasequoia</i> dawn redwoods, <i>Sabalites</i>
+      palms, tree ferns, ginkgo, and the early flowering shrubs that were already taking over
+      the understory.</p>
+    <button id="enter">Enter the floodplain</button>
+    <div class="fine">Walk within 25 m of an animal to record it in the field log.</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+if(!window.THREE){document.getElementById('plate').innerHTML='<p>Could not load the 3D library.</p>';return;}
+
+/* ============================================================
+   SPECIMEN RECORDS — Hell Creek Formation, Lancian faunal stage
+   ============================================================ */
+const SPECIES = {
+  trex:{
+    name:"Tyrannosaurus rex", say:"tie-RAN-oh-SORE-us", common:"Tyrant lizard king",
+    mean:"The apex predator of the formation, and the last large theropod on Earth. Adults took roughly two decades to reach full size.",
+    stats:[["Length","12.3 m"],["Hip height","3.7 m"],["Mass","≈ 8 000 kg"],["Bite force","≈ 35 000 N"],["Diet","Carnivore"]],
+    notes:[
+      "The spine is horizontal, head and tail balanced over the hips. The upright tail-dragging pose was abandoned in the 1970s and is skeletally impossible — the tail vertebrae will not bend that way.",
+      "Teeth sit behind scaly lips at rest. Exposed crocodile-style fangs would dry out the enamel; the tooth surface texture argues for lips.",
+      "Skin impressions from the neck, hip and tail are all scaly, so no shaggy coat here — but the arms are strong, and held with palms facing inward, never down."
+    ]},
+  trike:{
+    name:"Triceratops prorsus", say:"try-SERRA-tops", common:"Three-horned face",
+    mean:"The single most common large dinosaur in Hell Creek — more individuals have been collected than of any other big animal here.",
+    stats:[["Length","8.0 m"],["Shoulder height","2.9 m"],["Mass","≈ 9 000 kg"],["Skull","2.4 m"],["Diet","Low browser"]],
+    notes:[
+      "Forelimbs are held semi-erect: the elbows bow slightly outward and the hands point forward-and-out. Neither a sprawling lizard nor a columnar rhino.",
+      "Five fingers per hand, but only the inner three bear weight and carry hooves — the outer two are splints.",
+      "The frill is solid bone in this genus, edged with fused epoccipitals that give the margin its scalloped wave. Skin impressions show large, nipple-like scales on the flanks."
+    ]},
+  edmonto:{
+    name:"Edmontosaurus annectens", say:"ed-MON-toe-SORE-us", common:"Edmonton lizard",
+    mean:"A herding hadrosaur that grew as long as Tyrannosaurus. Bone beds preserve hundreds of individuals together.",
+    stats:[["Length","12.0 m"],["Hip height","3.3 m"],["Mass","≈ 7 600 kg"],["Teeth","≈ 1 000"],["Diet","Bulk herbivore"]],
+    notes:[
+      "Habitually quadrupedal. The forelimb ends in a fleshy mitten — the fingers are bound in a single pad, so there are no splayed dinosaur fingers pressing into the mud.",
+      "A soft fleshy comb crowns the skull, preserved in the “dinosaur mummy” specimens. It is not bone, and it was missed for a century.",
+      "It chews by letting the upper jaws flex outward as the lower jaw closes — pleurokinesis — not by grinding side to side like a cow."
+    ]},
+  anky:{
+    name:"Ankylosaurus magniventris", say:"an-KYE-loh-SORE-us", common:"Fused lizard, big belly",
+    mean:"The largest known ankylosaurid, and genuinely rare: it is known from only a handful of specimens.",
+    stats:[["Length","6.5 m"],["Width","1.7 m"],["Mass","≈ 5 000 kg"],["Club","≈ 25 kg"],["Diet","Low herbivore"]],
+    notes:[
+      "The armour is a mosaic of separate osteoderms set in the skin in rows, not a fused turtle shell. Small ossicles fill the gaps between the big keeled plates.",
+      "The tail club swings horizontally. The handle is locked rigid by interlocking vertebrae and ossified tendons, so it cannot whip — it is a mace, not a flail.",
+      "Its species name means “big belly” for good reason: a wide barrel gut for fermenting low, tough vegetation."
+    ]},
+  dakota:{
+    name:"Dakotaraptor steini", say:"da-KOH-ta-RAP-tor", common:"Dakota thief",
+    mean:"A giant dromaeosaur, far larger than the Velociraptor of the films and living 9 000 km away from it in time and place.",
+    stats:[["Length","4.6 m"],["Hip height","1.6 m"],["Mass","≈ 350 kg"],["Sickle claw","16 cm"],["Diet","Carnivore"]],
+    notes:[
+      "Fully feathered, with a true wing. Quill knobs are preserved on the ulna — the direct anchor points where large pennaceous feathers attached to bone.",
+      "The palms face each other, like a person about to clap. A dromaeosaur wrist physically cannot pronate into the downward-facing “bunny hands” of old artwork.",
+      "The sickle claw held on and pinned prey down. It was too blunt in cross-section to slit a hide open, and the foot was made for gripping."
+    ]},
+  anzu:{
+    name:"Anzu wylei", say:"AN-zoo", common:"Feathered demon of the mud",
+    mean:"A caenagnathid oviraptorosaur, nicknamed the “chicken from hell” when it was described in 2014.",
+    stats:[["Length","3.5 m"],["Hip height","1.5 m"],["Mass","≈ 250 kg"],["Crest","Hollow bone"],["Diet","Omnivore"]],
+    notes:[
+      "The plumage is not speculative. Close oviraptorosaur relatives are preserved with pennaceous feathers on the arms and a fan on the tail tip, used for display.",
+      "It is toothless: a sharp keratin beak, and a tall hollow crest above the eyes.",
+      "Fossil oviraptorosaurs have been found brooding nests, sitting with the arms folded over the eggs the way a bird covers a clutch."
+    ]},
+  pachy:{
+    name:"Pachycephalosaurus wyomingensis", say:"PACK-ee-KEF-uh-lo-SORE-us", common:"Thick-headed lizard",
+    mean:"A bipedal plant-eater carrying 25 cm of solid bone on the roof of its skull.",
+    stats:[["Length","4.5 m"],["Hip height","1.8 m"],["Mass","≈ 450 kg"],["Dome","25 cm thick"],["Diet","Mixed feeder"]],
+    notes:[
+      "Head-to-head ramming is contested. Some domes show healed injuries, but the neck joints are poorly built for absorbing a head-on hit — flank-butting fits the anatomy better.",
+      "“Dracorex” and “Stygimoloch” are almost certainly this animal as a juvenile and a subadult: the spikes shrink and the dome inflates with age.",
+      "Its teeth are small and leaf-shaped, so despite the armoured skull it was browsing on soft plants and possibly insects."
+    ]},
+  thescelo:{
+    name:"Thescelosaurus neglectus", say:"THESS-el-oh-SORE-us", common:"Wonderful, neglected lizard",
+    mean:"A small, heavy-bodied runner and one of the last non-avian dinosaurs — it is found right up against the impact boundary.",
+    stats:[["Length","3.5 m"],["Hip height","1.0 m"],["Mass","≈ 250 kg"],["Femur","44 cm"],["Diet","Low herbivore"]],
+    notes:[
+      "The tail is laced with a lattice of ossified tendons, holding it out as a rigid balance beam behind the hips.",
+      "Its huge nasal chambers and stout forelimbs hint at burrowing habits, matching close relatives found fossilised inside their own dens.",
+      "The famous “fossilised heart” found in one specimen was reexamined and is a concretion of sediment — a good reminder of how reconstruction gets corrected."
+    ]}
+};
+const ORDER = ["trex","trike","edmonto","anky","dakota","anzu","pachy","thescelo"];
+
+/* ============================================================
+   PROCEDURAL TEXTURES  (no external assets — CSP-safe)
+   ============================================================ */
+function cv(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
+function tex(c,rx,ry){const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;
+  if(rx)t.repeat.set(rx,ry||rx); t.anisotropy=4; t.encoding=THREE.sRGBEncoding; return t;}
+
+function noiseInto(ctx,w,h,a){
+  const d=ctx.getImageData(0,0,w,h);
+  for(let i=0;i<d.data.length;i+=4){
+    const n=(Math.random()-.5)*a;
+    d.data[i]+=n; d.data[i+1]+=n; d.data[i+2]+=n;
+  }
+  ctx.putImageData(d,0,0);
+}
+// mottled floodplain silt with scattered plant litter
+function groundTex(){
+  const c=cv(512,512), x=c.getContext('2d');
+  x.fillStyle='#6d5a3c'; x.fillRect(0,0,512,512);
+  for(let i=0;i<900;i++){
+    const r=6+Math.random()*46;
+    x.fillStyle=['rgba(92,105,64,.30)','rgba(120,98,60,.35)','rgba(58,66,42,.28)','rgba(146,126,86,.22)'][i%4];
+    x.beginPath(); x.ellipse(Math.random()*512,Math.random()*512,r,r*(.4+Math.random()*.8),Math.random()*3,0,6.3); x.fill();
+  }
+  for(let i=0;i<260;i++){ // leaf litter
+    x.strokeStyle='rgba(74,58,34,.5)'; x.lineWidth=1+Math.random()*2;
+    const px=Math.random()*512,py=Math.random()*512,a=Math.random()*6.3,l=4+Math.random()*13;
+    x.beginPath(); x.moveTo(px,py); x.lineTo(px+Math.cos(a)*l,py+Math.sin(a)*l); x.stroke();
+  }
+  noiseInto(x,512,512,26);
+  return tex(c,46,46);
+}
+// reptilian pebbled scales
+function scaleTex(base,dark){
+  const c=cv(256,256), x=c.getContext('2d');
+  x.fillStyle=base; x.fillRect(0,0,256,256);
+  for(let row=0;row<32;row++)for(let col=0;col<32;col++){
+    const px=col*8+(row%2?4:0), py=row*8, r=2.4+Math.random()*1.5;
+    x.fillStyle=Math.random()<.5?dark:base;
+    x.globalAlpha=.35+Math.random()*.4;
+    x.beginPath(); x.ellipse(px,py,r,r*.82,0,0,6.3); x.fill();
+  }
+  x.globalAlpha=1; noiseInto(x,256,256,16);
+  return tex(c,7,7);
+}
+// Higher-frequency, non-uniform hide for the hero tyrannosaur. Fossil skin
+// impressions indicate a fine mosaic rather than oversized crocodile plates;
+// layered pigment clouds keep that detail visible at both distance and arm's
+// length. The same map drives a very shallow bump on the matte skin material.
+function trexSkinTex(){
+  const c=cv(512,512), x=c.getContext('2d');
+  x.fillStyle='#625f43'; x.fillRect(0,0,512,512);
+  for(let i=0;i<145;i++){
+    const px=Math.random()*512,py=Math.random()*512,rx=18+Math.random()*72,ry=12+Math.random()*48;
+    x.fillStyle=i%3===0?'rgba(38,39,27,.20)':i%3===1?'rgba(132,119,76,.13)':'rgba(76,73,47,.16)';
+    x.beginPath(); x.ellipse(px,py,rx,ry,Math.random()*Math.PI,0,Math.PI*2); x.fill();
+  }
+  for(let row=0;row<76;row++)for(let col=0;col<76;col++){
+    const px=col*6.8+(row%2?3.4:0)+(Math.random()-.5)*2.2;
+    const py=row*6.8+(Math.random()-.5)*2.2, r=1.45+Math.random()*1.35;
+    const shade=48+Math.floor(Math.random()*47);
+    x.fillStyle=`rgba(${shade},${shade+2},${Math.max(28,shade-12)},${.20+Math.random()*.28})`;
+    x.beginPath(); x.ellipse(px,py,r*(.8+Math.random()*.45),r*(.65+Math.random()*.4),Math.random()*3.14,0,6.3); x.fill();
+    if(Math.random()<.22){
+      x.strokeStyle='rgba(180,166,112,.12)'; x.lineWidth=.6;
+      x.stroke();
+    }
+  }
+  noiseInto(x,512,512,11);
+  return tex(c,11,11);
+}
+// downy plumage: fine directional barbs
+function plumeTex(base,tip){
+  const c=cv(256,256), x=c.getContext('2d');
+  x.fillStyle=base; x.fillRect(0,0,256,256);
+  for(let i=0;i<2600;i++){
+    const px=Math.random()*256, py=Math.random()*256, l=7+Math.random()*13;
+    x.strokeStyle=Math.random()<.45?tip:base;
+    x.globalAlpha=.16+Math.random()*.3; x.lineWidth=1+Math.random();
+    x.beginPath(); x.moveTo(px,py);
+    x.quadraticCurveTo(px+3,py+l*.5,px+1.5,py+l); x.stroke();
+  }
+  x.globalAlpha=1; noiseInto(x,256,256,12);
+  return tex(c,5,5);
+}
+// a single pennaceous feather on transparent ground (alpha-tested card)
+function featherTex(shaft,vane,vane2){
+  const c=cv(128,256), x=c.getContext('2d');
+  x.clearRect(0,0,128,256);
+  for(let s=0;s<2;s++){
+    for(let i=0;i<150;i++){
+      const t=i/150, y=24+t*220;
+      const w=Math.sin(t*Math.PI*.92)*(s?40:30)*(1-t*.28);
+      x.strokeStyle=(i%7<3)?vane2:vane; x.lineWidth=2.2; x.globalAlpha=.85;
+      x.beginPath(); x.moveTo(64,y);
+      x.lineTo(64+(s?w:-w), y+11+w*.12); x.stroke();
+    }
+  }
+  x.globalAlpha=1; x.strokeStyle=shaft; x.lineWidth=3.4;
+  x.beginPath(); x.moveTo(64,14); x.lineTo(64,250); x.stroke();
+  const t=new THREE.CanvasTexture(c); t.anisotropy=4; t.encoding=THREE.sRGBEncoding; return t;
+}
+// fern / palm frond card
+function frondTex(a,b,pinnate){
+  const c=cv(128,256), x=c.getContext('2d');
+  x.clearRect(0,0,128,256);
+  x.strokeStyle=a; x.lineWidth=4;
+  x.beginPath(); x.moveTo(64,256); x.quadraticCurveTo(64,120,64,10); x.stroke();
+  const n=pinnate?26:15;
+  for(let i=0;i<n;i++){
+    const t=i/n, y=250-t*236, w=Math.sin((t+.06)*Math.PI*.95)*58*(pinnate?1:1.1);
+    x.strokeStyle=i%3===0?b:a; x.lineWidth=pinnate?4.5:9;
+    x.lineCap='round';
+    for(const s of [-1,1]){
+      x.beginPath(); x.moveTo(64,y);
+      x.quadraticCurveTo(64+s*w*.6,y-4,64+s*w,y-16-w*.16); x.stroke();
+    }
+  }
+  const t=new THREE.CanvasTexture(c); t.anisotropy=4; t.encoding=THREE.sRGBEncoding; return t;
+}
+function barkTex(){
+  const c=cv(128,256), x=c.getContext('2d');
+  x.fillStyle='#5d4630'; x.fillRect(0,0,128,256);
+  for(let i=0;i<170;i++){
+    x.strokeStyle=['#4a3624','#6d5439','#3d2d1e'][i%3]; x.lineWidth=1+Math.random()*4;
+    const px=Math.random()*128;
+    x.beginPath(); x.moveTo(px,0);
+    x.bezierCurveTo(px+8,85,px-8,170,px+Math.random()*10-5,256); x.stroke();
+  }
+  noiseInto(x,128,256,20);
+  return tex(c,3,1);
+}
+function foliageTex(){
+  const c=cv(256,256), x=c.getContext('2d');
+  x.fillStyle='#2f4b29'; x.fillRect(0,0,256,256);
+  for(let i=0;i<1800;i++){
+    const px=Math.random()*256, py=Math.random()*256, l=5+Math.random()*16;
+    x.strokeStyle=['#203b23','#41613a','#587243','#738055'][i%4];
+    x.globalAlpha=.28+Math.random()*.38; x.lineWidth=.6+Math.random()*1.5;
+    x.beginPath(); x.moveTo(px,py); x.lineTo(px+l,py+(Math.random()-.5)*7); x.stroke();
+  }
+  x.globalAlpha=1; noiseInto(x,256,256,18); return tex(c,3,6);
+}
+function redwoodBranchTex(){
+  const c=cv(384,160),x=c.getContext('2d'); x.clearRect(0,0,384,160);
+  x.strokeStyle='#263d27'; x.lineWidth=5; x.lineCap='round';
+  x.beginPath(); x.moveTo(18,92); x.bezierCurveTo(130,88,258,77,372,51); x.stroke();
+  for(let i=0;i<92;i++){
+    const t=i/91, px=22+t*346, py=92-t*38+Math.sin(t*13)*3;
+    const len=(12+Math.random()*19)*(1-t*.35), side=i%2?-1:1;
+    x.strokeStyle=i%4===0?'#668052':i%3===0?'#46643f':'#314f32';
+    x.lineWidth=1.4+Math.random()*1.5; x.beginPath(); x.moveTo(px,py);
+    x.quadraticCurveTo(px-5,py+side*len*.45,px-9-Math.random()*6,py+side*len); x.stroke();
+  }
+  const t=new THREE.CanvasTexture(c); t.anisotropy=4; t.encoding=THREE.sRGBEncoding; return t;
+}
+
+/* ============================================================
+   SCENE
+   ============================================================ */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x7f9384);
+scene.fog = new THREE.FogExp2(0x82917c, 0.0056);
+
+const camera = new THREE.PerspectiveCamera(66, innerWidth/innerHeight, 0.1, 900);
+const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.76;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+// hazy subtropical light: strong low sun + green bounce from the canopy
+const sun = new THREE.DirectionalLight(0xffddb0, 1.75);
+sun.position.set(-52, 64, 34); sun.castShadow = true;
+sun.shadow.mapSize.set(2048,2048);
+const sc = sun.shadow.camera;
+sc.left=-46; sc.right=46; sc.top=46; sc.bottom=-46; sc.near=1; sc.far=200;
+sun.shadow.bias = -0.0016;
+scene.add(sun); scene.add(sun.target);
+scene.add(new THREE.HemisphereLight(0xa9bdc1, 0x27331f, 0.56));
+const fill = new THREE.DirectionalLight(0x91a7b5, 0.18); fill.position.set(40,26,-40); scene.add(fill);
+
+/* ---------- terrain: floodplain cut by a meandering channel ---------- */
+const RIVER = x => Math.sin(x*0.021)*22 + Math.cos(x*0.047)*7;   // channel centre-line in z
+function channel(x,z){
+  const d = Math.abs(z - RIVER(x));
+  return Math.max(0, 1 - d/15);
+}
+function ground(x,z){
+  const g = Math.sin(x*0.031)*1.5 + Math.cos(z*0.027)*1.25
+          + Math.sin((x*0.7+z)*0.013)*2.4 + Math.cos((x-z*0.8)*0.008)*3.1;
+  const c = channel(x,z);
+  return g*(1-c*0.85) - Math.pow(c,1.5)*4.6;
+}
+const SIZE=440, SEG=190;
+const tGeo = new THREE.PlaneGeometry(SIZE,SIZE,SEG,SEG);
+tGeo.rotateX(-Math.PI/2);
+{
+  const p = tGeo.attributes.position;
+  for(let i=0;i<p.count;i++) p.setY(i, ground(p.getX(i), p.getZ(i)));
+  tGeo.computeVertexNormals();
+}
+const groundMap = groundTex();
+const terrain = new THREE.Mesh(tGeo, new THREE.MeshStandardMaterial({
+  map:groundMap, bumpMap:groundMap, bumpScale:.16, color:0xb2ad8a,
+  roughness:.99, metalness:0
+}));
+terrain.receiveShadow = true;
+scene.add(terrain);
+
+// river surface
+const water = new THREE.Mesh(
+  new THREE.PlaneGeometry(SIZE, SIZE, 1, 1),
+  new THREE.MeshStandardMaterial({color:0x5c6b57, roughness:.14, metalness:.35,
+    transparent:true, opacity:.86})
+);
+water.rotation.x = -Math.PI/2; water.position.y = -1.55;
+scene.add(water);
+
+/* ============================================================
+   GEOMETRY BUILDERS
+   sections run along local +Z; cross-sections are ellipses.
+   ============================================================ */
+const RAD = 24;
+function loft(sections, mat){
+  // Interpolate extra anatomical rings so shoulders, ribcages and tails flow
+  // continuously instead of changing radius in visibly faceted steps.
+  const source=sections, smooth=[];
+  for(let i=0;i<source.length-1;i++){
+    const a=source[i], b=source[i+1];
+    for(let k=0;k<3;k++){
+      const t=k/3, u=t*t*(3-2*t);
+      smooth.push({z:a.z+(b.z-a.z)*t, y:(a.y||0)+((b.y||0)-(a.y||0))*u,
+        rx:a.rx+(b.rx-a.rx)*u, ry:a.ry+(b.ry-a.ry)*u});
+    }
+  }
+  smooth.push(source[source.length-1]); sections=smooth;
+  const pos=[], uv=[], idx=[];
+  sections.forEach((s,i)=>{
+    for(let j=0;j<=RAD;j++){
+      const a = j/RAD*Math.PI*2;
+      pos.push(Math.cos(a)*s.rx, (s.y||0)+Math.sin(a)*s.ry, s.z);
+      uv.push(j/RAD, i/(sections.length-1));
+    }
+  });
+  for(let i=0;i<sections.length-1;i++)for(let j=0;j<RAD;j++){
+    const a=i*(RAD+1)+j, b=a+1, c=a+RAD+1, d=c+1;
+    // Outward-facing winding. The old order rendered every animal inside-out,
+    // which made the hides look hollow and broke their lighting at close range.
+    idx.push(a,b,c, b,d,c);
+  }
+  // Close both ends of every loft.  Keeping separate rim vertices gives the
+  // caps flat normals while the side rings retain their smooth shading.
+  // Without these caps every torso, skull and articulated segment was an open
+  // tube, so holes appeared at tips and whenever a bent joint exposed an end.
+  const addCap=(section,outward)=>{
+    const center=pos.length/3;
+    pos.push(0,section.y||0,section.z); uv.push(.5,.5);
+    const rim=pos.length/3;
+    for(let j=0;j<=RAD;j++){
+      const a=j/RAD*Math.PI*2;
+      pos.push(Math.cos(a)*section.rx,(section.y||0)+Math.sin(a)*section.ry,section.z);
+      uv.push(.5+Math.cos(a)*.5,.5+Math.sin(a)*.5);
+    }
+    for(let j=0;j<RAD;j++){
+      if(outward>0) idx.push(center,rim+j,rim+j+1);
+      else idx.push(center,rim+j+1,rim+j);
+    }
+  };
+  addCap(sections[0],-1);
+  addCap(sections[sections.length-1],1);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv,2));
+  g.setIndex(idx); g.computeVertexNormals();
+  const m = new THREE.Mesh(g, mat); m.castShadow = true; return m;
+}
+// smooth taper between two radii over n sub-sections, with an optional arc
+function taper(len, r0, r1, mat, squash, bow, n){
+  n = n||5; const s=[];
+  for(let i=0;i<=n;i++){
+    const t=i/n, r=r0+(r1-r0)*t;
+    s.push({z:len*t, y:bow?Math.sin(t*Math.PI)*bow:0, rx:r, ry:r*(squash||1)});
+  }
+  return loft(s, mat);
+}
+// articulated chain: each link is a pivot whose child cone runs +Z
+function chain(links, mat, squash){
+  const root=new THREE.Object3D(); const joints=[], meshes=[]; let cur=root;
+  links.forEach(l=>{
+    const j=new THREE.Object3D(); cur.add(j); joints.push(j);
+    // Slight overlap closes the gaps that otherwise appear when a joint bends.
+    const mesh=taper(l.len*1.14, l.r0, l.r1, mat, squash||1, 0, 5);
+    j.add(mesh); meshes.push(mesh);
+    const nxt=new THREE.Object3D(); nxt.position.z=l.len; j.add(nxt); cur=nxt;
+  });
+  return {root, joints, meshes, tip:cur};
+}
+function ball(r, mat, sx, sy, sz){
+  const m=new THREE.Mesh(new THREE.SphereGeometry(r,26,18), mat);
+  m.scale.set(sx||1, sy||1, sz||1); m.castShadow=true; return m;
+}
+function box(w,h,d,mat){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat); m.castShadow=true; return m;
+}
+/* a limb: femur → tibia → metatarsus → foot, hanging downward.
+   returns pivots so a walk cycle can drive flexion about X. */
+function leg(mat, seg, footL, footW, digits){
+  const hip = new THREE.Object3D();
+  hip.rotation.x = Math.PI/2;                      // point the chain down
+  const c = chain(seg, mat, 0.86);
+  hip.add(c.root);
+  // inside a leg frame, local +Y points forward and local +Z points down
+  const foot = new THREE.Object3D(); c.tip.add(foot);
+  // A padded, tapered foot reads as living anatomy rather than a rectangular block.
+  const f = ball(1, mat, footW*.58, footL*.46, footL*.18);
+  f.position.set(0, footL*.38, footL*.10); foot.add(f);
+  if(digits) for(let i=0;i<3;i++){
+    const d = taper(footL*0.55, footW*0.21, footW*0.07, mat, 1, 0, 2);
+    d.rotation.set(-Math.PI/2, (i-1)*0.34, 0);
+    d.position.set(0, footL*0.52, footL*0.13); foot.add(d);
+  }
+  return {hip, j:c.joints, foot};
+}
+/* feather card: alpha-tested plane, doubled */
+function feather(len, wid, t){
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(wid,len),
+    new THREE.MeshStandardMaterial({map:t, transparent:true, alphaTest:.42,
+      side:THREE.DoubleSide, roughness:.9}));
+  m.geometry.translate(0, len/2, 0);
+  return m;
+}
+
+/* ============================================================
+   HIDES & PLUMAGE
+   ============================================================ */
+function skin(map,color,rough){
+  const m = new THREE.MeshStandardMaterial({map:map, color:color||0xffffff,
+    roughness:rough===undefined?.93:rough, metalness:0});
+  if(map){ m.bumpMap=map; m.bumpScale=.035; }
+  return m;
+}
+const HIDE = {
+  trex:     null,
+  trike:    skin(scaleTex('#7d6a4e','#574833')),
+  edmonto:  skin(scaleTex('#8a7b5b','#5c503a')),
+  anky:     skin(scaleTex('#6b6149','#443e2f')),
+  pachy:    skin(scaleTex('#7a6448','#54432e')),
+  thescelo: skin(scaleTex('#6e6b4a','#484833')),
+  dakota:   skin(plumeTex('#7b5433','#c4a26c'),0xffffff,.98),
+  anzu:     skin(plumeTex('#454754','#a9aebc'),0xffffff,.98)
+};
+const trexHideMap=new THREE.TextureLoader().load('assets/trex-hide.png');
+trexHideMap.wrapS=trexHideMap.wrapT=THREE.RepeatWrapping;
+trexHideMap.repeat.set(10,10); trexHideMap.encoding=THREE.sRGBEncoding;
+trexHideMap.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+HIDE.trex=skin(trexHideMap,0xffffff,.97);
+HIDE.trex.bumpScale=.022;
+const HORN = skin(null,0xb9ac8a,.6), BEAK = skin(null,0x6b5c44,.55),
+      CLAW = skin(null,0x30291f,.5), EYE = new THREE.MeshStandardMaterial({color:0x120f0a,roughness:.15});
+// Tyrannosaur soft tissues are kept subdued: a lighter underside, dark mouth
+// seam and keratinous facial bosses add anatomical landmarks without turning
+// uncertain display structures into fantasy spikes or plumage.
+const TREX_UNDER = skin(scaleTex('#777052','#504a35'),0xffffff,.96);
+const TREX_LIP = skin(null,0x343023,.98);
+const TREX_BOSS = skin(null,0x403b2b,.82);
+const TREX_IRIS = new THREE.MeshStandardMaterial({color:0x9b7d32,roughness:.22,
+  emissive:0x181004,emissiveIntensity:.22});
+const TREX_CORNEA = new THREE.MeshPhysicalMaterial({color:0x17130b,roughness:.06,
+  clearcoat:1,clearcoatRoughness:.03});
+const FEATHER = {
+  dakota: featherTex('#3a2916','#8b5c32','#c9a068'),
+  anzu:   featherTex('#1d1f26','#474c5a','#9fa5b3')
+};
+function eyes(host,x,y,z,r){
+  for(const s of [-1,1]){
+    const e=ball(r,EYE); e.position.set(s*x,y,z); host.add(e);
+    const glint=ball(r*.20,new THREE.MeshBasicMaterial({color:0xdde5d7}));
+    glint.position.set(s*(x+r*.83),y+r*.28,z+r*.20); host.add(glint);
+  }
+}
+// lifts the assembly so the lowest foot rests on y = 0
+function seat(inner, feet){
+  inner.updateMatrixWorld(true);
+  let min=Infinity;
+  feet.forEach(f=>{ const b=new THREE.Box3().setFromObject(f); if(b.min.y<min) min=b.min.y; });
+  if(isFinite(min)) inner.position.y -= min;
+}
+const LEG_POSE = {theropod:[-0.45,0.86,-0.42], column:[-0.14,0.30,-0.17], fore:[-0.06,0.20,-0.15]};
+function pose(l,p){ l.j[0].rotation.x=p[0]; l.j[1].rotation.x=p[1]; l.j[2].rotation.x=p[2]; }
+
+/* ============================================================
+   SPECIES BUILDERS   (forward = +Z, tail toward −Z)
+   ============================================================ */
+
+/* ---------------- Tyrannosaurus rex ---------------- */
+function buildTrex(){
+  const M=HIDE.trex, g=new THREE.Object3D(), b=new THREE.Object3D(); g.add(b);
+  const HIP=3.12;
+  // A tyrannosaur was a deep, powerfully muscled animal rather than a slim
+  // horizontal tube.  The broad pelvis anchors the caudofemoralis muscles;
+  // the chest is deep but noticeably narrower than the hips.
+  const torso = loft([
+    {z:-2.15,rx:.70,ry:.72},{z:-1.55,rx:1.02,ry:1.03},{z:-.85,rx:1.08,ry:1.17},
+    {z:.05,rx:.98,ry:1.22},{z:.90,rx:.91,ry:1.17},{z:1.65,rx:.75,ry:.98},
+    {z:2.15,rx:.56,ry:.70}], M);
+  torso.position.y=HIP; b.add(torso);
+  // Shoulder and pelvic masses break the mathematically smooth torso into the
+  // major muscle groups visible on a large, well-fed terrestrial predator.
+  for(const s of [-1,1]){
+    const shoulder=ball(.54,M,.74,.94,1.15); shoulder.position.set(s*.50,HIP+.01,1.35); b.add(shoulder);
+  }
+  // A restrained midline ridge catches grazing light without inventing a sail.
+  const ridgeZ=[-1.48,-1.08,-.62,-.12,.36,.82,1.24,1.60];
+  ridgeZ.forEach((z,i)=>{
+    const r=.045+(i%3)*.009, q=ball(r,TREX_BOSS,1.05,.55,1.45);
+    const top=[4.12,4.24,4.31,4.34,4.30,4.23,4.12,3.97][i];
+    q.position.set((i%2?1:-1)*.018,top,z); b.add(q);
+  });
+  // The first third of the tail is deliberately massive: this is where the
+  // primary hind-limb retractor attached. It then tapers gradually as a rigid,
+  // elevated counterbalance and never drags on the ground.
+  const tail = chain([{len:1.15,r0:.82,r1:.72},{len:1.25,r0:.72,r1:.58},{len:1.35,r0:.58,r1:.44},
+                      {len:1.35,r0:.44,r1:.31},{len:1.35,r0:.31,r1:.19},{len:1.25,r0:.19,r1:.065}], M, 1.10);
+  tail.root.position.set(0,HIP+.10,-1.74); tail.root.rotation.y=Math.PI; b.add(tail.root);
+  tail.joints[0].rotation.x=.045; tail.joints[1].rotation.x=-.025;
+
+  // Short, thick, S-curved neck with enough volume for the large jaw and neck
+  // musculature reconstructed in adult Tyrannosaurus.
+  const neck = chain([{len:.54,r0:.58,r1:.57},{len:.54,r0:.57,r1:.54},{len:.50,r0:.54,r1:.47}], M, 1.08);
+  neck.root.position.set(0,HIP+.52,2.03); neck.root.rotation.x=-0.39; b.add(neck.root);
+  neck.joints[1].rotation.x=.31; neck.joints[2].rotation.x=.30;
+  // Preserve the articulated pivots for head placement, but replace their
+  // visibly segmented cones with one continuous muscular skin envelope.
+  neck.meshes.forEach(m=>m.visible=false);
+  const neckSkin=loft([
+    {z:1.90,y:HIP+.42,rx:.63,ry:.67},{z:2.18,y:HIP+.58,rx:.62,ry:.65},
+    {z:2.52,y:HIP+.72,rx:.59,ry:.61},{z:2.88,y:HIP+.77,rx:.56,ry:.58},
+    {z:3.22,y:HIP+.74,rx:.52,ry:.54},{z:3.57,y:HIP+.66,rx:.47,ry:.48}
+  ],M);
+  b.add(neckSkin);
+
+  // Skull: deep and broad behind, narrowing toward a blunt U-shaped muzzle.
+  // Paired cheek masses restore the adductor muscles that skeletal-looking
+  // reconstructions omit, while the closed lips cover the tooth row.
+  const head = new THREE.Object3D(); neck.tip.add(head); head.rotation.x=0.18;
+  const sk = loft([{z:-.08,rx:.47,ry:.50},{z:.28,rx:.54,ry:.57},{z:.72,rx:.49,ry:.50},
+                   {z:1.12,rx:.39,ry:.40},{z:1.48,rx:.31,ry:.31},{z:1.67,rx:.27,ry:.25}], M);
+  head.add(sk);
+  const jaw = loft([{z:-.03,rx:.42,ry:.25},{z:.42,rx:.46,ry:.27},{z:.92,rx:.39,ry:.24},
+                    {z:1.35,rx:.30,ry:.19},{z:1.62,rx:.22,ry:.13}], TREX_UNDER);
+  jaw.position.set(0,-.39,.02); head.add(jaw);
+  const throat=ball(.34,TREX_UNDER,.86,.50,1.22); throat.position.set(0,-.39,-.02); head.add(throat);
+  const eyeParts=[];
+  for(const s of [-1,1]){
+    const cheek=ball(.30,M,.94,.84,1.18); cheek.position.set(s*.27,-.11,.31); head.add(cheek);
+    // Rugose lacrimal bosses, not pointed dragon horns.
+    const boss=ball(.12,TREX_BOSS,1.25,.55,1.42); boss.position.set(s*.35,.37,.69); head.add(boss);
+    const lip=taper(1.22,.035,.018,TREX_LIP,.50,-.015,5);
+    lip.position.set(s*.405,-.29,.38); lip.rotation.y=s*.055; head.add(lip);
+    // Heavy orbital rims shade small, forward-canted eyes. Separate iris,
+    // pupil/cornea and catchlight prevent the toy-like black-bead look.
+    const socket=ball(.115,TREX_BOSS,1.16,.72,1.08); socket.position.set(s*.39,.25,.82); head.add(socket);
+    const iris=ball(.075,TREX_IRIS,.50,1,1); iris.position.set(s*.455,.25,.84); head.add(iris);
+    const pupil=ball(.046,TREX_CORNEA,.38,.88,.88); pupil.position.set(s*.482,.25,.849); head.add(pupil);
+    const glint=ball(.012,new THREE.MeshBasicMaterial({color:0xf3ead2}));
+    glint.position.set(s*.500,.273,.874); head.add(glint);
+    eyeParts.push([iris,pupil,glint]);
+    // Rows of tiny mechanosensory scale pits follow the oral margin.
+    for(let i=0;i<8;i++){
+      const pit=ball(.010+(i%3)*.002,TREX_LIP,.34,.70,1);
+      pit.position.set(s*(.395-i*.017),-.13+(i%2)*.045,1.03+i*.067); head.add(pit);
+    }
+  }
+  // Paired nostrils sit near the tip, above the closed mouth.
+  for(const s of [-1,1]){
+    const nostril=ball(.042,TREX_LIP,1.25,.55,1.7); nostril.position.set(s*.235,.10,1.48); head.add(nostril);
+  }
+  // Irregular cornified scale clusters on the nasal roof and brow are subtle
+  // in profile but make close encounters read as skin over bone, not plastic.
+  const nasal=[[-.17,.27,1.12,.050],[.12,.30,1.18,.042],[-.08,.30,1.34,.045],
+               [.10,.27,1.45,.038],[-.20,.22,.96,.043],[.19,.23,1.00,.047]];
+  nasal.forEach(([x,y,z,r],i)=>{
+    const q=ball(r,TREX_BOSS,1.15,.48,1.30); q.position.set(x,y,z); q.rotation.z=i*.73; head.add(q);
+  });
+
+  // Very small but muscular arms. The wrists are un-pronated, so the palms
+  // face inward toward one another. The forearm is roughly half the humeral
+  // length and the two permanently separated digits flex down and inward.
+  const arms=[];
+  const armAxis=new THREE.Vector3(0,0,1);
+  function armSegment(host,from,to,r0,r1,mat,squash){
+    const delta=to.clone().sub(from), m=taper(delta.length(),r0,r1,mat,squash||1,0,5);
+    m.position.copy(from);
+    m.quaternion.setFromUnitVectors(armAxis,delta.normalize());
+    host.add(m); return m;
+  }
+  for(const s of [-1,1]){
+    const a=new THREE.Object3D(); a.position.set(s*.62,HIP+.02,1.43); b.add(a);
+    const shoulder=new THREE.Vector3(0,0,0);
+    const elbow=new THREE.Vector3(s*.075,-.405,-.055);
+    const wrist=new THREE.Vector3(-s*.012,-.590,.085);
+    armSegment(a,shoulder,elbow,.155,.118,M,.94);
+    armSegment(a,elbow,wrist,.118,.078,M,.90);
+    const elbowPad=ball(.135,M,.92,1.02,.94); elbowPad.position.copy(elbow); a.add(elbowPad);
+    const wristPad=ball(.087,M,.56,1.05,.88); wristPad.position.copy(wrist); a.add(wristPad);
+
+    // The flattened manus lies in the sagittal plane: its broad faces point
+    // medially/laterally, never down toward the ground as in "bunny hands".
+    const palm=ball(.12,M,.38,.84,1.0); palm.position.set(-s*.012,-.665,.135); a.add(palm);
+    for(let i=0;i<2;i++){
+      const z0=i===0?.095:.180, z1=i===0?.155:.285;
+      const y0=-.700, y1=i===0?-.805:-.835;
+      const knuckle=new THREE.Vector3(-s*.012,y0,z0);
+      const tip=new THREE.Vector3(-s*.026,y1,z1);
+      armSegment(a,knuckle,tip,i===0?.049:.054,.034,M,.86);
+      const joint=ball(i===0?.043:.047,M,.50,.82,.88); joint.position.copy(tip); a.add(joint);
+      const clawTip=new THREE.Vector3(-s*.035,y1-(i===0?.085:.105),z1+(i===0?.075:.095));
+      armSegment(a,tip,clawTip,.036,.006,CLAW,.72);
+    }
+    arms.push(a);
+  }
+
+  // Digitigrade hind limbs: thick, forward-swept thighs; long shins; compact
+  // metatarsi and three weight-bearing toes. Bulky haunches blend the legs into
+  // the pelvis instead of leaving them looking like detached rods.
+  const L=[], seg=[{len:1.40,r0:.49,r1:.34},{len:1.46,r0:.34,r1:.22},{len:.91,r0:.22,r1:.14}];
+  for(const s of [-1,1]){
+    const haunch=ball(.68,M,.86,1.12,1.08); haunch.position.set(s*.66,HIP-.26,-1.02); b.add(haunch);
+    const l=leg(M,seg,.72,.49,true); l.hip.position.set(s*.64,HIP-.18,-1.10);
+    pose(l,[-.53,.94,-.39]); b.add(l.hip); L.push(l);
+    // Gastrocnemius and ankle pads soften the otherwise conical limb links.
+    const calf=ball(.30,M,.86,.76,1.48); calf.position.set(0,0,.42); l.j[1].add(calf);
+    const ankle=ball(.18,M,.90,.82,1.18); ankle.position.set(0,0,.66); l.j[2].add(ankle);
+    // Dark keratin claw tips continue the three splayed toes.
+    for(let i=0;i<3;i++){
+      const claw=taper(.19,.055,.008,CLAW,.72,.015,3);
+      claw.position.set((i-1)*.14,.55,.11); claw.rotation.x=-Math.PI/2; l.foot.add(claw);
+    }
+    // Small elevated hallux: present, but not a fourth forward-bearing toe.
+    const hallux=taper(.16,.045,.009,CLAW,.72,.018,3);
+    hallux.position.set(s*.08,-.05,.02); hallux.rotation.set(Math.PI/2,s*.18,0); l.foot.add(hallux);
+  }
+  seat(b,[L[0].foot,L[1].foot]);
+  return {g, update:(t,sp)=>{
+    const w=t*2.6;
+    L.forEach((l,i)=>{
+      const p=w+i*Math.PI;
+      l.j[0].rotation.x=-.53+Math.sin(p)*.30*sp;
+      l.j[1].rotation.x=.94+(Math.sin(p+2.1)*.27+.27*sp)*sp;
+      l.j[2].rotation.x=-.39-Math.sin(p+1.0)*.28*sp;
+    });
+    if(b.userData.base===undefined) b.userData.base=b.position.y;
+    b.position.y = b.userData.base + Math.abs(Math.sin(w))*.10*sp;
+    // Breathing and balancing never stop completely, even when the animal is
+    // standing. Movement adds amplitude rather than switching life on/off.
+    torso.scale.y=1+Math.sin(t*.92)*.009;
+    tail.joints.forEach((j,i)=>{
+      j.rotation.y=Math.sin(t*.72-i*.52)*(.025+sp*.065);
+      j.rotation.x=(i===0?.045:i===1?-.025:0)+Math.sin(t*.58-i*.7)*.012;
+    });
+    head.rotation.x=.18+Math.sin(t*.8)*.07;
+    head.rotation.y=Math.sin(t*.34)*.055;
+    // Brief paired blinks keep the glossy eyes from reading as static beads.
+    const blinkCycle=t%7.6;
+    const eyeOpen=blinkCycle<.11?Math.max(.08,blinkCycle/.11):
+                  blinkCycle<.22?Math.max(.08,(.22-blinkCycle)/.11):
+                  blinkCycle>.35&&blinkCycle<.43?Math.max(.18,Math.abs(blinkCycle-.39)/.04):1;
+    eyeParts.forEach(([iris,pupil,glint])=>{
+      iris.scale.y=eyeOpen;
+      pupil.scale.y=.88*eyeOpen;
+      glint.visible=eyeOpen>.55;
+    });
+    arms.forEach((a,i)=>a.rotation.x=Math.sin(w+i)*(.018+.082*sp));
+  }};
+}
+
+/* ---------------- Triceratops prorsus ---------------- */
+const TRIKE_FRILL=skin(scaleTex('#6b5c42','#443a29'),0xffffff,.92);
+const TRIKE_QUILL_M=new THREE.MeshStandardMaterial({color:0x34291b,roughness:.88});
+const TRIKE_QUILL_G=new THREE.ConeGeometry(.018,1,5);
+TRIKE_QUILL_G.translate(0,.5,0); // pivot each bristle at the skin
+
+// Psittacosaurus-inspired display bristles. Each group lives on a tail joint,
+// so the silhouette stays attached as the articulated tail sways.
+function addTrikeTailQuills(tail,links){
+  const quills=[];
+  const counts=[6,5,4];
+  const total=links.reduce((sum,link)=>sum+link.len,0);
+  let before=0;
+  links.forEach((link,segment)=>{
+    const count=counts[segment]||4;
+    for(let i=0;i<count;i++){
+      const u=(i+.45)/(count+.15);
+      const progress=(before+u*link.len)/total;
+      const radius=THREE.MathUtils.lerp(link.r0,link.r1,u);
+      const length=.30+Math.sin(progress*Math.PI)*.30;
+      const stagger=((i+segment)%3-1)*.042*(1-progress*.35);
+      const q=new THREE.Mesh(TRIKE_QUILL_G,TRIKE_QUILL_M);
+      q.position.set(stagger,radius*.92*.98,u*link.len);
+      q.rotation.set(.10+progress*.24,-stagger*.8,stagger*.75);
+      q.scale.set(1+(i%2)*.12,length,1+(i%2)*.12);
+      q.castShadow=true;
+      tail.joints[segment].add(q);
+      quills.push(q);
+    }
+    before+=link.len;
+  });
+  return quills;
+}
+function scallopedFrill(R){
+  const sh=new THREE.Shape(); sh.moveTo(-R*.34,-R*.30);
+  const N=56;
+  for(let i=0;i<=N;i++){
+    const a=-Math.PI*.90+(i/N)*Math.PI*1.80;
+    const edge=1+Math.sin(i/N*Math.PI*9)*.035;
+    sh.lineTo(Math.sin(a)*R*.80*edge,Math.cos(a)*R*edge-R*.06);
+  }
+  sh.lineTo(R*.34,-R*.30);
+  const geo=new THREE.ExtrudeGeometry(sh,{depth:R*.075,bevelEnabled:true,
+    bevelThickness:R*.03,bevelSize:R*.035,bevelSegments:3,curveSegments:3});
+  geo.center(); const mesh=new THREE.Mesh(geo,TRIKE_FRILL); mesh.castShadow=true; return mesh;
+}
+function buildTrike(){
+  const M=HIDE.trike, g=new THREE.Object3D(), b=new THREE.Object3D(); g.add(b);
+  const HIP=1.94;
+  const t = loft([
+    {z:-2.20,rx:.52,ry:.56},{z:-1.50,rx:.86,ry:.92},{z:-.60,rx:1.08,ry:1.12},
+    {z:.30,rx:1.16,ry:1.16},{z:1.00,rx:1.14,ry:1.22,y:.06},
+    {z:1.60,rx:.98,ry:1.10,y:.04},{z:2.10,rx:.70,ry:.76},{z:2.40,rx:.54,ry:.58}
+  ], M);
+  t.position.y=HIP; b.add(t);
+  const tailLinks=[{len:.72,r0:.50,r1:.38},{len:.62,r0:.38,r1:.26},{len:.52,r0:.26,r1:.10}];
+  const tail=chain(tailLinks,M,.92);
+  tail.root.position.set(0,HIP+.05,-2.15); tail.root.rotation.y=Math.PI; b.add(tail.root);
+  addTrikeTailQuills(tail,tailLinks);
+  tail.joints[0].rotation.x=.16;
+  // head assembly: short neck, huge skull, frill, three horns
+  const neck=new THREE.Object3D(); neck.position.set(0,HIP+.12,2.25); neck.rotation.x=.22; b.add(neck);
+  const head=new THREE.Object3D(); head.scale.setScalar(1.28); neck.add(head);
+  const sk=loft([{z:0,rx:.46,ry:.48},{z:.42,rx:.45,ry:.44},{z:.82,rx:.34,ry:.36},
+                 {z:1.18,rx:.25,ry:.29},{z:1.46,rx:.15,ry:.21}],M);
+  head.add(sk);
+  const beak=taper(.34,.17,.03,BEAK,.72,0,4); beak.position.set(0,-.10,1.40); beak.rotation.x=.30; head.add(beak);
+  const frill=scallopedFrill(.80); frill.position.set(0,.50,-.10); frill.rotation.x=-.80;
+  frill.scale.set(1.30,.92,1); head.add(frill);
+  const nh=taper(.30,.10,.02,HORN,1,0,4); nh.position.set(0,.10,1.06); nh.rotation.x=-1.05; head.add(nh);
+  for(const s of [-1,1]){
+    const bh=taper(.86,.105,.014,HORN,1,.09,6);
+    bh.position.set(s*.34,.30,.52); bh.rotation.set(-1.16,s*.16,0); head.add(bh);
+  }
+  eyes(head,.40,.10,.62,.062);
+  // limbs: columnar hind, semi-erect fore with the elbows bowed out
+  const L=[], feet=[];
+  const hindSeg=[{len:.82,r0:.44,r1:.34},{len:.70,r0:.35,r1:.27},{len:.34,r0:.28,r1:.24}];
+  const foreSeg=[{len:.72,r0:.42,r1:.33},{len:.64,r0:.34,r1:.26},{len:.32,r0:.27,r1:.23}];
+  for(const s of [-1,1]){
+    const l=leg(M,hindSeg,.46,.52,true); l.hip.position.set(s*.80,HIP-.36,-1.15);
+    pose(l,LEG_POSE.column); b.add(l.hip); L.push(l); feet.push(l.foot);
+  }
+  for(const s of [-1,1]){
+    const l=leg(M,foreSeg,.44,.50,true); l.hip.position.set(s*.74,HIP-.44,1.35);
+    l.hip.rotation.z=s*.13;                       // elbows out — semi-erect, not sprawling
+    pose(l,LEG_POSE.fore); b.add(l.hip); L.push(l); feet.push(l.foot);
+  }
+  seat(b,feet);
+  const P=[LEG_POSE.column,LEG_POSE.column,LEG_POSE.fore,LEG_POSE.fore];
+  const ph=[0,Math.PI,Math.PI*.5,Math.PI*1.5];
+  return {g, update:(t,sp)=>{
+    const w=t*2.2;
+    L.forEach((l,i)=>{
+      const p=w+ph[i];
+      l.j[0].rotation.x=P[i][0]+Math.sin(p)*.30*sp;
+      l.j[1].rotation.x=P[i][1]+Math.abs(Math.sin(p+1.6))*.32*sp;
+      l.j[2].rotation.x=P[i][2]-Math.sin(p+.8)*.20*sp;
+    });
+    tail.joints.forEach((j,i)=>j.rotation.y=Math.sin(w*.5-i*.5)*.06*(1+sp));
+    neck.rotation.x=.22+Math.sin(t*.5)*.05 + (1-sp)*.30;   // drops to browse when still
+    neck.rotation.y=Math.sin(t*.31)*.14;
+  }};
+}
+
+/* ---------------- Edmontosaurus annectens ---------------- */
+function buildEdmonto(){
+  const M=HIDE.edmonto, g=new THREE.Object3D(), b=new THREE.Object3D(); g.add(b);
+  const HIP=2.75;
+  const t=loft([{z:-2.4,rx:.70,ry:.86},{z:-1.2,rx:1.00,ry:1.18},{z:.1,rx:1.05,ry:1.22},
+                {z:1.4,rx:.86,ry:1.00},{z:2.3,rx:.60,ry:.68}],M);
+  t.position.y=HIP; b.add(t);
+  // deep, laterally flattened tail stiffened by ossified tendons
+  const tail=chain([{len:1.15,r0:.66,r1:.56},{len:1.15,r0:.56,r1:.44},{len:1.15,r0:.44,r1:.32},
+                    {len:1.15,r0:.32,r1:.20},{len:1.1,r0:.20,r1:.06}],M,1.45);
+  tail.root.position.set(0,HIP+.2,-2.35); tail.root.rotation.y=Math.PI; b.add(tail.root);
+  const neck=chain([{len:.75,r0:.52,r1:.47},{len:.75,r0:.47,r1:.42},{len:.7,r0:.42,r1:.36}],M,1);
+  neck.root.position.set(0,HIP+.55,2.2); neck.root.rotation.x=-.55; b.add(neck.root);
+  neck.joints[1].rotation.x=.30; neck.joints[2].rotation.x=.40;
+  const head=new THREE.Object3D(); neck.tip.add(head); head.rotation.x=.55;
+  const sk=loft([{z:0,rx:.30,ry:.34},{z:.45,rx:.28,ry:.30},{z:.95,rx:.24,ry:.22},{z:1.25,rx:.30,ry:.16}],M);
+  head.add(sk);
+  const bill=ball(.34,BEAK,1.25,.42,.75); bill.position.set(0,-.04,1.32); head.add(bill);
+  // the fleshy comb — soft tissue, known only from mummified specimens
+  const comb=ball(.22,skin(null,0x8d6a4c,.85),.55,1.15,1.9); comb.position.set(0,.34,.30); head.add(comb);
+  eyes(head,.29,.14,.55,.07);
+  const L=[], feet=[];
+  const hindSeg=[{len:1.15,r0:.42,r1:.32},{len:1.05,r0:.30,r1:.21},{len:.60,r0:.19,r1:.16}];
+  const foreSeg=[{len:.82,r0:.24,r1:.19},{len:.78,r0:.18,r1:.14},{len:.30,r0:.14,r1:.15}];
+  for(const s of [-1,1]){
+    const l=leg(M,hindSeg,.52,.44,true); l.hip.position.set(s*.62,HIP-.25,-1.35);
+    pose(l,LEG_POSE.theropod); b.add(l.hip); L.push(l); feet.push(l.foot);
+  }
+  for(const s of [-1,1]){
+    // the forelimb ends in a fleshy mitten: one pad, no splayed fingers
+    const l=leg(M,foreSeg,.26,.30,false); l.hip.position.set(s*.68,HIP+.05,1.75);
+    pose(l,LEG_POSE.fore); b.add(l.hip); L.push(l); feet.push(l.foot);
+    const mitt=ball(.20,M,1.05,.75,1.15); mitt.position.set(0,.10,0); l.foot.add(mitt);
+  }
+  seat(b,feet);
+  const P=[LEG_POSE.theropod,LEG_POSE.theropod,LEG_POSE.fore,LEG_POSE.fore];
+  const ph=[0,Math.PI,Math.PI*.5,Math.PI*1.5];
+  return {g, update:(t,sp)=>{
+    const w=t*2.3;
+    L.forEach((l,i)=>{
+      const p=w+ph[i];
+      l.j[0].rotation.x=P[i][0]+Math.sin(p)*.32*sp;
+      l.j[1].rotation.x=P[i][1]+Math.abs(Math.sin(p+1.7))*.30*sp;
+      l.j[2].rotation.x=P[i][2]-Math.sin(p+.9)*.22*sp;
+    });
+    tail.joints.forEach((j,i)=>j.rotation.y=Math.sin(w*.55-i*.45)*.07*(1+sp));
+    neck.root.rotation.x=-.55+(1-sp)*.55+Math.sin(t*.44)*.06;
+    neck.joints[0].rotation.y=Math.sin(t*.37)*.16;
+  }};
+}
+
+/* ---------------- Ankylosaurus magniventris ---------------- */
+function buildAnky(){
+  const M=HIDE.anky, g=new THREE.Object3D(), b=new THREE.Object3D(); g.add(b);
+  const HIP=1.25;
+  const t=loft([{z:-1.6,rx:.86,ry:.60},{z:-.7,rx:1.12,ry:.78},{z:.3,rx:1.18,ry:.82},
+                {z:1.3,rx:1.00,ry:.72},{z:2.0,rx:.70,ry:.54}],M);
+  t.position.y=HIP; b.add(t);
+  // osteoderms: separate keeled plates in rows, plus ossicles between
+  for(let r=0;r<7;r++){
+    const z=1.5-r*.62, w=(r>1&&r<6)?1.05:.82;
+    for(const s of [-1,1])for(let k=0;k<2;k++){
+      const o=ball(.17-k*.045,HORN,1,1.35,1.6);
+      o.position.set(s*(w-k*.36), HIP+.52+k*.20, z); o.rotation.z=s*-.4; b.add(o);
+    }
+    const mid=ball(.10,HORN,1,1.2,1.4); mid.position.set(0,HIP+.86,z); b.add(mid);
+  }
+  for(const s of [-1,1]){ // shoulder spikes
+    const sp2=taper(.42,.16,.02,HORN,1,0,3); sp2.position.set(s*1.0,HIP+.42,1.15); sp2.rotation.set(0,0,s*1.3); b.add(sp2);
+  }
+  // low broad muzzle
+  const head=new THREE.Object3D(); head.position.set(0,HIP+.05,2.15); b.add(head);
+  const sk=loft([{z:0,rx:.48,ry:.34},{z:.4,rx:.52,ry:.32},{z:.8,rx:.44,ry:.26}],M); head.add(sk);
+  const bk=ball(.30,BEAK,1.35,.55,.6); bk.position.set(0,-.06,.86); head.add(bk);
+  for(const s of [-1,1]){ const q=ball(.15,HORN,1,.9,1.5); q.position.set(s*.44,.10,.20); q.rotation.y=s*.6; head.add(q); }
+  eyes(head,.42,.10,.52,.055);
+  // rigid handle + club: it swings, it cannot whip
+  const tail=chain([{len:.75,r0:.42,r1:.36},{len:.75,r0:.36,r1:.30},{len:.75,r0:.30,r1:.26},{len:.75,r0:.26,r1:.22}],M,.85);
+  tail.root.position.set(0,HIP+.15,-1.55); tail.root.rotation.y=Math.PI; b.add(tail.root);
+  const club=new THREE.Object3D(); tail.tip.add(club);
+  for(const s of [-1,1]){ const kb=ball(.36,HORN,1,.78,.9); kb.position.set(s*.24,0,.20); club.add(kb); }
+  const L=[], feet=[], seg=[{len:.52,r0:.28,r1:.24},{len:.46,r0:.23,r1:.20},{len:.24,r0:.19,r1:.18}];
+  for(const s of [-1,1]){
+    const l=leg(M,seg,.34,.44,false); l.hip.position.set(s*.86,HIP-.32,-.95);
+    l.hip.rotation.z=s*.16; pose(l,LEG_POSE.column); b.add(l.hip); L.push(l); feet.push(l.foot);
+  }
+  for(const s of [-1,1]){
+    const l=leg(M,seg,.32,.44,false); l.hip.position.set(s*.90,HIP-.34,1.10);
+    l.hip.rotation.z=s*.20; pose(l,LEG_POSE.fore); b.add(l.hip); L.push(l); feet.push(l.foot);
+  }
+  seat(b,feet);
+  const ph=[0,Math.PI,Math.PI*.5,Math.PI*1.5];
+  return {g, update:(t,sp)=>{
+    const w=t*2.4;
+    L.forEach((l,i)=>{
+      const p=w+ph[i];
+      l.j[0].rotation.x=LEG_POSE.column[0]+Math.sin(p)*.28*sp;
+      l.j[1].rotation.x=LEG_POSE.column[1]+Math.abs(Math.sin(p+1.6))*.26*sp;
+      l.j[2].rotation.x=LEG_POSE.column[2]-Math.sin(p+.8)*.16*sp;
+    });
+    // the handle stays stiff; the swing comes from the base
+    tail.joints[0].rotation.y=Math.sin(t*1.1)*.20;
+    tail.joints.forEach((j,i)=>{ if(i) j.rotation.y=Math.sin(t*1.1)*.02; });
+    head.rotation.x=Math.sin(t*.7)*.06;
+  }};
+}
+
+/* ---------------- Dakotaraptor steini ---------------- */
+function wing(side, t, n, len, spread){
+  const w=new THREE.Object3D(); w.rotation.x=-Math.PI/2;
+  for(let i=0;i<n;i++){
+    const k=i/(n-1);
+    const f=feather(len*(1-k*.42), len*.26, t);
+    f.position.set(side*(k*len*.62), 0, 0);
+    f.rotation.z = side*(-.35 - k*.65) + spread;
+    f.rotation.y = side*.12;
+    w.add(f);
+  }
+  return w;
+}
+function buildDakota(){
+  const M=HIDE.dakota, T=FEATHER.dakota, g=new THREE.Object3D(), b=new THREE.Object3D(); g.add(b);
+  const HIP=1.42;
+  const t=loft([{z:-.95,rx:.26,ry:.30},{z:-.45,rx:.36,ry:.44},{z:.2,rx:.40,ry:.50},
+                {z:.85,rx:.34,ry:.42},{z:1.2,rx:.26,ry:.30}],M);
+  t.position.y=HIP; b.add(t);
+  // contour feathers over the shoulders and back
+  for(let i=0;i<11;i++){
+    const f=feather(.52,.20,T);
+    f.position.set((Math.random()-.5)*.5, HIP+.42, 1.0-i*.19);
+    f.rotation.set(2.5+Math.random()*.2, 0, (Math.random()-.5)*.5);
+    b.add(f);
+  }
+  const tail=chain([{len:.62,r0:.20,r1:.17},{len:.62,r0:.17,r1:.14},{len:.62,r0:.14,r1:.11},
+                    {len:.62,r0:.11,r1:.07}],M,1);
+  tail.root.position.set(0,HIP+.10,-.9); tail.root.rotation.y=Math.PI; b.add(tail.root);
+  tail.joints.forEach((j,i)=>{ // feathered rectrices down the whole tail
+    for(const s of [-1,1]){
+      const f=feather(.44-i*.05,.16,T);
+      f.position.set(0,0,.32); f.rotation.set(-Math.PI/2,0,s*1.25+Math.PI/2*0); j.add(f);
+      f.rotation.set(-Math.PI/2, 0, s*1.3);
+    }
+  });
+  const neck=chain([{len:.34,r0:.20,r1:.18},{len:.34,r0:.18,r1:.16},{len:.32,r0:.16,r1:.14}],M,1);
+  neck.root.position.set(0,HIP+.28,1.15); neck.root.rotation.x=-.85; b.add(neck.root);
+  neck.joints[1].rotation.x=.55; neck.joints[2].rotation.x=.62;
+  const head=new THREE.Object3D(); neck.tip.add(head); head.rotation.x=.42;
+  head.add(loft([{z:0,rx:.15,ry:.17},{z:.2,rx:.17,ry:.18},{z:.5,rx:.12,ry:.13},{z:.72,rx:.06,ry:.07}],M));
+  const jw=loft([{z:0,rx:.11,ry:.06},{z:.5,rx:.08,ry:.05},{z:.68,rx:.04,ry:.03}],M);
+  jw.position.set(0,-.11,.03); head.add(jw);
+  eyes(head,.14,.09,.30,.05);
+  for(let i=0;i<5;i++){ const f=feather(.24,.10,T); f.position.set(0,.10,-.05+i*0); f.rotation.set(2.7,0,(i-2)*.4); head.add(f); }
+  // arms: palms facing inward — the wrist cannot pronate
+  const arms=[];
+  for(const s of [-1,1]){
+    const a=new THREE.Object3D(); a.position.set(s*.32,HIP+.22,.72); b.add(a);
+    const c=chain([{len:.42,r0:.10,r1:.08},{len:.44,r0:.08,r1:.06}],M,1);
+    c.root.rotation.set(Math.PI/2-.75,0,s*.55); a.add(c.root); c.joints[1].rotation.x=1.5;
+    const w=wing(s,T,7,.72,0); c.joints[1].add(w); w.position.z=.12;
+    for(let i=0;i<3;i++){ const d=taper(.16,.03,.01,CLAW,1,0,2); d.position.set((i-1)*.05,0,0); d.rotation.x=-Math.PI/2+.4; c.tip.add(d); }
+    arms.push({a,c});
+  }
+  const L=[], seg=[{len:.72,r0:.17,r1:.13},{len:.70,r0:.12,r1:.09},{len:.46,r0:.08,r1:.06}];
+  for(const s of [-1,1]){
+    const l=leg(M,seg,.30,.20,true); l.hip.position.set(s*.26,HIP-.10,-.45);
+    pose(l,LEG_POSE.theropod); b.add(l.hip); L.push(l);
+    // feathered thigh, then a bare scaly shank — as in every feathered fossil found
+    for(let i=0;i<4;i++){ const f=feather(.40,.18,T); f.position.set(s*.14,.06,-.45+ (i-1.5)*.10); f.rotation.set(2.9,0,s*.3); b.add(f); f.position.y=HIP-.18; }
+    // raised sickle claw on digit II
+    const sk=taper(.24,.055,.012,CLAW,1,.05,4);
+    sk.position.set(s*.05,.06,.04); sk.rotation.set(-2.1,0,0); l.foot.add(sk);
+  }
+  seat(b,[L[0].foot,L[1].foot]);
+  return {g, update:(t,sp)=>{
+    const w=t*(3.4+sp*1.6);
+    L.forEach((l,i)=>{
+      const p=w+i*Math.PI;
+      l.j[0].rotation.x=LEG_POSE.theropod[0]+Math.sin(p)*.46*sp;
+      l.j[1].rotation.x=LEG_POSE.theropod[1]+(Math.abs(Math.sin(p+1.9))*.5)*sp;
+      l.j[2].rotation.x=LEG_POSE.theropod[2]-Math.sin(p+1.0)*.42*sp;
+    });
+    tail.joints.forEach((j,i)=>{ j.rotation.y=Math.sin(w*.45-i*.6)*.10*(1+sp); j.rotation.x=-.04+Math.sin(t*.7-i)*.03; });
+    neck.joints[0].rotation.y=Math.sin(t*1.3)*.22;
+    head.rotation.x=.42+Math.sin(t*2.1)*.10;
+    arms.forEach((o,i)=>{ o.c.joints[0].rotation.z=Math.sin(t*1.1+i)*.14; });
+  }};
+}
+
+/* ---------------- Anzu wyliei ---------------- */
+function buildAnzu(){
+  const M=HIDE.anzu, T=FEATHER.anzu, g=new THREE.Object3D(), b=new THREE.Object3D(); g.add(b);
+  const HIP=1.35;
+  const t=loft([{z:-.7,rx:.24,ry:.28},{z:-.3,rx:.32,ry:.40},{z:.2,rx:.34,ry:.44},{z:.7,rx:.26,ry:.32}],M);
+  t.position.y=HIP; b.add(t);
+  for(let i=0;i<9;i++){ const f=feather(.46,.19,T); f.position.set((Math.random()-.5)*.4,HIP+.38,.6-i*.18);
+    f.rotation.set(2.55,0,(Math.random()-.5)*.6); b.add(f); }
+  const tail=chain([{len:.36,r0:.17,r1:.14},{len:.36,r0:.14,r1:.11},{len:.34,r0:.11,r1:.08}],M,1);
+  tail.root.position.set(0,HIP+.10,-.66); tail.root.rotation.y=Math.PI; b.add(tail.root);
+  const fan=new THREE.Object3D(); tail.tip.add(fan);      // display fan at the tail tip
+  for(let i=0;i<9;i++){ const f=feather(.60,.20,T); f.rotation.set(-Math.PI/2+.25,0,(i-4)*.30); fan.add(f); }
+  const neck=chain([{len:.34,r0:.16,r1:.14},{len:.34,r0:.14,r1:.12},{len:.30,r0:.12,r1:.11}],M,1);
+  neck.root.position.set(0,HIP+.30,.68); neck.root.rotation.x=-1.15; b.add(neck.root);
+  neck.joints[1].rotation.x=.42; neck.joints[2].rotation.x=.50;
+  const head=new THREE.Object3D(); neck.tip.add(head); head.rotation.x=.85;
+  head.add(loft([{z:0,rx:.13,ry:.15},{z:.18,rx:.14,ry:.16},{z:.36,rx:.10,ry:.11}],M));
+  const bk=loft([{z:0,rx:.11,ry:.10},{z:.22,rx:.07,ry:.09},{z:.34,rx:.02,ry:.03}],BEAK);
+  bk.position.set(0,-.03,.32); bk.rotation.x=.25; head.add(bk);
+  const crest=ball(.20,skin(null,0x8f8378,.7),.28,1.25,.95); crest.position.set(0,.20,.10); crest.rotation.x=-.25; head.add(crest);
+  eyes(head,.12,.07,.20,.045);
+  const arms=[];
+  for(const s of [-1,1]){
+    const a=new THREE.Object3D(); a.position.set(s*.27,HIP+.20,.42); b.add(a);
+    const c=chain([{len:.36,r0:.09,r1:.07},{len:.38,r0:.07,r1:.05}],M,1);
+    c.root.rotation.set(Math.PI/2-.7,0,s*.5); a.add(c.root); c.joints[1].rotation.x=1.45;
+    const wg=wing(s,T,6,.64,0); c.joints[1].add(wg); wg.position.z=.10;
+    arms.push(c);
+  }
+  const L=[], seg=[{len:.66,r0:.14,r1:.11},{len:.62,r0:.10,r1:.08},{len:.44,r0:.07,r1:.055}];
+  for(const s of [-1,1]){
+    const l=leg(M,seg,.26,.17,true); l.hip.position.set(s*.22,HIP-.08,-.32);
+    pose(l,LEG_POSE.theropod); b.add(l.hip); L.push(l);
+    for(let i=0;i<3;i++){ const f=feather(.38,.17,T); f.position.set(s*.13,HIP-.16,-.32+(i-1)*.11); f.rotation.set(2.9,0,s*.3); b.add(f); }
+  }
+  seat(b,[L[0].foot,L[1].foot]);
+  return {g, update:(t,sp)=>{
+    const w=t*(3.8+sp*1.4);
+    L.forEach((l,i)=>{
+      const p=w+i*Math.PI;
+      l.j[0].rotation.x=LEG_POSE.theropod[0]+Math.sin(p)*.44*sp;
+      l.j[1].rotation.x=LEG_POSE.theropod[1]+Math.abs(Math.sin(p+1.9))*.46*sp;
+      l.j[2].rotation.x=LEG_POSE.theropod[2]-Math.sin(p+1.0)*.38*sp;
+    });
+    tail.joints.forEach((j,i)=>j.rotation.y=Math.sin(w*.5-i*.6)*.09*(1+sp));
+    fan.rotation.z=Math.sin(t*.9)*.18;
+    neck.joints[0].rotation.y=Math.sin(t*1.6)*.26;
+    head.rotation.x=.85+Math.sin(t*2.4)*.13;
+    arms.forEach((c,i)=>c.joints[0].rotation.z=Math.sin(t*1.4+i)*.16);
+  }};
+}
+
+/* ---------------- Pachycephalosaurus wyomingensis ---------------- */
+function buildPachy(){
+  const M=HIDE.pachy, g=new THREE.Object3D(), b=new THREE.Object3D(); g.add(b);
+  const HIP=1.62;
+  const t=loft([{z:-.9,rx:.32,ry:.38},{z:-.35,rx:.48,ry:.58},{z:.3,rx:.52,ry:.62},
+                {z:.95,rx:.40,ry:.46},{z:1.25,rx:.28,ry:.32}],M);
+  t.position.y=HIP; b.add(t);
+  const tail=chain([{len:.62,r0:.26,r1:.22},{len:.62,r0:.22,r1:.17},{len:.62,r0:.17,r1:.12},{len:.6,r0:.12,r1:.05}],M,1.1);
+  tail.root.position.set(0,HIP+.12,-.85); tail.root.rotation.y=Math.PI; b.add(tail.root);
+  const neck=new THREE.Object3D(); neck.position.set(0,HIP+.26,1.2); neck.rotation.x=-.7; b.add(neck);
+  neck.add(taper(.42,.22,.19,M,1,0,3));
+  const head=new THREE.Object3D(); head.position.z=.40; head.rotation.x=.72; neck.add(head);
+  head.add(loft([{z:0,rx:.17,ry:.18},{z:.24,rx:.19,ry:.20},{z:.5,rx:.14,ry:.14},{z:.68,rx:.08,ry:.09}],M));
+  const dome=ball(.26,M,1.0,.92,1.05); dome.position.set(0,.16,.16); head.add(dome);   // 25 cm of solid bone
+  for(let i=0;i<9;i++){ const a=-1.4+i*.35, k=ball(.045,HORN,1,1.6,1); // knob fringe on the squamosal shelf
+    k.position.set(Math.sin(a)*.26,.02+Math.cos(a)*.05,-.06+Math.cos(a)*.10); head.add(k); }
+  for(const s of [-1,1]){ const sp2=taper(.14,.045,.008,HORN,1,0,2); sp2.position.set(s*.20,.02,.34); sp2.rotation.set(-.4,s*.5,0); head.add(sp2); }
+  eyes(head,.16,.06,.42,.05);
+  const L=[], seg=[{len:.80,r0:.20,r1:.15},{len:.74,r0:.14,r1:.10},{len:.46,r0:.09,r1:.07}];
+  for(const s of [-1,1]){
+    const l=leg(M,seg,.32,.24,true); l.hip.position.set(s*.32,HIP-.14,-.45);
+    pose(l,LEG_POSE.theropod); b.add(l.hip); L.push(l);
+  }
+  for(const s of [-1,1]){ // short forelimbs, held clear of the ground
+    const a=new THREE.Object3D(); a.position.set(s*.38,HIP+.10,.85); b.add(a);
+    const c=chain([{len:.30,r0:.08,r1:.06},{len:.28,r0:.06,r1:.05}],M,1);
+    c.root.rotation.set(Math.PI/2-.5,0,s*.4); a.add(c.root); c.joints[1].rotation.x=1.2;
+  }
+  seat(b,[L[0].foot,L[1].foot]);
+  return {g, update:(t,sp)=>{
+    const w=t*3.0;
+    L.forEach((l,i)=>{
+      const p=w+i*Math.PI;
+      l.j[0].rotation.x=LEG_POSE.theropod[0]+Math.sin(p)*.40*sp;
+      l.j[1].rotation.x=LEG_POSE.theropod[1]+Math.abs(Math.sin(p+1.9))*.42*sp;
+      l.j[2].rotation.x=LEG_POSE.theropod[2]-Math.sin(p+1.0)*.34*sp;
+    });
+    // ossified tendons hold the tail rigid — it barely flexes
+    tail.joints.forEach((j,i)=>j.rotation.y=Math.sin(w*.5)*.03);
+    neck.rotation.x=-.7+(1-sp)*.45+Math.sin(t*.8)*.05;
+    neck.rotation.y=Math.sin(t*.6)*.18;
+  }};
+}
+
+/* ---------------- Thescelosaurus neglectus ---------------- */
+function buildThescelo(){
+  const M=HIDE.thescelo, g=new THREE.Object3D(), b=new THREE.Object3D(); g.add(b);
+  const HIP=.95;
+  const t=loft([{z:-.6,rx:.20,ry:.24},{z:-.2,rx:.30,ry:.36},{z:.25,rx:.32,ry:.38},{z:.7,rx:.22,ry:.26}],M);
+  t.position.y=HIP; b.add(t);
+  const tail=chain([{len:.48,r0:.17,r1:.14},{len:.48,r0:.14,r1:.11},{len:.48,r0:.11,r1:.08},{len:.46,r0:.08,r1:.03}],M,1.05);
+  tail.root.position.set(0,HIP+.06,-.58); tail.root.rotation.y=Math.PI; b.add(tail.root);
+  const neck=new THREE.Object3D(); neck.position.set(0,HIP+.18,.68); neck.rotation.x=-.95; b.add(neck);
+  neck.add(taper(.34,.14,.12,M,1,0,3));
+  const head=new THREE.Object3D(); head.position.z=.33; head.rotation.x=.95; neck.add(head);
+  head.add(loft([{z:0,rx:.11,ry:.12},{z:.2,rx:.10,ry:.11},{z:.36,rx:.07,ry:.07}],M));
+  const bk=ball(.08,BEAK,1.1,.7,1.2); bk.position.set(0,-.03,.40); head.add(bk);
+  eyes(head,.10,.05,.20,.04);
+  const L=[], seg=[{len:.44,r0:.13,r1:.10},{len:.42,r0:.09,r1:.07},{len:.26,r0:.06,r1:.05}];
+  for(const s of [-1,1]){
+    const l=leg(M,seg,.22,.16,true); l.hip.position.set(s*.20,HIP-.10,-.28);
+    pose(l,LEG_POSE.theropod); b.add(l.hip); L.push(l);
+  }
+  for(const s of [-1,1]){
+    const a=new THREE.Object3D(); a.position.set(s*.24,HIP+.02,.50); b.add(a);
+    const c=chain([{len:.24,r0:.06,r1:.05},{len:.22,r0:.05,r1:.04}],M,1);
+    c.root.rotation.set(Math.PI/2-.45,0,s*.35); a.add(c.root); c.joints[1].rotation.x=1.1;
+  }
+  seat(b,[L[0].foot,L[1].foot]);
+  return {g, update:(t,sp)=>{
+    const w=t*4.4;
+    L.forEach((l,i)=>{
+      const p=w+i*Math.PI;
+      l.j[0].rotation.x=LEG_POSE.theropod[0]+Math.sin(p)*.48*sp;
+      l.j[1].rotation.x=LEG_POSE.theropod[1]+Math.abs(Math.sin(p+1.9))*.5*sp;
+      l.j[2].rotation.x=LEG_POSE.theropod[2]-Math.sin(p+1.0)*.42*sp;
+    });
+    tail.joints.forEach((j)=>j.rotation.y=Math.sin(w*.5)*.02);   // ossified-tendon lattice: stiff
+    neck.rotation.x=-.95+(1-sp)*.55+Math.sin(t*1.2)*.07;
+    neck.rotation.y=Math.sin(t*1.9)*.22;
+  }};
+}
+const BUILD = {trex:buildTrex, trike:buildTrike, edmonto:buildEdmonto, anky:buildAnky,
+               dakota:buildDakota, anzu:buildAnzu, pachy:buildPachy, thescelo:buildThescelo};
+
+/* ============================================================
+   FLORA — the Hell Creek understory, instanced for speed
+   ============================================================ */
+const dummy = new THREE.Object3D();
+function instanced(geo, mat, n, cast){
+  const m = new THREE.InstancedMesh(geo, mat, n);
+  m.castShadow = !!cast; m.receiveShadow = false;
+  m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  scene.add(m); return m;
+}
+function put(m,i,x,y,z,sx,sy,sz,ry,rz){
+  dummy.position.set(x,y,z); dummy.rotation.set(0,ry||0,rz||0);
+  dummy.scale.set(sx,sy,sz); dummy.updateMatrix();
+  m.setMatrixAt(i,dummy.matrix);
+}
+const UP_AXIS=new THREE.Vector3(0,1,0), branchDir=new THREE.Vector3();
+function putBetween(m,i,ax,ay,az,bx,by,bz,r){
+  branchDir.set(bx-ax,by-ay,bz-az); const len=branchDir.length();
+  dummy.position.set((ax+bx)/2,(ay+by)/2,(az+bz)/2);
+  dummy.quaternion.setFromUnitVectors(UP_AXIS,branchDir.normalize());
+  dummy.scale.set(r,len,r); dummy.updateMatrix(); m.setMatrixAt(i,dummy.matrix);
+}
+function openSpot(minR,maxR){
+  for(let k=0;k<40;k++){
+    const a=Math.random()*6.283, r=minR+Math.random()*(maxR-minR);
+    const x=Math.cos(a)*r, z=Math.sin(a)*r;
+    if(channel(x,z)<0.34 && ground(x,z)>-1.0) return [x,z];
+  }
+  return [0,0];
+}
+const barkMat = skin(barkTex(),0xffffff,.95);
+const coneMat = new THREE.MeshStandardMaterial({map:foliageTex(),color:0x91a076,roughness:.98,flatShading:false});
+const branchMat = new THREE.MeshStandardMaterial({map:redwoodBranchTex(),transparent:true,alphaTest:.30,
+  side:THREE.DoubleSide,roughness:.98,color:0x9eaa83});
+const fernMat = new THREE.MeshStandardMaterial({map:frondTex('#3f5c30','#6f8a3f',true),
+  transparent:true, alphaTest:.45, side:THREE.DoubleSide, roughness:.95});
+const palmMat = new THREE.MeshStandardMaterial({map:frondTex('#4e6f33','#7d9445',false),
+  transparent:true, alphaTest:.45, side:THREE.DoubleSide, roughness:.95});
+
+// Metasequoia — visible woody boughs carry layered sprays of deciduous needles.
+const NC=78;
+const trunkI = instanced(new THREE.CylinderGeometry(.30,.62,1,12), barkMat, NC, true);
+const rootI = instanced(new THREE.ConeGeometry(1,1.8,12),barkMat,NC,true);
+const boughI = instanced(new THREE.CylinderGeometry(1,.72,1,7),barkMat,NC*30,true);
+const canopyI = instanced(new THREE.PlaneGeometry(2.7,1.2), branchMat, NC*30, true);
+for(let i=0;i<NC;i++){
+  const [x,z]=openSpot(26,205), y=ground(x,z), h=13+Math.random()*13;
+  put(trunkI,i,x,y+h/2,z,1,h,1,Math.random()*6.28);
+  put(rootI,i,x,y+.88,z,.76+Math.random()*.18,1,.76+Math.random()*.18,Math.random()*6.28);
+  const twist=Math.random()*Math.PI*2;
+  for(let k=0;k<6;k++) for(let q=0;q<5;q++){
+    const t=k/6, a=twist+q*Math.PI*.4+k*.37+(Math.random()-.5)*.16;
+    const len=(4.2-t*2.15)*(1+Math.random()*.13), by=y+h*(.45+t*.083);
+    const ex=x+Math.cos(a)*len, ey=by+len*(.12-t*.04), ez=z+Math.sin(a)*len;
+    const n=i*30+k*5+q;
+    putBetween(boughI,n,x,by,z,ex,ey,ez,.055+(1-t)*.055);
+    dummy.position.set(x+Math.cos(a)*len*.56,by+len*.10,z+Math.sin(a)*len*.56);
+    dummy.rotation.set(0,-a,-.05-(1-t)*.08+(Math.random()-.5)*.08);
+    dummy.scale.set(len*.48,len*(.48+Math.random()*.13),1); dummy.updateMatrix(); canopyI.setMatrixAt(n,dummy.matrix);
+  }
+}
+trunkI.instanceMatrix.needsUpdate=true; rootI.instanceMatrix.needsUpdate=true;
+boughI.instanceMatrix.needsUpdate=true; canopyI.instanceMatrix.needsUpdate=true;
+
+// Smaller ginkgo-like trees: forked limbs and many separate leaf masses create
+// a broad, irregular crown instead of a single spherical topiary shape.
+const NGK=28;
+const ginkgoTrunkI=instanced(new THREE.CylinderGeometry(.16,.30,1,10),barkMat,NGK,true);
+const ginkgoLimbI=instanced(new THREE.CylinderGeometry(1,.76,1,7),barkMat,NGK*6,true);
+const ginkgoCrownI=instanced(new THREE.IcosahedronGeometry(1,2),coneMat,NGK*11,true);
+for(let i=0;i<NGK;i++){
+  const [x,z]=openSpot(30,205),y=ground(x,z),h=7+Math.random()*6;
+  put(ginkgoTrunkI,i,x,y+h/2,z,1,h,1,Math.random()*6.28);
+  const twist=Math.random()*Math.PI*2;
+  for(let k=0;k<6;k++){
+    const a=twist+k*Math.PI/3,base=y+h*.64,len=1.8+Math.random()*1.3;
+    putBetween(ginkgoLimbI,i*6+k,x,base,z,x+Math.cos(a)*len,base+len*.72,z+Math.sin(a)*len,.045+.025*Math.random());
+  }
+  for(let k=0;k<11;k++){
+    const a=twist+k/11*Math.PI*2+(Math.random()-.5)*.3, ring=k<7?1.65:.75;
+    const r=.62+Math.random()*.58, lift=k<7?-.30:.72;
+    put(ginkgoCrownI,i*11+k,x+Math.cos(a)*ring,y+h+lift+(Math.random()-.5)*.65,
+      z+Math.sin(a)*ring,r*1.22,r*.78,r*1.16,a);
+  }
+}
+ginkgoTrunkI.instanceMatrix.needsUpdate=true; ginkgoLimbI.instanceMatrix.needsUpdate=true;
+ginkgoCrownI.instanceMatrix.needsUpdate=true;
+
+// Sabalites palms along the channel margins
+const NP=46, PF=15;
+const ptrunkI = instanced(new THREE.CylinderGeometry(.16,.28,1,10), barkMat, NP, true);
+const pfrondI = instanced(new THREE.PlaneGeometry(2.15,3.6), palmMat, NP*PF, true);
+{ let f=0;
+  for(let i=0;i<NP;i++){
+    let x,z,tries=0;
+    do{ x=(Math.random()-.5)*330; z=RIVER(x)+(Math.random()<.5?-1:1)*(16+Math.random()*26); tries++; }
+    while(Math.hypot(x,z)<24 && tries<12);
+    const y=ground(x,z), h=4.5+Math.random()*5;
+    put(ptrunkI,i,x,y+h/2,z,1,h,1,Math.random()*6.28);
+    for(let k=0;k<PF;k++,f++){
+      const a=k/PF*6.283+Math.random()*.3;
+      dummy.position.set(x+Math.cos(a)*1.15,y+h-.5,z+Math.sin(a)*1.15);
+      dummy.rotation.set(-1.05-Math.random()*.5,-a+Math.PI/2,0);
+      dummy.scale.set(1,1,1); dummy.updateMatrix(); pfrondI.setMatrixAt(f,dummy.matrix);
+    }
+  }
+}
+ptrunkI.instanceMatrix.needsUpdate=true; pfrondI.instanceMatrix.needsUpdate=true;
+
+// fern and horsetail understory
+const NF=640;
+const fernI = instanced(new THREE.PlaneGeometry(1.5,1.9), fernMat, NF*4, false);
+{ let f=0;
+  for(let i=0;i<NF;i++){
+    const [x,z]=openSpot(6,215), y=ground(x,z), s=.55+Math.random()*.9;
+    for(let k=0;k<4;k++,f++){
+      const a=k*1.57+Math.random();
+      dummy.position.set(x+Math.cos(a)*.28*s, y+.9*s*.5, z+Math.sin(a)*.28*s);
+      dummy.rotation.set(-.34-Math.random()*.3, a, 0);
+      dummy.scale.set(s,s,s); dummy.updateMatrix(); fernI.setMatrixAt(f,dummy.matrix);
+    }
+  }
+}
+fernI.instanceMatrix.needsUpdate=true;
+
+// Dense mixed-height ground cover. Crossed alpha-tested cards keep thousands of
+// individual blades cheap while preserving depth and parallax at walking height.
+function grassTex(){
+  const c=cv(96,256), x=c.getContext('2d'); x.clearRect(0,0,96,256);
+  const blades=[[-34,238,-28,38],[-22,246,-8,12],[-10,248,-15,68],[2,250,10,22],
+                [14,246,27,52],[27,250,39,18],[37,244,31,78]];
+  blades.forEach((b,i)=>{
+    const g=x.createLinearGradient(48+b[0],250,48+b[2],b[3]);
+    g.addColorStop(0,i%2?'#263d22':'#314d29'); g.addColorStop(.7,i%2?'#55713b':'#668047');
+    g.addColorStop(1,'rgba(151,164,85,.65)'); x.strokeStyle=g;
+    x.lineWidth=3.4-(i%3)*.45; x.lineCap='round'; x.beginPath();
+    x.moveTo(48+b[0],b[1]); x.quadraticCurveTo(48+(b[0]+b[2])*.38,135,48+b[2],b[3]); x.stroke();
+  });
+  const t=new THREE.CanvasTexture(c); t.anisotropy=4; t.encoding=THREE.sRGBEncoding; return t;
+}
+const grassMat=new THREE.MeshStandardMaterial({map:grassTex(),transparent:true,alphaTest:.36,
+  side:THREE.DoubleSide,roughness:.98,color:0xa8ad78});
+const NG=6500, grassI=instanced(new THREE.PlaneGeometry(.88,1.65),grassMat,NG*3,false);
+{ let n=0;
+  for(let i=0;i<NG;i++){
+    const [x,z]=openSpot(2,218), y=ground(x,z), s=.35+Math.random()*.80;
+    for(let k=0;k<3;k++,n++){
+      const a=k*Math.PI/3+Math.random()*.55;
+      dummy.position.set(x+(Math.random()-.5)*.38,y+.78*s,z+(Math.random()-.5)*.38);
+      dummy.rotation.set(0,a,(Math.random()-.5)*.11);
+      dummy.scale.set(s*(.75+Math.random()*.45),s*(.72+Math.random()*.55),s);
+      dummy.updateMatrix(); grassI.setMatrixAt(n,dummy.matrix);
+    }
+  }
+}
+grassI.instanceMatrix.needsUpdate=true;
+
+// flowering shrubs — angiosperms were already taking the understory
+const shrubMat = new THREE.MeshStandardMaterial({map:foliageTex(),color:0x7f9163,roughness:.98});
+const shrubI = instanced(new THREE.SphereGeometry(1,12,8), shrubMat, 320, true);
+for(let i=0;i<320;i++){
+  const [x,z]=openSpot(10,210), s=.32+Math.random()*.70;
+  put(shrubI,i,x,ground(x,z)+s*.42,z,s*1.20,s*.68,s*1.20,Math.random()*6.28);
+}
+shrubI.instanceMatrix.needsUpdate=true;
+
+// driftwood on the point bars
+const logMat = skin(barkTex(),0x9a8a72,.95);
+for(let i=0;i<16;i++){
+  const x=(Math.random()-.5)*260, z=RIVER(x)+(Math.random()<.5?-1:1)*(12+Math.random()*8);
+  const l=new THREE.Mesh(new THREE.CylinderGeometry(.24,.34,4+Math.random()*5,6),logMat);
+  l.rotation.set(Math.PI/2,Math.random()*6.28,Math.random()*.4);
+  l.position.set(x,ground(x,z)+.3,z); l.castShadow=true; l.receiveShadow=true; scene.add(l);
+}
+
+/* ============================================================
+   AGENTS — one wandering individual per slot
+   ============================================================ */
+const POP = [["trex",1],["trike",2],["edmonto",3],["anky",1],
+             ["dakota",2],["anzu",2],["pachy",1],["thescelo",2]];
+const SPEC = {trex:{v:1.9,r:2.4},trike:{v:1.3,r:2.0},edmonto:{v:1.5,r:2.2},anky:{v:.8,r:2.0},
+              dakota:{v:3.0,r:1.1},anzu:{v:2.6,r:.9},pachy:{v:1.9,r:1.0},thescelo:{v:2.4,r:.8}};
+const agents = [];
+POP.forEach(([key,n])=>{
+  const [hx,hz]=openSpot(34,120);
+  for(let i=0;i<n;i++){
+    const built = BUILD[key]();
+    const x=hx+(Math.random()-.5)*13, z=hz+(Math.random()-.5)*13;
+    built.g.position.set(x,ground(x,z),z);
+    built.g.rotation.y=Math.random()*6.28;
+    scene.add(built.g);
+    agents.push({key, o:built, home:new THREE.Vector2(hx,hz),
+      tgt:new THREE.Vector2(x,z), wait:Math.random()*6, sp:0, phase:Math.random()*40});
+  }
+});
+
+/* ============================================================
+   PLAYER
+   ============================================================ */
+const EYE_H = 1.70;                                  // a 1.7 m observer — the scale reference
+const player = new THREE.Vector3(0,0,-8);
+let yaw = 0, pitch = 0, locked = false;
+const keys = Object.create(null);
+addEventListener('keydown',e=>{ keys[e.code]=true; });
+addEventListener('keyup',e=>{ keys[e.code]=false; });
+
+const cv3 = renderer.domElement;
+function lock(){ if(cv3.requestPointerLock) cv3.requestPointerLock(); }
+document.addEventListener('pointerlockchange',()=>{ locked = document.pointerLockElement===cv3; });
+addEventListener('mousemove',e=>{
+  if(!locked) return;
+  yaw   -= e.movementX*0.0022;
+  pitch -= e.movementY*0.0022;
+  pitch = Math.max(-1.25, Math.min(1.25, pitch));
+});
+cv3.addEventListener('click',()=>{ if(!gate.classList.contains('off')) return; lock(); });
+
+// touch: drag to look, thumbstick to walk
+let touchMove = {x:0,y:0};
+const stick = document.getElementById('stick'), nub = stick.firstElementChild;
+if(matchMedia('(hover:none)').matches) document.body.classList.add('touch');
+let sid=null;
+stick.addEventListener('pointerdown',e=>{ sid=e.pointerId; stick.setPointerCapture(sid); });
+stick.addEventListener('pointermove',e=>{
+  if(e.pointerId!==sid) return;
+  const r=stick.getBoundingClientRect();
+  let dx=(e.clientX-r.left-r.width/2)/(r.width/2), dy=(e.clientY-r.top-r.height/2)/(r.height/2);
+  const m=Math.hypot(dx,dy); if(m>1){dx/=m;dy/=m;}
+  touchMove={x:dx,y:dy}; nub.style.transform=`translate(${dx*34}px,${dy*34}px)`;
+});
+function endStick(){ sid=null; touchMove={x:0,y:0}; nub.style.transform=''; }
+stick.addEventListener('pointerup',endStick); stick.addEventListener('pointercancel',endStick);
+let lookId=null, lookPrev=null;
+cv3.addEventListener('pointerdown',e=>{ lookId=e.pointerId; lookPrev={x:e.clientX,y:e.clientY}; });
+cv3.addEventListener('pointermove',e=>{
+  if(e.pointerId!==lookId||!lookPrev) return;
+  yaw -= (e.clientX-lookPrev.x)*0.0045;
+  pitch = Math.max(-1.25,Math.min(1.25, pitch-(e.clientY-lookPrev.y)*0.0045));
+  lookPrev={x:e.clientX,y:e.clientY};
+});
+cv3.addEventListener('pointerup',()=>{lookId=null;lookPrev=null;});
+
+/* ============================================================
+   HUD
+   ============================================================ */
+const gate=document.getElementById('gate'), card=document.getElementById('card'),
+      roster=document.getElementById('roster'), tally=document.getElementById('tally'),
+      compass=document.getElementById('compass');
+ORDER.forEach(k=>{
+  const li=document.createElement('li'); li.id='li-'+k;
+  li.textContent=SPECIES[k].name.split(' ')[0]; roster.appendChild(li);
+});
+const seen=new Set();
+function record(k){
+  if(seen.has(k)) return;
+  seen.add(k);
+  document.getElementById('li-'+k).classList.add('seen');
+  tally.textContent = seen.size+' / 8';
+}
+let shown=null;
+function showCard(k){
+  if(shown===k) return;
+  shown=k;
+  if(!k){ card.classList.remove('on'); return; }
+  const s=SPECIES[k];
+  card.innerHTML =
+    '<div class="top">'+
+      '<div class="cat"><span>HELL CREEK FM.</span><span>'+s.common.toUpperCase()+'</span></div>'+
+      '<h3>'+s.name+'</h3>'+
+      '<div class="say">'+s.say+'</div>'+
+      '<p class="mean">'+s.mean+'</p>'+
+    '</div>'+
+    '<dl>'+s.stats.map(([a,b])=>'<dt>'+a+'</dt><dd>'+b+'</dd>').join('')+'</dl>'+
+    '<div class="notes"><span class="eyebrow">Reconstructed to evidence</span><ul>'+
+      s.notes.map(n=>'<li>'+n+'</li>').join('')+'</ul></div>';
+  card.classList.add('on');
+}
+document.getElementById('enter').addEventListener('click',()=>{
+  gate.classList.add('off'); lock();
+});
+const DIRS=['N','NE','E','SE','S','SW','W','NW'];
+
+/* ============================================================
+   LOOP
+   ============================================================ */
+const clock = new THREE.Clock();
+const fwd = new THREE.Vector3(), right = new THREE.Vector3();
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let bob = 0;
+
+function step(){
+  requestAnimationFrame(step);
+  const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
+
+  /* --- player --- */
+  let mx = (keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
+  let mz = (keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0);
+  mx += touchMove.x; mz -= touchMove.y;
+  const run = keys.ShiftLeft||keys.ShiftRight ? 2.15 : 1;
+  const len = Math.hypot(mx,mz);
+  if(len>0.02){
+    mx/=Math.max(len,1); mz/=Math.max(len,1);
+    const v = 3.5*run*dt;
+    player.x += (-Math.sin(yaw)*mz + Math.cos(yaw)*mx)*v;
+    player.z += (-Math.cos(yaw)*mz - Math.sin(yaw)*mx)*v;
+    bob += dt*9*run;
+  }
+  player.x = Math.max(-198, Math.min(198, player.x));
+  player.z = Math.max(-198, Math.min(198, player.z));
+
+  /* --- animals: wander, and keep the observer out of their volume --- */
+  let near=null, nd=1e9;
+  for(const a of agents){
+    const S=SPEC[a.key], p=a.o.g.position;
+    a.wait -= dt;
+    if(a.wait<=0 && Math.hypot(a.tgt.x-p.x, a.tgt.y-p.z)<2.5){
+      const ang=Math.random()*6.283, rad=8+Math.random()*22;
+      a.tgt.set(a.home.x+Math.cos(ang)*rad, a.home.y+Math.sin(ang)*rad);
+      a.wait = 2+Math.random()*9;
+    }
+    const dx=a.tgt.x-p.x, dz=a.tgt.y-p.z, d=Math.hypot(dx,dz);
+    const want = (a.wait<=0 && d>2.0) ? 1 : 0;
+    a.sp += (want-a.sp)*Math.min(1,dt*1.6);
+    if(d>0.3){
+      const target=Math.atan2(dx,dz);
+      let diff=target-a.o.g.rotation.y;
+      while(diff>Math.PI)diff-=6.283; while(diff<-Math.PI)diff+=6.283;
+      a.o.g.rotation.y += Math.max(-1.2*dt, Math.min(1.2*dt, diff*1.4));
+      if(a.sp>0.02){
+        p.x += Math.sin(a.o.g.rotation.y)*S.v*a.sp*dt;
+        p.z += Math.cos(a.o.g.rotation.y)*S.v*a.sp*dt;
+      }
+    }
+    p.y = ground(p.x,p.z);
+    a.o.update(t+a.phase, a.sp);
+
+    // soft body collision
+    const pd = Math.hypot(p.x-player.x, p.z-player.z);
+    if(pd < S.r){
+      const k=(S.r-pd)/Math.max(pd,.001);
+      player.x -= (p.x-player.x)*k; player.z -= (p.z-player.z)*k;
+    }
+    if(pd < nd){ nd=pd; near=a.key; }
+  }
+  if(nd < 25){ record(near); showCard(near); }
+  else if(nd > 31) showCard(null);
+
+  /* --- camera --- */
+  const gy = Math.max(ground(player.x,player.z), -1.75);
+  camera.rotation.order='YXZ';
+  camera.rotation.set(pitch, yaw, 0);
+  camera.position.set(player.x, gy+EYE_H + (reduce?0:Math.sin(bob)*0.045), player.z);
+
+  sun.target.position.set(player.x,0,player.z);
+  sun.position.set(player.x-52, 64, player.z+34);
+  water.position.x = player.x; water.position.z = player.z;
+
+  const oct = Math.round(((-yaw*180/Math.PI)%360+360)%360/45)%8;
+  compass.innerHTML = '<b>'+DIRS[oct]+'</b>';
+
+  renderer.render(scene,camera);
+}
+step();
+
+addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+})();
+</script>
