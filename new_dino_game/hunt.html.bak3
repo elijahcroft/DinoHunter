@@ -143,14 +143,6 @@
   }
   #enter:hover{background:#fff; transform:translateY(-1px)}
   #enter:focus-visible{outline:2px solid var(--rust); outline-offset:3px}
-  #contracts{display:flex; flex-wrap:wrap; gap:8px; margin-top:20px}
-  #contracts a{
-    font-family:var(--sans); font-weight:600; font-size:11px; letter-spacing:.14em;
-    text-transform:uppercase; text-decoration:none; color:rgba(232,223,201,.62);
-    border:1px solid var(--hair); padding:8px 11px; transition:color .2s ease,border-color .2s ease,background .2s ease;
-  }
-  #contracts a:hover{color:var(--paper); border-color:var(--bone)}
-  #contracts a.active{color:var(--paper); border-color:var(--rust); background:rgba(166,75,33,.18)}
   #plate .fine{margin-top:14px; font-family:var(--mono); font-size:11px; color:rgba(232,223,201,.45)}
 
   /* ---------- touch ---------- */
@@ -186,9 +178,7 @@
   /* vignette while shouldered */
   #scope{position:fixed; inset:0; z-index:4; pointer-events:none; opacity:0;
     transition:opacity .18s ease;
-    /* you have to be able to SEE the animal while the sights are on him —
-       the old falloff went almost solid black at three quarters of the frame */
-    background:radial-gradient(circle at 50% 50%,transparent 42%,rgba(8,7,5,.34) 66%,rgba(8,7,5,.90) 92%)}
+    background:radial-gradient(circle at 50% 50%,transparent 26%,rgba(8,7,5,.55) 52%,rgba(8,7,5,.97) 76%)}
   body.aim #scope{opacity:1}
 
   /* wind + ammo readout */
@@ -226,12 +216,6 @@
     max-width:min(560px,86vw); text-align:center; line-height:1.45; pointer-events:none}
   #guide.on{opacity:1}
 
-  /* muzzle flash — a blink, so it never sits in the sight picture */
-  #flash{position:fixed; inset:0; z-index:8; pointer-events:none; opacity:0;
-    background:radial-gradient(ellipse 40% 30% at 50% 78%,rgba(255,232,178,.55),transparent 70%)}
-  #flash.go{animation:mzf .11s ease-out}
-  @keyframes mzf{0%{opacity:1}100%{opacity:0}}
-
   /* hit flash */
   #hit{position:fixed; inset:0; z-index:8; pointer-events:none; opacity:0;
     background:radial-gradient(circle at 50% 50%,rgba(166,75,33,.16),transparent 62%)}
@@ -240,49 +224,6 @@
 
   /* tracking log reuse */
   #log li.hit::before{content:"✦"; color:var(--rust)}
-
-  /* range call under the reticle, only while shouldered */
-  #rangecall{position:fixed; left:50%; top:50%; transform:translate(-50%,26px); z-index:6;
-    font-family:var(--mono); font-size:12px; letter-spacing:.10em; color:rgba(232,223,201,.62);
-    pointer-events:none; opacity:0; transition:opacity .18s ease}
-  body.aim #rangecall{opacity:1}
-  #rangecall .u{font-size:9px; margin-left:3px; color:rgba(232,223,201,.4)}
-
-  /* the shot chart */
-  #chart{position:fixed; left:14px; top:44px; width:min(330px,40vw); z-index:6;
-    opacity:0; visibility:hidden; transition:opacity .35s ease, visibility .35s}
-  #chart.on{opacity:1; visibility:visible}
-  #chart h2{margin:0 0 6px; font-family:var(--sans); font-size:10px; font-weight:600;
-    letter-spacing:.18em; text-transform:uppercase; color:var(--bone)}
-  .chart{width:100%; height:auto; display:block; overflow:visible}
-  .chart .cgnd{stroke:rgba(201,188,152,.20); stroke-width:1; stroke-dasharray:3 4}
-  .chart .cbody{fill:rgba(232,223,201,.13); stroke:rgba(232,223,201,.30); stroke-width:1.2;
-    stroke-linejoin:round}
-  .chart .cline{fill:none; stroke:rgba(232,223,201,.60); stroke-width:1.5;
-    stroke-linejoin:round}
-  .chart .czone{opacity:.46}
-  .chart .cshot circle{fill:none; stroke-width:2}
-  .chart .cshot path{stroke-width:1.2}
-  .chart .cshot text{font-family:var(--mono); font-size:13px}
-  .chart .hit circle,.chart .hit path{stroke:#F2E4C2}
-  .chart .hit text{fill:#F2E4C2}
-  .chart .miss circle{stroke:rgba(232,223,201,.55); stroke-dasharray:3 3}
-  .chart .miss text{fill:rgba(232,223,201,.55)}
-  .chart .off circle{stroke:var(--rust)}
-  .clist{list-style:none; margin:7px 0 0; padding:0}
-  .clist li{display:flex; align-items:baseline; gap:6px; font-family:var(--mono);
-    font-size:11px; color:rgba(232,223,201,.78); padding:3px 0;
-    border-bottom:1px solid rgba(201,188,152,.10)}
-  .clist li b{color:var(--paper); min-width:12px; flex:none}
-  .clist li span{flex:1; min-width:0}
-  .clist li em{flex:none; font-style:normal; color:var(--bone); font-size:10px;
-    padding-left:8px; white-space:nowrap}
-  .clist .k{width:7px; height:7px; border-radius:50%; display:inline-block; flex:none}
-  .clist .k.hit{background:#F2E4C2}
-  .clist .k.miss{border:1px solid rgba(232,223,201,.5)}
-  #endchart{margin:18px 0 0}
-  #endchart .chart{max-width:100%}
-  #endchart .clist{margin-top:10px}
 
   /* end card */
   #end{position:fixed; inset:0; z-index:22; display:flex; align-items:center; justify-content:center;
@@ -332,7 +273,7 @@
   </div>
 
   <div id="quarry">
-    <span class="eyebrow" id="quarry-name">Bull Triceratops</span>
+    <span class="eyebrow">Bull Triceratops</span>
     <div class="bar"><i id="alertbar"></i></div>
     <div class="st" id="alertst">Grazing</div>
   </div>
@@ -344,43 +285,35 @@
   </div>
 
   <div id="guide"></div>
-  <div id="chart" class="panel"></div>
-  <div id="rangecall"><span id="rangev">—</span><span class="u">m</span></div>
   <div id="retic"><i></i><i></i><i></i><i></i></div>
   <div id="card" role="status" aria-live="polite"></div>
   <div id="stick"><i></i></div>
 </div>
 <div id="scope"></div>
 <div id="hit"></div>
-<div id="flash"></div>
 
 <div id="end"><div class="sheet">
   <div class="eyebrow">Contract closed</div>
   <h2 id="endh">The animal is <i>down</i></h2>
   <div class="rule"></div>
   <dl id="endstats"></dl>
-  <div id="endchart"></div>
   <p id="endp"></p>
   <button id="again">Hunt again</button>
 </div></div>
 
 <div id="gate">
   <div id="plate">
-    <div class="eyebrow" id="contract-eyebrow">Chartered take · Lancian faunal stage · 66.0 Ma</div>
-    <h1 id="contract-title">You have one <i>bull</i>, and two rounds</h1>
+    <div class="eyebrow">Chartered take · Lancian faunal stage · 66.0 Ma</div>
+    <h1>You have one <i>bull</i>, and two rounds</h1>
     <div class="rule"></div>
-    <p id="contract-intro">A humid coastal floodplain in what is now eastern Montana. Somewhere out along the
+    <p>A humid coastal floodplain in what is now eastern Montana. Somewhere out along the
       channel is a mature bull <i>Triceratops prorsus</i> — nine tonnes, and the most common
       large animal in this formation. He is licensed to you. Nothing else here is.</p>
-    <p class="flora" id="contract-stalk">He will smell you long before he sees you. Watch the wind, keep it in your
+    <p class="flora">He will smell you long before he sees you. Watch the wind, keep it in your
       face, and stay low. A bull that is merely alert can be settled by standing still. A bull
       that has your scent is gone.</p>
-    <p class="flora" id="contract-shot">Put the first round through the lungs, behind the shoulder. A gut shot
+    <p class="flora">Put the first round through the lungs, behind the shoulder. A gut shot
       will not stop him — it will just make you walk a very long way.</p>
-    <nav id="contracts" aria-label="Choose a hunting contract">
-      <a href="?quarry=trike" data-contract="trike">04 · Triceratops</a>
-      <a href="?quarry=thescelo" data-contract="thescelo">05 · Thescelosaurus</a>
-    </nav>
     <button id="enter">Begin the stalk</button>
     <div class="fine">WASD move · ctrl crouch · RMB shoulder · LMB fire · space hold breath</div>
   </div>
@@ -471,78 +404,6 @@ const SPECIES = {
     ]}
 };
 const ORDER = ["trex","trike","edmonto","anky","dakota","anzu","pachy","thescelo"];
-
-/* ============================================================
-   CONTRACTS — keep quarry-specific facts out of the shared hunt systems
-   Add ?quarry=thescelo to hunt Thescelosaurus; Triceratops stays the default.
-   ============================================================ */
-const QUARRY_KEY = new URLSearchParams(location.search).get('quarry') === 'thescelo'
-  ? 'thescelo' : 'trike';
-const HUNTS = {
-  trike:{
-    contract:'04', strip:'one bull <i>Triceratops</i>', hud:'Bull Triceratops',
-    quarry:'Triceratops prorsus', title:'You have one <i>bull</i>, and two rounds',
-    intro:'A humid coastal floodplain in what is now eastern Montana. Somewhere out along the channel is a mature bull <i>Triceratops prorsus</i> — nine tonnes, and the most common large animal in this formation. He is licensed to you. Nothing else here is.',
-    stalk:'He will smell you long before he sees you. Watch the wind, keep it in your face, and stay low. A bull that is merely alert can be settled by standing still. A bull that has your scent is gone.',
-    shot:'Put the first round through the lungs, behind the shoulder. A gut shot will not stop him — it will just make you walk a very long way.',
-    start:'He\'s out there about {distance} metres, bearing {bearing}. Keep the wind in your face.',
-    alertUp:'He\'s got his head up. Don\'t move.', settled:'He\'s settled. Go now, and go low.',
-    blown:'He\'s blown out. He has your scent.', woundedRun:'He\'s running. Mark where he goes in.',
-    stopped:'He\'s stopped. You can still work back onto him.', woundedStopped:'He\'s stopped, and he\'s still on his feet. You\'ll need another round.',
-    success:'Nine tonnes of Triceratops, and the light going out of the floodplain behind you.',
-    woundedEnd:'You have nothing left to finish it with. This is the outcome every hunter is supposed to fear, and it is on you.',
-    emptyEnd:'You emptied the rifle into the floodplain. He is still out there, and he will not let you near him again.',
-    bodyY:1.86, aimCenter:[0,1.86,.60], chartMidY:1.90, slopeSpan:2.4,
-    spawnMin:88, spawnMax:110, visibleDistance:130, grazeSpeed:.55,
-    fleeSpeed:9.4, lethalFleeSpeed:8.2, legFleeSpeed:4.4, unhurtRun:120, downLift:.50,
-    gaitWalk:.26, gaitFlee:.42, gaitRate:2.0, gaitSpeedRate:.9, bob:.035,
-    poses:{down:[.55,.20],graze:[.46,.30],alert:[-.22,-.16],flee:[-.05,.10]},
-    sense:{scent:78,sight:95,noiseWalk:22,noiseRun:46,noiseCrouch:9},
-    chart:{W:520,H:300,K:46,cx:250,cy:250,
-      body:'M1.60,2.90 C0.95,3.14 0.10,3.10 -0.55,3.02 C-1.25,2.98 -1.80,2.92 -2.45,2.58 L-3.60,2.16 L-4.95,1.72 L-3.50,1.76 L-2.40,1.56 C-1.80,1.22 -0.20,1.02 0.80,1.04 C1.35,1.08 1.66,1.20 1.78,1.38 C1.90,1.70 1.94,2.20 1.96,2.44 Z',
-      head:'M1.18,3.24 L2.36,3.06 C2.52,2.86 2.62,2.66 2.74,2.54 L3.64,3.40 L2.98,2.34 L3.30,2.62 L3.16,2.08 L3.60,1.80 L3.30,1.44 L2.52,1.62 L1.84,1.86 L1.12,2.04 Z',
-      legs:[{z:1.20,w:.62,top:1.44},{z:-1.55,w:.78,top:1.80}]}
-  },
-  thescelo:{
-    contract:'05', strip:'one adult <i>Thescelosaurus</i>', hud:'Adult Thescelosaurus',
-    quarry:'Thescelosaurus neglectus', title:'You have one <i>adult</i>, and two rounds',
-    intro:'A humid coastal floodplain in what is now eastern Montana. Somewhere in the fern breaks is an adult <i>Thescelosaurus neglectus</i> — three and a half metres long, compact, wary, and licensed to you. Nothing else here is.',
-    stalk:'It is smaller than the brush and built to run. Keep the wind in your face, move only when its head is down, and do not mistake the unlicensed animals on the floodplain for your quarry.',
-    shot:'Wait for a broadside angle and place the first round through the lungs, just behind the forelimb. The vital area is much smaller than the Triceratops contract.',
-    start:'The tracker put it about {distance} metres out, bearing {bearing}. Look low beneath the fern tops.',
-    alertUp:'Its head is up. Freeze.', settled:'It has gone back to feeding. Move while the head is down.',
-    blown:'It has blown out into the cover.', woundedRun:'It is running. Mark the last place you saw it.',
-    stopped:'It has stopped in the cover. Work back onto it carefully.', woundedStopped:'It has stopped, but it is still standing. You need a second round.',
-    success:'A cleanly recovered Thescelosaurus at the edge of the fern break.',
-    woundedEnd:'You have nothing left to finish it with. A wounded animal is still somewhere in the cover.',
-    emptyEnd:'Both rounds are gone. The Thescelosaurus has vanished into the fern breaks.',
-    bodyY:0, aimCenter:[0,1.06,.10], chartMidY:1.02, slopeSpan:1.25,
-    spawnMin:58, spawnMax:78, visibleDistance:96, grazeSpeed:.72,
-    fleeSpeed:10.8, lethalFleeSpeed:8.7, legFleeSpeed:5.2, unhurtRun:165, downLift:.18,
-    gaitWalk:.43, gaitFlee:.67, gaitRate:2.8, gaitSpeedRate:1.15, bob:.026,
-    poses:{down:[.68,.28],graze:[.38,.22],alert:[-.34,-.10],flee:[-.08,.04]},
-    sense:{scent:70,sight:108,noiseWalk:24,noiseRun:50,noiseCrouch:10},
-    chart:{W:520,H:300,K:88,cx:285,cy:260,
-      body:'M0.82,1.33 C0.48,1.52 -0.05,1.55 -0.58,1.43 C-0.92,1.36 -1.18,1.22 -1.40,1.08 L-2.05,.88 L-1.48,.82 L-.92,.91 C-.48,.78 .12,.76 .62,.84 C.92,.90 1.04,1.04 1.04,1.18 Z',
-      head:'M.72,1.38 L1.20,1.44 L1.52,1.32 L1.62,1.17 L1.42,1.08 L1.05,1.12 L.78,1.23 Z',
-      legs:[{z:-.18,w:.30,top:1.04}]}
-  }
-};
-const HUNT = HUNTS[QUARRY_KEY];
-
-(function applyContractCopy(){
-  const set = (id,html) => { const e=document.getElementById(id); if(e) e.innerHTML=html; };
-  document.title = HUNT.quarry+' · The Lancian Contract';
-  set('clock','Contract '+HUNT.contract+' · '+HUNT.strip);
-  set('quarry-name',HUNT.hud);
-  set('contract-eyebrow','Chartered take · Contract '+HUNT.contract+' · Lancian faunal stage · 66.0 Ma');
-  set('contract-title',HUNT.title); set('contract-intro',HUNT.intro);
-  set('contract-stalk',HUNT.stalk); set('contract-shot',HUNT.shot);
-  document.querySelectorAll('[data-contract]').forEach(a=>{
-    const on=a.dataset.contract===QUARRY_KEY; a.classList.toggle('active',on);
-    if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
-  });
-})();
 
 /* ============================================================
    PROCEDURAL TEXTURES  (no external assets — CSP-safe)
@@ -865,7 +726,7 @@ scene.fog = new THREE.FogExp2(0x93a189, 0.0058);   // open it up; we need to see
 const MAPR = 205;                                   // playable radius
 const clampMap = v => Math.max(-MAPR, Math.min(MAPR, v));
 
-const TRIKE_WOUND = {
+const WOUND = {
   brain:{run:0,   lethal:true,  instant:true, rate:0,   col:0xb02318, blood:"—",                          note:"Straight through the braincase."},
   spine:{run:0,   lethal:true,  instant:true, rate:0,   col:0xb02318, blood:"—",                          note:"Spine severed over the shoulder."},
   heart:{run:44,  lethal:true,  rate:4.6, col:0xc02a18, blood:"bright arterial, pumping",                 note:"Through the heart. He did not go far."},
@@ -875,178 +736,65 @@ const TRIKE_WOUND = {
   leg:{  run:135, lethal:false, rate:1.5, col:0x8a2415, blood:"thin and smeared where the leg swings",    note:"You broke a leg. He can still travel."},
   frill:{run:190, lethal:false, rate:0,   col:0x8a2415, blood:"none — solid bone",                        note:"The round flattened on the frill. Nine feet of solid bone."}
 };
-const THESCELO_WOUND = {
-  brain:{run:0,   lethal:true,  instant:true, rate:0,   col:0xb02318, blood:"—",                          note:"Straight through the braincase."},
-  spine:{run:0,   lethal:true,  instant:true, rate:0,   col:0xb02318, blood:"—",                          note:"The spine was severed over the shoulder."},
-  heart:{run:18,  lethal:true,  rate:4.8, col:0xc02a18, blood:"bright arterial, pumping",                 note:"Through the heart. It covered only a few strides."},
-  lung:{ run:42,  lethal:true,  rate:3.5, col:0xb02318, blood:"bright and frothy — lung",                 note:"Both lungs. The froth in the blood confirmed the hit."},
-  neck:{ run:14,  lethal:true,  rate:5.0, col:0xc02a18, blood:"heavy, arterial",                          note:"Through the neck."},
-  gut:{  run:145, lethal:false, rate:1.1, col:0x53180f, blood:"dark, thin, stinking of stomach",          note:"A gut shot. It made the deep cover."},
-  leg:{  run:105, lethal:false, rate:1.5, col:0x8a2415, blood:"thin and smeared where the leg swings",    note:"The leg is broken, but the animal can still travel."}
-};
-const WOUND = QUARRY_KEY==='thescelo' ? THESCELO_WOUND : TRIKE_WOUND;
-const ZONE_LABEL = {brain:"Braincase",spine:"Spine",heart:"Heart",lung:"Lungs",neck:"Neck",gut:"Gut",
-                    leg:QUARRY_KEY==='thescelo'?"Leg":"Foreleg",frill:"Frill (bone)"};
+const ZONE_LABEL = {brain:"Braincase",spine:"Spine",heart:"Heart",lung:"Lungs",neck:"Neck",gut:"Gut",leg:"Foreleg",frill:"Frill (bone)"};
 
 /* ============================================================
    VEGETATION — cover, and most of what sells the place
-   Every scatter below is one InstancedMesh: the old version paid a draw call
-   per fern card, which capped the plain at 190 clumps and left it looking
-   mown. One call per species buys thousands of cards for the same cost.
    ============================================================ */
-const fernT  = frondTex('#4d6b33','#6d8a3f',true);
-const palmT  = frondTex('#3f5f2e','#5a7d38',false);
-const sedgeT = frondTex('#6a7538','#8d9a4c',false);
-const scrubT = frondTex('#55632f','#77863c',true);
-const barkM  = new THREE.MeshStandardMaterial({map:barkTex(), roughness:.95});
+const fernT = frondTex('#4d6b33','#6d8a3f',true);
+const palmT = frondTex('#3f5f2e','#5a7d38',false);
+const barkM = new THREE.MeshStandardMaterial({map:barkTex(), roughness:.95});
 
-/* a foliage card, pivoted at its base so instances sit on the ground */
-function cardGeo(len,wid){
-  const g = new THREE.PlaneGeometry(wid,len,1,2);
-  g.translate(0,len/2,0);
+function frondCard(t,len,wid){
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(wid,len),
+    new THREE.MeshStandardMaterial({map:t,transparent:true,alphaTest:.45,
+      side:THREE.DoubleSide,roughness:.92}));
+  m.geometry.translate(0,len/2,0);
+  return m;
+}
+// low fern clump: three crossed cards
+function fernClump(s){
+  const g = new THREE.Group();
+  for(let i=0;i<3;i++){
+    const f = frondCard(fernT, 1.5*s, 1.1*s);
+    f.rotation.y = i*1.05 + Math.random();
+    f.rotation.z = (Math.random()-.5)*.4;
+    g.add(f);
+  }
   return g;
 }
-function cardMat(t){
-  return new THREE.MeshStandardMaterial({map:t, transparent:true, alphaTest:.45,
-    side:THREE.DoubleSide, roughness:.92});
+function tree(s){
+  const g = new THREE.Group();
+  const h = 9*s;
+  const trunk = taper(h, .42*s, .17*s, barkM, 1, 0, 4);
+  trunk.rotation.x = -Math.PI/2;                     // taper runs +Z; stand it up
+  g.add(trunk);
+  for(let i=0;i<7;i++){
+    const f = frondCard(palmT, 4.2*s, 3.0*s);
+    f.position.y = h - .5*s;
+    f.rotation.y = i*.9;
+    f.rotation.x = -.5 - Math.random()*.5;
+    g.add(f);
+  }
+  return g;
 }
-function frondCard(t,len,wid){ return new THREE.Mesh(cardGeo(len,wid), cardMat(t)); }
-
 const veg = new THREE.Group(); scene.add(veg);
-
-/* build one InstancedMesh from a list of {x,y,z,rx,ry,rz,s,sy} */
-const _vm = new THREE.Matrix4(), _vq = new THREE.Quaternion(),
-      _ve = new THREE.Euler(0,0,0,'YXZ'), _vp = new THREE.Vector3(), _vs = new THREE.Vector3();
-function instance(geo, mat, list, shadow){
-  const im = new THREE.InstancedMesh(geo, mat, list.length);
-  for(let i=0;i<list.length;i++){
-    const o = list[i];
-    _ve.set(o.rx||0, o.ry||0, o.rz||0, 'YXZ');
-    _vq.setFromEuler(_ve);
-    _vp.set(o.x, o.y, o.z);
-    const sc = o.s===undefined ? 1 : o.s;
-    _vs.set(sc, o.sy===undefined ? sc : o.sy, sc);
-    _vm.compose(_vp,_vq,_vs);
-    im.setMatrixAt(i,_vm);
-  }
-  im.instanceMatrix.needsUpdate = true;
-  im.castShadow = !!shadow;
-  im.receiveShadow = !!shadow;
-  im.frustumCulled = false;
-  veg.add(im);
-  return im;
-}
-
-/* how far a point is from the channel centre-line, and whether it is wet */
-const bankDist = (x,z) => Math.abs(z - RIVER(x));
-const rnd = (a,b) => a + Math.random()*(b-a);
-
-/* ---------- ground cover: fern clumps, thickening toward the water -------- */
-const fernList = [];
-for(let i=0;i<1100;i++){
-  const x = rnd(-208,208), z = rnd(-208,208);
+for(let i=0;i<190;i++){
+  const x=(Math.random()-.5)*400, z=(Math.random()-.5)*400;
   const gy = ground(x,z);
-  if(gy < -1.25) continue;                            // not out in the channel
-  const b = bankDist(x,z);
-  // ferns like damp ground: thin them out on the dry interfluve
-  if(b > 34 && Math.random() < 0.45) continue;
-  const s = rnd(.45,.85) * (b < 26 ? 1.15 : 1);
-  const n = 3 + (Math.random()*3|0);
-  for(let k=0;k<n;k++){
-    const a = Math.random()*6.283, r = Math.random()*1.1*s;
-    const px = x+Math.cos(a)*r, pz = z+Math.sin(a)*r;
-    fernList.push({x:px, y:ground(px,pz)-.07, z:pz,
-      ry:Math.random()*6.283, rz:rnd(-.22,.22), s:s*rnd(.75,1.15)});
-  }
+  if(gy < -1.3) continue;                            // not in the channel
+  const c = fernClump(.75+Math.random()*1.15);
+  c.position.set(x, gy-.06, z);
+  veg.add(c);
 }
-instance(cardGeo(1.25,1.0), cardMat(fernT), fernList);
-
-/* ---------- sedge and horsetail along the cut banks ---------------------- */
-const sedgeList = [];
-for(let i=0;i<9000;i++){
-  const x = rnd(-208,208);
-  const side = Math.random()<.5 ? -1 : 1;
-  const z = RIVER(x) + side*rnd(6.5,15.5);
-  const gy = ground(x,z);
-  if(gy < -1.9 || gy > 1.2) continue;                 // the wet margin only
-  if(Math.abs(z) > 208) continue;
-  sedgeList.push({x, y:gy-.08, z, ry:Math.random()*6.283,
-    rz:rnd(-.16,.16), s:rnd(.45,.85), sy:rnd(.85,1.45)});
-  if(sedgeList.length > 2600) break;
-}
-instance(cardGeo(1.55,.80), cardMat(sedgeT), sedgeList);
-
-/* ---------- dry tussock on the open plain -------------------------------- */
-const tuftList = [];
-for(let i=0;i<26000;i++){
-  const x = rnd(-208,208), z = rnd(-208,208);
-  const gy = ground(x,z);
-  if(gy < -1.1) continue;
-  tuftList.push({x, y:gy-.05, z, ry:Math.random()*6.283, rz:rnd(-.35,.35), s:rnd(.45,.95)});
-}
-instance(cardGeo(1.0,.85), cardMat(sedgeT), tuftList);
-
-/* ---------- scrub: waist-high thickets that actually hide a stalker ------- */
-const scrubList = [];
-for(let i=0;i<330;i++){
-  const x = rnd(-200,200), z = rnd(-200,200);
-  const gy = ground(x,z);
-  if(gy < -1.0) continue;
-  const s = rnd(.75,1.25);
-  for(let k=0;k<7;k++){
-    const a = Math.random()*6.283, r = Math.random()*1.3*s;
-    const px = x+Math.cos(a)*r, pz = z+Math.sin(a)*r;
-    scrubList.push({x:px, y:ground(px,pz)-.1, z:pz, ry:Math.random()*6.283,
-      rz:rnd(-.35,.35), s:s*rnd(.8,1.1)});
-  }
-}
-instance(cardGeo(2.0,1.7), cardMat(scrubT), scrubList);
-
-/* ---------- trees: trunks and crowns, each one instanced ----------------- */
-const trunkList = [], crownList = [];
-const TREE_H = 9;
-const trunkGeo = new THREE.CylinderGeometry(.17,.42,TREE_H,7,1,true);
-trunkGeo.translate(0,TREE_H/2,0);
-for(let i=0;i<300;i++){
-  const x = rnd(-200,200), z = rnd(-200,200);
-  const gy = ground(x,z);
-  if(gy < -0.7) continue;
-  const b = bankDist(x,z);
-  // gallery forest: palms crowd the river and thin out fast away from it
-  const want = b < 30 ? 0.85 : b < 60 ? 0.34 : 0.12;
-  if(Math.random() > want) continue;
-  const s = rnd(.75,1.65), lean = rnd(-.09,.09), leanA = Math.random()*6.283;
-  const rx = Math.cos(leanA)*lean, rz = Math.sin(leanA)*lean;
-  trunkList.push({x, y:gy, z, s, rx, rz});
-  const h = TREE_H*s - .5*s;
-  const base = Math.random()*6.283;
-  const nf = 7 + (Math.random()*3|0);
-  for(let k=0;k<nf;k++){
-    crownList.push({x:x+rx*h, y:gy+h, z:z+rz*h,
-      ry:base + k*(6.283/nf) + rnd(-.2,.2),
-      rx:-.45 - Math.random()*.6, s:s*rnd(.85,1.12)});
-  }
-  if(trunkList.length >= 96) break;
-}
-instance(trunkGeo, barkM, trunkList, true);
-const crowns = instance(cardGeo(4.2,3.0), cardMat(palmT), crownList);
-
-/* ---------- deadfall: logs to break the ground up and give you a rest ----- */
-const logList = [];
-const logGeo = new THREE.CylinderGeometry(.22,.31,4.4,7);
-logGeo.rotateZ(Math.PI/2);
-for(let i=0;i<70;i++){
-  const x = rnd(-200,200), z = rnd(-200,200);
+for(let i=0;i<26;i++){
+  const x=(Math.random()-.5)*380, z=(Math.random()-.5)*380;
   const gy = ground(x,z);
   if(gy < -0.9) continue;
-  const ls = rnd(.65,1.05);
-  logList.push({x, y:gy+.20*ls, z, ry:Math.random()*6.283, rz:rnd(-.05,.05), s:ls});
-  if(logList.length >= 42) break;
+  const t = tree(.8+Math.random()*.7);
+  t.position.set(x, gy, z);
+  veg.add(t);
 }
-instance(logGeo, barkM, logList, true);
-
-/* things a bullet will actually stop against: trunks and deadfall, not leaves */
-const SOLIDS = veg.children.filter(o => o.material === barkM);
 
 /* ============================================================
    TRICERATOPS PRORSUS
@@ -1620,9 +1368,7 @@ function buildTrike(){
   return {root, body, neck, skull, tail, legs, zones};
 }
 
-// Keep the historic variable name as an adapter: all shared ballistics and
-// tracking code can address either quarry through the same shape contract.
-const trike = QUARRY_KEY==='thescelo' ? buildHuntThescelo() : buildTrike();
+const trike = buildTrike();
 scene.add(trike.root);
 
 /* ============================================================
@@ -1635,507 +1381,31 @@ const A = {
   wound:null, hitZone:null, runLeft:0, tracked:0,
   bleedAcc:0, settle:0, lastBlood:new THREE.Vector3()
 };
-// Place the selected quarry on a random bearing, clear of the channel.
+// place him 95 m out on a random bearing, clear of the channel
 (function place(){
   for(let i=0;i<300;i++){
-    const a = Math.random()*Math.PI*2,
-          d = HUNT.spawnMin+Math.random()*(HUNT.spawnMax-HUNT.spawnMin);
+    const a = Math.random()*Math.PI*2, d = 88+Math.random()*22;
     const x = Math.cos(a)*d, z = Math.sin(a)*d;
     if(Math.abs(z-RIVER(x)) < 20) continue;          // not standing in the river
     A.pos.set(x, ground(x,z), z); A.yaw = Math.random()*Math.PI*2; return;
   }
-  A.pos.set(HUNT.spawnMax-5, ground(HUNT.spawnMax-5,20), 20);
+  A.pos.set(90, ground(90,20), 20);
 })();
-
-/* ============================================================
-   FAUNA — the rest of the living floodplain
-   Hell Creek was not one bull standing alone on a lawn. Everything below is
-   ambient: it cannot be shot and it cannot hurt you, but it reacts to the
-   rifle, and a band that blows out beside your bull will cost you the stalk.
-   ============================================================ */
-function sRGB(hex){ return new THREE.Color(hex).convertSRGBToLinear(); }
-
-/* cylinder running +Z from the origin, for necks, bills and tails */
-function fsegZ(r0,r1,len,mat){
-  const g = new THREE.CylinderGeometry(r0,r1,len,8);
-  g.rotateX(Math.PI/2); g.translate(0,0,len/2);
-  return new THREE.Mesh(g,mat);
-}
-/* cylinder hanging -Y from the origin, for limbs */
-function fsegY(r0,r1,len,mat){
-  const g = new THREE.CylinderGeometry(r0,r1,len,8);
-  g.translate(0,-len/2,0);
-  return new THREE.Mesh(g,mat);
-}
-
-/* ---- Thescelosaurus neglectus: 3.5 m, 1 m at the hip -------------------- */
-function buildThescelo(){
-  const g = new THREE.Group();
-  const hide = new THREE.MeshStandardMaterial({color:sRGB(0x7b6d47), roughness:.94});
-  const dark = new THREE.MeshStandardMaterial({color:sRGB(0x4c4229), roughness:.95});
-  const pale = new THREE.MeshStandardMaterial({color:sRGB(0xa39167), roughness:.92});
-
-  const body = new THREE.Mesh(new THREE.SphereGeometry(.5,14,10), hide);
-  body.scale.set(.74,.82,1.50); body.position.set(0,1.12,0); g.add(body);
-  const back = new THREE.Mesh(new THREE.SphereGeometry(.5,12,9), dark);
-  back.scale.set(.50,.46,1.42); back.position.set(0,1.36,-.05); g.add(back);
-  const belly= new THREE.Mesh(new THREE.SphereGeometry(.42,12,9), pale);
-  belly.scale.set(.62,.50,1.32); belly.position.set(0,.92,.02); g.add(belly);
-
-  const neck = new THREE.Group(); neck.position.set(0,1.32,.58); g.add(neck);
-  neck.add(fsegZ(.15,.11,.60,hide));
-  const head = new THREE.Group(); head.position.set(0,.05,.58); neck.add(head);
-  const skull= new THREE.Mesh(new THREE.SphereGeometry(.15,10,8), hide);
-  skull.scale.set(.88,.95,1.45); head.add(skull);
-  const snout= fsegZ(.10,.055,.30,hide); snout.position.set(0,-.03,.13); head.add(snout);
-  const beak = fsegZ(.055,.02,.10,pale); beak.position.set(0,-.03,.42); head.add(beak);
-  const eyeM = new THREE.MeshStandardMaterial({color:sRGB(0x14100a), roughness:.35});
-  for(const sx of [-1,1]){
-    const e = new THREE.Mesh(new THREE.SphereGeometry(.028,6,5), eyeM);
-    e.position.set(sx*.115,.05,.09); head.add(e);
-  }
-
-  // the tail is a rigid balance beam - ossified tendons, so barely any droop
-  const tail = new THREE.Group(); tail.position.set(0,1.16,-.70); tail.rotation.y = Math.PI; g.add(tail);
-  tail.add(fsegZ(.21,.12,1.05,hide));
-  const tail2 = new THREE.Group(); tail2.position.set(0,0,1.05); tail.add(tail2);
-  tail2.add(fsegZ(.12,.03,.95,dark));
-
-  const legs = [];
-  for(const sx of [-1,1]){
-    const hip = new THREE.Group(); hip.position.set(sx*.28,1.06,-.08); g.add(hip);
-    hip.add(fsegY(.17,.12,.40,hide));
-    const knee = new THREE.Group(); knee.position.y=-.40; hip.add(knee);
-    knee.add(fsegY(.10,.065,.38,hide));
-    const ankle = new THREE.Group(); ankle.position.y=-.38; knee.add(ankle);
-    ankle.add(fsegY(.055,.045,.18,dark));
-    const foot = new THREE.Mesh(new THREE.BoxGeometry(.17,.07,.34), dark);
-    foot.position.set(0,-.20,.08); ankle.add(foot);
-    legs.push({hip,knee,ankle,sx});
-  }
-  for(const sx of [-1,1]){                      // short forelimbs, palms inward
-    const sh = new THREE.Group(); sh.position.set(sx*.26,1.18,.34); g.add(sh);
-    sh.rotation.set(.55,0,sx*.22); sh.add(fsegY(.07,.045,.32,hide));
-    const el = new THREE.Group(); el.position.y=-.32; sh.add(el);
-    el.rotation.x = -1.05; el.add(fsegY(.045,.028,.24,hide));
-  }
-  g.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
-  return {root:g, neck, head, tail, tail2, legs};
-}
-
-/* Promote the field-guide/ambient animal to a full hunt quarry. The wrapper
-   supplies the same articulated interface as buildTrike(), plus raycast-only
-   vital boxes. That lets the shared stalk, ballistics and tracking systems run
-   unchanged while the silhouette and anatomy stay Thescelosaurus-sized. */
-function buildHuntThescelo(){
-  const m = buildThescelo();
-  const root = new THREE.Group(), body = new THREE.Group();
-  root.add(body); body.add(m.root);
-
-  const zones = [];
-  const ZM = new THREE.MeshBasicMaterial({visible:false});
-  function zone(name,w,h,d,x,y,z,parent){
-    const q = new THREE.Mesh(new THREE.BoxGeometry(w,h,d),ZM);
-    q.position.set(x,y,z); q.userData.zone=name;
-    (parent||m.root).add(q); zones.push(q); return q;
-  }
-  // Local +Z is forward. Boxes deliberately overlap: pickZone() resolves the
-  // most vital structure crossed by the bullet instead of the first box face.
-  zone('spine', .56,.18,1.18, 0,1.36,-.02);
-  zone('lung',  .58,.48,.62, 0,1.13, .34);
-  zone('heart', .42,.32,.32, 0, .91, .42);
-  zone('gut',   .66,.54,.78, 0,1.02,-.24);
-  zone('neck',  .30,.34,.44, 0,1.37, .76);
-  zone('brain', .19,.17,.22, 0, .04, .02,m.head);
-  for(const l of m.legs) zone('leg',.24,.76,.28,l.hip.position.x,.59,l.hip.position.z);
-
-  const legs = m.legs.map(l=>({
-    L:{hip:l.hip,j:[l.hip,l.knee,l.ankle]}, s:l.sx, fore:false, base:0
-  }));
-  return {
-    root,body,neck:m.neck,skull:m.head,
-    tail:{joints:[m.tail,m.tail2]},legs,zones
-  };
-}
-
-/* ---- an azhdarchid pterosaur, roughly 5 m across the wings -------------- */
-function buildPtero(){
-  const g = new THREE.Group();
-  const skin  = new THREE.MeshStandardMaterial({color:sRGB(0x6a5c46), roughness:.90});
-  const memb  = new THREE.MeshStandardMaterial({color:sRGB(0x5b4e3b), roughness:.96, side:THREE.DoubleSide});
-  const crestM= new THREE.MeshStandardMaterial({color:sRGB(0x8d5a34), roughness:.85, side:THREE.DoubleSide});
-
-  const body = new THREE.Mesh(new THREE.SphereGeometry(.3,10,8), skin);
-  body.scale.set(.60,.68,1.95); g.add(body);
-
-  const neck = new THREE.Group(); neck.position.set(0,.12,.46); neck.rotation.x=-.30; g.add(neck);
-  neck.add(fsegZ(.10,.075,.72,skin));
-  const head = new THREE.Group(); head.position.set(0,0,.72); head.rotation.x=.42; neck.add(head);
-  head.add(fsegZ(.085,.018,1.10,skin));
-  const crest = new THREE.Mesh(new THREE.PlaneGeometry(.52,.40), crestM);
-  crest.rotation.y = Math.PI/2; crest.position.set(0,.20,.10); head.add(crest);
-
-  const tl = fsegZ(.09,.02,.46,skin); tl.rotation.y = Math.PI; g.add(tl);
-
-  const wings = [];
-  for(const sx of [-1,1]){
-    const sh = new THREE.Group(); sh.position.set(sx*.15,.13,.16); g.add(sh);
-    const sp = new THREE.Shape();
-    sp.moveTo(0,.16); sp.lineTo(1.15,.30); sp.lineTo(2.30,.08);
-    sp.lineTo(2.20,-.20); sp.lineTo(1.00,-.62); sp.lineTo(0,-.52); sp.closePath();
-    const wg = new THREE.ShapeGeometry(sp); wg.rotateX(-Math.PI/2);
-    const inner = new THREE.Mesh(wg, memb); inner.scale.x = sx; sh.add(inner);
-
-    const wr = new THREE.Group(); wr.position.set(sx*2.25,0,0); sh.add(wr);
-    const sp2 = new THREE.Shape();
-    sp2.moveTo(0,.10); sp2.lineTo(1.05,.02); sp2.lineTo(1.65,-.12);
-    sp2.lineTo(1.00,-.32); sp2.lineTo(0,-.46); sp2.closePath();
-    const wg2 = new THREE.ShapeGeometry(sp2); wg2.rotateX(-Math.PI/2);
-    const outer = new THREE.Mesh(wg2, memb); outer.scale.x = sx; wr.add(outer);
-    wings.push({sh, wr, sx});
-  }
-  for(const sx of [-1,1]){                      // legs tucked up under the body
-    const l = fsegY(.05,.03,.55,skin);
-    l.position.set(sx*.11,-.05,-.10); l.rotation.x = -1.15; g.add(l);
-  }
-  return {root:g, wings, neck, head};
-}
-
-/* ---- a small bird: Avisaurus, and the Ichthyornis-grade shorebirds ------ */
-const birdWingGeo = (function(){
-  const g = new THREE.PlaneGeometry(.44,.18); g.translate(.22,0,0); g.rotateX(-Math.PI/2); return g;
-})();
-function buildBird(col, sc){
-  const g = new THREE.Group();
-  const m = new THREE.MeshStandardMaterial({color:sRGB(col), roughness:.90, side:THREE.DoubleSide});
-  const b = new THREE.Mesh(new THREE.SphereGeometry(.10,7,5), m);
-  b.scale.set(.80,.80,2.30); g.add(b);
-  const hd = new THREE.Mesh(new THREE.SphereGeometry(.062,6,5), m); hd.position.set(0,.045,.22); g.add(hd);
-  const bk = fsegZ(.028,.005,.15,m); bk.position.set(0,.03,.25); g.add(bk);
-  const wings = [];
-  for(const sx of [-1,1]){
-    const w = new THREE.Group(); w.position.set(sx*.05,.05,.02); g.add(w);
-    const mm = new THREE.Mesh(birdWingGeo, m); mm.scale.x = sx; w.add(mm);
-    wings.push({w, sx});
-  }
-  const tl = new THREE.Mesh(new THREE.PlaneGeometry(.15,.22), m);
-  tl.rotation.x = -Math.PI/2; tl.position.set(0,0,-.28); g.add(tl);
-  g.scale.setScalar(sc||1);
-  return {root:g, wings};
-}
-
-const fauna = new THREE.Group(); scene.add(fauna);
-
-/* ---- the Thescelosaurus band ------------------------------------------- */
-const HERD = {c:new THREE.Vector3(), drift:Math.random()*6.283, run:0,
-              flee:new THREE.Vector3(1,0,0), members:[], warned:0};
-(function placeHerd(){
-  HERD.c.set(120, 0, 40);
-  for(let i=0;i<400;i++){
-    const a = Math.random()*6.283, d = rnd(72,152);
-    const x = Math.cos(a)*d, z = Math.sin(a)*d;
-    if(Math.hypot(x-A.pos.x, z-A.pos.z) < 58) continue;   // not on top of the bull
-    if(bankDist(x,z) < 16) continue;
-    HERD.c.set(x,0,z); break;
-  }
-  // When Thescelosaurus is the licensed quarry, remove the non-interactive
-  // lookalike band so the player never aims at an animal the rifle cannot hit.
-  const herdSize = QUARRY_KEY==='thescelo' ? 0 : 9;
-  for(let i=0;i<herdSize;i++){
-    const m = buildThescelo();
-    const a = Math.random()*6.283, r = rnd(2,14);
-    m.off = new THREE.Vector2(Math.cos(a)*r, Math.sin(a)*r);
-    m.pos = new THREE.Vector3(HERD.c.x+m.off.x, 0, HERD.c.z+m.off.y);
-    m.yaw = Math.random()*6.283; m.speed = 0; m.phase = Math.random()*6.283;
-    m.graze = Math.random()*6; m.head = 0; m.down = Math.random()<.5;
-    m.root.scale.setScalar(rnd(.82,1.12));
-    fauna.add(m.root); HERD.members.push(m);
-  }
-})();
-
-/* ---- pterosaurs riding the thermals over the channel -------------------- */
-const PTERO = [];
-for(let i=0;i<6;i++){
-  const p = buildPtero();
-  p.cx = rnd(-90,90); p.cz = rnd(-90,90);
-  p.r  = rnd(38,105); p.alt = rnd(34,74);
-  p.a  = Math.random()*6.283; p.w = (Math.random()<.5?-1:1)*rnd(.035,.075);
-  p.ph = Math.random()*6.283; p.flapT = rnd(1,10); p.flap = 0;
-  p.root.scale.setScalar(rnd(.85,1.5));
-  fauna.add(p.root); PTERO.push(p);
-}
-
-/* ---- bird flocks: three on the wing, two bands of waders on the bars ---- */
-const FLOCKS = [];
-function makeFlock(n, col, sc, landed){
-  const f = {birds:[], landed:!!landed, lead:new THREE.Vector3(), tgt:new THREE.Vector3(),
-             alt:rnd(14,30), wob:Math.random()*6.283, flush:0, home:null};
-  for(let i=0;i<n;i++){
-    const b = buildBird(col, sc*rnd(.85,1.15));
-    b.pos = new THREE.Vector3(); b.vel = new THREE.Vector3();
-    b.off = new THREE.Vector3(rnd(-7,7), rnd(-2.5,2.5), rnd(-9,3));
-    b.ph = Math.random()*6.283; b.yaw = 0;
-    fauna.add(b.root); f.birds.push(b);
-  }
-  FLOCKS.push(f); return f;
-}
-for(let i=0;i<3;i++){
-  const a = Math.random()*6.283, d = rnd(30,140);
-  const f = makeFlock(9+(Math.random()*5|0), 0x2f2a20, .9, false);
-  f.lead.set(Math.cos(a)*d, f.alt, Math.sin(a)*d);
-  f.tgt.copy(f.lead);
-  f.birds.forEach(b=>b.pos.copy(f.lead).add(b.off));
-}
-(function waders(){
-  for(let k=0;k<2;k++){
-    const x = rnd(-150,150), z = RIVER(x) + (Math.random()<.5?-1:1)*rnd(8,13);
-    const f = makeFlock(7+(Math.random()*4|0), 0xd8d2c0, .8, true);
-    f.alt = 18; f.home = new THREE.Vector3(x, ground(x,z), z);
-    f.lead.copy(f.home); f.tgt.copy(f.home);
-    f.birds.forEach(b=>{
-      b.pos.set(x+b.off.x*.5, 0, z+b.off.z*.4);
-      b.pos.y = ground(b.pos.x,b.pos.z) + .30;
-      b.root.position.copy(b.pos);
-    });
-  }
-})();
-
-/* ---- midges over the wet ground, kept in a box that travels with you ---- */
-const BUGN = 340;
-const bugPos = new Float32Array(BUGN*3), bugVel = new Float32Array(BUGN*3);
-const bugGeo = new THREE.BufferGeometry();
-bugGeo.setAttribute('position', new THREE.BufferAttribute(bugPos,3));
-const bugs = new THREE.Points(bugGeo, new THREE.PointsMaterial({
-  color:sRGB(0x2b2a1c), size:.045, sizeAttenuation:true, transparent:true,
-  opacity:.55, depthWrite:false}));
-bugs.frustumCulled = false; scene.add(bugs);
-for(let i=0;i<BUGN;i++){
-  bugPos[i*3  ] = rnd(-14,14); bugPos[i*3+1] = rnd(.3,2.6); bugPos[i*3+2] = rnd(-14,14);
-  bugVel[i*3  ] = rnd(-.5,.5); bugVel[i*3+1] = rnd(-.3,.3); bugVel[i*3+2] = rnd(-.5,.5);
-}
-
-/* ---- rises on the water ------------------------------------------------- */
-const RINGS = [];
-const ringGeo = new THREE.RingGeometry(.55,.72,20);
-ringGeo.rotateX(-Math.PI/2);
-for(let i=0;i<10;i++){
-  const m = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({
-    color:sRGB(0xbfd3d8), transparent:true, opacity:0, depthWrite:false}));
-  m.visible = false; scene.add(m);
-  RINGS.push({m, t:99});
-}
-let riseT = rnd(1,4);
-
-/* ---- alarm: a rifle shot empties the plain ------------------------------ */
-function faunaAlarm(pos, radius, hard){
-  if(Math.hypot(HERD.c.x-pos.x, HERD.c.z-pos.z) < radius){
-    HERD.flee.set(HERD.c.x-pos.x, 0, HERD.c.z-pos.z);
-    if(HERD.flee.lengthSq() < 1e-4) HERD.flee.set(1,0,0);
-    HERD.flee.normalize();
-    HERD.run = Math.max(HERD.run, hard ? 9 : 5);
-  }
-  for(const f of FLOCKS){
-    const ref = f.landed ? f.home : f.lead;
-    if(!ref) continue;
-    if(Math.hypot(ref.x-pos.x, ref.z-pos.z) < radius*(f.landed?.34:1)){
-      f.flush = Math.max(f.flush, hard ? 26 : 16);
-      if(f.landed){ f.landed = false; f.alt = rnd(16,26); }
-    }
-  }
-}
-
-function faunaStep(dt, t){
-  /* --- the band: drift while grazing, bolt in a line when alarmed -------- */
-  if(HERD.run > 0){
-    HERD.run -= dt;
-    HERD.c.x = clampMap(HERD.c.x + HERD.flee.x*9.5*dt);
-    HERD.c.z = clampMap(HERD.c.z + HERD.flee.z*9.5*dt);
-    if(HERD.run <= 0) HERD.drift = Math.atan2(HERD.flee.x, HERD.flee.z);
-  } else {
-    HERD.drift += (Math.random()-.5)*dt*0.9;
-    HERD.c.x = clampMap(HERD.c.x + Math.sin(HERD.drift)*0.55*dt);
-    HERD.c.z = clampMap(HERD.c.z + Math.cos(HERD.drift)*0.55*dt);
-  }
-  const running = HERD.run > 0;
-  for(const m of HERD.members){
-    const tx = HERD.c.x + m.off.x, tz = HERD.c.z + m.off.y;
-    const dx = tx - m.pos.x, dz = tz - m.pos.z;
-    const d  = Math.hypot(dx,dz);
-    const want = running ? 10.5 : (d > 3.2 ? 1.5 : 0);
-    m.speed += (want - m.speed) * Math.min(1, dt*2.2);
-    if(d > 0.05 && m.speed > 0.02){
-      const ny = Math.atan2(dx,dz);
-      m.yaw += angDiff(ny, m.yaw) * Math.min(1, dt*3.2);
-      m.pos.x += Math.sin(m.yaw)*m.speed*dt;
-      m.pos.z += Math.cos(m.yaw)*m.speed*dt;
-    }
-    m.pos.y = ground(m.pos.x, m.pos.z);
-    m.root.position.copy(m.pos);
-    m.root.rotation.y = m.yaw;
-
-    if(m.speed > .12){                                   // gait
-      m.phase += dt * (2.6 + m.speed*1.15);
-      const amp = running ? .72 : .40;
-      for(const L of m.legs){
-        const ph = m.phase + (L.sx>0 ? 0 : Math.PI);
-        L.hip.rotation.x   = Math.sin(ph)*amp*.62;
-        L.knee.rotation.x  = (Math.sin(ph-1.1)*.5+.5)*amp;
-        L.ankle.rotation.x = -Math.sin(ph+.5)*amp*.42;
-      }
-      m.root.position.y += Math.abs(Math.sin(m.phase))*0.055*(running?1.6:1);
-      m.head += (0 - m.head)*Math.min(1,dt*6);
-    } else {
-      for(const L of m.legs){
-        L.hip.rotation.x   += (0-L.hip.rotation.x  )*Math.min(1,dt*4);
-        L.knee.rotation.x  += (0-L.knee.rotation.x )*Math.min(1,dt*4);
-        L.ankle.rotation.x += (0-L.ankle.rotation.x)*Math.min(1,dt*4);
-      }
-      m.graze -= dt;
-      if(m.graze < 0){ m.graze = rnd(2.5,9); m.down = !m.down; }
-      m.head += ((m.down ? 1 : 0) - m.head)*Math.min(1,dt*1.8);
-    }
-    m.neck.rotation.x  = .10 + m.head*0.95 + (running ? -.35 : 0);
-    m.tail.rotation.y  = Math.PI + Math.sin(t*1.4 + m.phase)*(running?.16:.06);
-    m.tail2.rotation.y = Math.sin(t*1.4 + m.phase - .7)*(running?.20:.08);
-  }
-  // a band blowing out beside your bull will lift his head for you
-  HERD.warned -= dt;
-  if(running && HERD.warned <= 0 && A.state !== 'down'){
-    const dh = Math.hypot(HERD.c.x-A.pos.x, HERD.c.z-A.pos.z);
-    if(dh < 70){
-      A.alert = Math.min(1, A.alert + 0.30);
-      HERD.warned = 12;
-      if(started) logLine("Thescelosaurus band blew out beside him");
-    }
-  }
-
-  /* --- pterosaurs -------------------------------------------------------- */
-  for(const p of PTERO){
-    p.a += p.w * dt;
-    const x = p.cx + Math.cos(p.a)*p.r, z = p.cz + Math.sin(p.a)*p.r;
-    const y = p.alt + Math.sin(t*0.31 + p.ph)*3.4;
-    p.root.position.set(x,y,z);
-    p.root.rotation.order = 'YXZ';
-    p.root.rotation.y = -p.a + (p.w>0 ? -Math.PI/2 : Math.PI/2);
-    p.root.rotation.z = (p.w>0 ? -1 : 1) * 0.30;
-    p.flapT -= dt;
-    if(p.flapT < 0){ p.flap = rnd(1.6,3.4); p.flapT = rnd(7,20); }
-    let amp = 0.06;
-    if(p.flap > 0){ p.flap -= dt; amp = 0.62; }
-    const f = Math.sin(t*(p.flap>0?3.4:0.9) + p.ph)*amp;
-    for(const w of p.wings){
-      w.sh.rotation.z = w.sx * (f + 0.06);
-      w.wr.rotation.z = w.sx * (-f*0.55 - 0.10);
-    }
-    p.neck.rotation.x = -0.30 + Math.sin(t*0.5+p.ph)*0.05;
-  }
-
-  /* --- flocks ------------------------------------------------------------ */
-  for(const f of FLOCKS){
-    if(f.flush > 0) f.flush -= dt;
-    if(f.landed){
-      for(const b of f.birds){
-        b.root.position.copy(b.pos);
-        b.root.rotation.order = 'YXZ';
-        b.root.rotation.y = b.yaw + Math.sin(t*0.4 + b.ph)*0.5;
-        b.root.rotation.x = Math.sin(t*1.1 + b.ph) > .82 ? 0.85 : 0.0;
-        for(const w of b.wings) w.w.rotation.z = w.sx * 0.12;
-      }
-      continue;
-    }
-    f.wob += dt*0.35;
-    if(f.home && f.flush <= 0){
-      f.tgt.set(f.home.x, f.home.y + 1.2, f.home.z);       // settle back on the bar
-    } else if(f.lead.distanceTo(f.tgt) < 12){
-      const a = Math.random()*6.283, d = rnd(45,150);
-      f.tgt.set(Math.cos(a)*d, f.alt + Math.sin(f.wob)*5, Math.sin(a)*d);
-    }
-    const dir = f.tgt.clone().sub(f.lead);
-    const dl = dir.length();
-    if(dl > .001) dir.multiplyScalar(1/dl);
-    f.lead.addScaledVector(dir, (f.home && f.flush<=0 && dl < 30 ? 5.0 : 11.0)*dt);
-
-    if(f.home && f.flush <= 0 && f.lead.distanceTo(f.tgt) < 2.2){
-      f.landed = true;
-      for(const b of f.birds){
-        b.pos.set(f.home.x+b.off.x*.5, 0, f.home.z+b.off.z*.4);
-        b.pos.y = ground(b.pos.x,b.pos.z)+.30;
-        b.root.rotation.set(0,0,0);
-      }
-      continue;
-    }
-    for(const b of f.birds){
-      const want = f.lead.clone().add(b.off);
-      want.y += Math.sin(t*1.6 + b.ph)*0.6;
-      b.vel.lerp(want.sub(b.pos).multiplyScalar(1.9), Math.min(1,dt*2.6));
-      b.pos.addScaledVector(b.vel, dt);
-      const floor = ground(b.pos.x,b.pos.z)+1.5;
-      if(b.pos.y < floor) b.pos.y = floor;
-      b.root.position.copy(b.pos);
-      const ny = Math.atan2(b.vel.x, b.vel.z);
-      b.yaw += angDiff(ny, b.yaw)*Math.min(1,dt*4);
-      b.root.rotation.order = 'YXZ';
-      b.root.rotation.set(0, b.yaw, 0, 'YXZ');
-      const fl = Math.sin(t*11 + b.ph);
-      for(const w of b.wings) w.w.rotation.z = w.sx * fl * 0.95;
-    }
-  }
-
-  /* --- midges ------------------------------------------------------------ */
-  const wet = ground(P.pos.x,P.pos.z) < 1.4 || bankDist(P.pos.x,P.pos.z) < 22;
-  bugs.visible = wet;
-  if(wet){
-    for(let i=0;i<BUGN;i++){
-      const j = i*3;
-      bugVel[j  ] += (Math.random()-.5)*dt*3.2;
-      bugVel[j+1] += (Math.random()-.5)*dt*2.0;
-      bugVel[j+2] += (Math.random()-.5)*dt*3.2;
-      bugVel[j  ] *= 0.94; bugVel[j+1] *= 0.94; bugVel[j+2] *= 0.94;
-      bugPos[j  ] += bugVel[j  ]*dt; bugPos[j+1] += bugVel[j+1]*dt; bugPos[j+2] += bugVel[j+2]*dt;
-      const rx = bugPos[j] - P.pos.x, rz = bugPos[j+2] - P.pos.z;
-      if(rx >  15) bugPos[j  ] -= 30; if(rx < -15) bugPos[j  ] += 30;
-      if(rz >  15) bugPos[j+2] -= 30; if(rz < -15) bugPos[j+2] += 30;
-      const gy = ground(bugPos[j],bugPos[j+2]);
-      if(bugPos[j+1] < gy+.25){ bugPos[j+1] = gy+.25; bugVel[j+1] = Math.abs(bugVel[j+1]); }
-      if(bugPos[j+1] > gy+3.0){ bugPos[j+1] = gy+3.0; bugVel[j+1] = -Math.abs(bugVel[j+1]); }
-    }
-    bugGeo.attributes.position.needsUpdate = true;
-  }
-
-  /* --- rises on the channel ---------------------------------------------- */
-  riseT -= dt;
-  if(riseT < 0){
-    riseT = rnd(1.4,5.0);
-    const r = RINGS.find(o=>o.t > 1);
-    if(r){
-      const x = P.pos.x + rnd(-45,45);
-      const z = RIVER(x) + rnd(-6,6);
-      if(ground(x,z) < -1.6){ r.t = 0; r.m.visible = true; r.m.position.set(x,-1.55,z); }
-    }
-  }
-  for(const r of RINGS){
-    if(r.t > 1){ if(r.m.visible) r.m.visible = false; continue; }
-    r.t += dt*0.55;
-    r.m.scale.setScalar(0.4 + r.t*4.2);
-    r.m.material.opacity = 0.45*(1-r.t)*(1-r.t);
-  }
-}
 
 function animalStep(dt, t){
   // --- terrain follow + slope pitch
   A.pos.y = ground(A.pos.x, A.pos.z);
   trike.root.position.copy(A.pos);
   trike.root.rotation.y = A.yaw;
-  const span=HUNT.slopeSpan;
-  const fx = A.pos.x + Math.sin(A.yaw)*span, fz = A.pos.z + Math.cos(A.yaw)*span;
-  const bx = A.pos.x - Math.sin(A.yaw)*span, bz = A.pos.z - Math.cos(A.yaw)*span;
-  trike.root.rotation.x = Math.atan2(ground(bx,bz)-ground(fx,fz), span*2) * 0.8;
+  const fx = A.pos.x + Math.sin(A.yaw)*2.4, fz = A.pos.z + Math.cos(A.yaw)*2.4;
+  const bx = A.pos.x - Math.sin(A.yaw)*2.4, bz = A.pos.z - Math.cos(A.yaw)*2.4;
+  trike.root.rotation.x = Math.atan2(ground(bx,bz)-ground(fx,fz), 4.8) * 0.8;
 
   // --- gait
   const moving = A.speed > .05;
   if(moving){
-    A.phase += dt * (HUNT.gaitRate + A.speed*HUNT.gaitSpeedRate);
-    const amp = A.state==='flee' ? HUNT.gaitFlee : HUNT.gaitWalk;
+    A.phase += dt * (2.0 + A.speed*0.9);
+    const amp = A.state==='flee' ? .42 : .26;
     trike.legs.forEach((g,i)=>{
       const off = [0, Math.PI, Math.PI*1.15, Math.PI*0.15][i];  // diagonal couplets
       const p = A.phase + off;
@@ -2143,21 +1413,22 @@ function animalStep(dt, t){
       g.L.j[1].rotation.x = (Math.sin(p-1.0)*.5+.5) * amp*1.15;
       g.L.j[2].rotation.x = -Math.sin(p+.6)*amp*.45;
     });
-    trike.body.position.y = HUNT.bodyY + Math.sin(A.phase*2)*HUNT.bob*(A.speed*0.4+0.5);
+    trike.body.position.y = 1.86 + Math.sin(A.phase*2)*0.035*(A.speed*0.4+0.5);
   } else {
     trike.legs.forEach(g=>{
       g.L.j[0].rotation.x += (g.base - g.L.j[0].rotation.x)*Math.min(1,dt*4);
       g.L.j[1].rotation.x += (0 - g.L.j[1].rotation.x)*Math.min(1,dt*4);
       g.L.j[2].rotation.x += (0 - g.L.j[2].rotation.x)*Math.min(1,dt*4);
     });
-    trike.body.position.y += (HUNT.bodyY - trike.body.position.y)*Math.min(1,dt*4);
+    trike.body.position.y += (1.86 - trike.body.position.y)*Math.min(1,dt*4);
   }
 
   // --- head carriage reads the state at a glance
   let wantNeck, wantSkull;
-  const pose = HUNT.poses[A.state] || HUNT.poses.flee;
-  wantNeck=pose[0]; wantSkull=pose[1];
-  if(A.state==='graze') wantNeck += Math.sin(t*0.5)*(QUARRY_KEY==='thescelo'?.11:.16);
+  if(A.state==='down'){ wantNeck = 0.55; wantSkull = 0.2; }
+  else if(A.state==='graze'){ wantNeck = 0.46 + Math.sin(t*0.5)*0.16; wantSkull = 0.30; }
+  else if(A.state==='alert'){ wantNeck = -0.22; wantSkull = -0.16; }
+  else { wantNeck = -0.05; wantSkull = 0.10; }
   trike.neck.rotation.x  += (wantNeck  - trike.neck.rotation.x )*Math.min(1,dt*2.2);
   trike.skull.rotation.x += (wantSkull - trike.skull.rotation.x)*Math.min(1,dt*2.2);
   trike.tail.joints[0].rotation.y = Math.sin(t*0.8)*0.10;
@@ -2209,8 +1480,6 @@ const keys = {};
 addEventListener('keydown', e=>{
   keys[e.code]=true;
   if(e.code==='KeyR') cycleBolt();
-  if(e.code==='KeyV'){ const c=document.getElementById('chart'); if(c) c.classList.toggle('on'); }
-  if(e.code.indexOf('Arrow')===0) e.preventDefault();
   if(e.code==='Space'){ P.breathing = true; e.preventDefault(); }
 });
 addEventListener('keyup', e=>{
@@ -2218,72 +1487,24 @@ addEventListener('keyup', e=>{
   if(e.code==='Space') P.breathing = false;
 });
 const cv3 = renderer.domElement;
-/* Pointer lock is the good path, but a browser refuses it outright inside an
-   iframe or a preview pane — and the old handlers gated BOTH look and fire on
-   holding the lock, so in those contexts the rifle simply did nothing. Take
-   the lock when it is offered, fall back to drag-to-look when it is not, and
-   never gate firing on it. */
-let locked = false, lockBroken = false, dragging = false, dragMoved = 0, hinted = false;
-function hint(){
-  if(hinted) return; hinted = true;
-  const k = document.getElementById('keys');
-  if(k) k.innerHTML =
-    'drag<kbd>LMB</kbd>look · click<kbd>LMB</kbd>fire<br>'+
-    'move<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · crouch<kbd>ctrl</kbd> · run<kbd>shift</kbd><br>'+
-    'shoulder<kbd>RMB</kbd> · fine aim<kbd>&larr;&uarr;&darr;&rarr;</kbd><br>'+
-    'breath<kbd>space</kbd> · bolt<kbd>R</kbd> · chart<kbd>V</kbd>';
-}
-function tryLock(){
-  if(lockBroken || !cv3.requestPointerLock) return;
-  try{
-    const r = cv3.requestPointerLock();
-    if(r && r.catch) r.catch(()=>{ lockBroken = true; hint(); });
-  }catch(err){ lockBroken = true; hint(); }
-}
-document.addEventListener('pointerlockchange', ()=>{ locked = (document.pointerLockElement === cv3); });
-document.addEventListener('pointerlockerror',  ()=>{ lockBroken = true; hint(); });
-
-function look(dx,dy){
-  const s = (P.aim ? 0.0009 : 0.0022);
-  P.yaw   -= dx * s;
-  P.pitch -= dy * s;
-  P.pitch = Math.max(-1.35, Math.min(1.35, P.pitch));
-}
 cv3.addEventListener('mousedown', e=>{
-  if(e.button===2){ P.aim = true; e.preventDefault(); return; }
-  if(e.button!==0) return;
-  if(locked){ fire(); return; }
-  if(!lockBroken){ tryLock(); return; }          // one click to take the mouse back
-  dragging = true; dragMoved = 0; e.preventDefault();
+  if(document.pointerLockElement !== cv3) return;
+  if(e.button===2){ P.aim = true; }
+  if(e.button===0){ fire(); }
 });
-addEventListener('mouseup', e=>{
-  if(e.button===2){ P.aim = false; return; }
-  if(e.button===0 && dragging){
-    dragging = false;
-    if(dragMoved < 6) fire();                    // a click, not a drag
-  }
-});
-addEventListener('mousemove', e=>{
-  const dx = e.movementX||0, dy = e.movementY||0;
-  if(locked) look(dx,dy);
-  else if(dragging){ dragMoved += Math.abs(dx)+Math.abs(dy); look(dx,dy); }
-});
-addEventListener('blur', ()=>{
-  dragging = false; P.aim = false;
-  for(const k in keys) keys[k] = false;
-});
+addEventListener('mouseup', e=>{ if(e.button===2) P.aim=false; });
 cv3.addEventListener('contextmenu', e=>e.preventDefault());
+addEventListener('mousemove', e=>{
+  if(document.pointerLockElement !== cv3) return;
+  const s = (P.aim ? 0.0009 : 0.0022);
+  P.yaw   -= e.movementX * s;
+  P.pitch -= e.movementY * s;
+  P.pitch = Math.max(-1.35, Math.min(1.35, P.pitch));
+});
 
 function playerStep(dt){
   P.crouch = !!keys['ControlLeft'] || !!keys['ControlRight'] || !!keys['KeyC'];
   P.run    = (!!keys['ShiftLeft'] || !!keys['ShiftRight']) && !P.crouch && !P.aim;
-
-  // fine aim on the arrows — a shouldered rifle moves slower than a swung one
-  const trim = (P.aim ? 0.30 : 0.95) * dt;
-  if(keys['ArrowLeft'])  P.yaw   += trim;
-  if(keys['ArrowRight']) P.yaw   -= trim;
-  if(keys['ArrowUp'])    P.pitch = Math.min( 1.35, P.pitch + trim*0.6);
-  if(keys['ArrowDown'])  P.pitch = Math.max(-1.35, P.pitch - trim*0.6);
 
   let f=0, r=0;
   if(keys['KeyW']) f+=1; if(keys['KeyS']) f-=1;
@@ -2362,16 +1583,16 @@ function sensesStep(dt){
 
   // scent: the wind carries you to him. dominant sense, works blind.
   const scentAlign = Math.max(0, -windVec.dot(dir));   // wind blowing you -> him
-  if(dist < HUNT.sense.scent){
-    const prox = 1 - dist/HUNT.sense.scent;
+  if(dist < 78){
+    const prox = 1 - dist/78;
     gain += scentAlign * prox * (0.85 + W.spd*0.10) * 1.55;
   }
 
   // sight: laterally-set eyes, wide arc, poor at picking out a still shape
   const fwd = new THREE.Vector3(Math.sin(A.yaw),0,Math.cos(A.yaw));
   const cone = fwd.dot(dir);                           // 1 = dead ahead
-  if(cone > -0.25 && dist < HUNT.sense.sight){
-    const prox = 1 - dist/HUNT.sense.sight;
+  if(cone > -0.25 && dist < 95){
+    const prox = 1 - dist/95;
     const arc  = Math.max(0, (cone+0.25)/1.25);
     const mot  = P.speed>4 ? 1.0 : P.speed>1.8 ? 0.55 : P.speed>0 ? 0.28 : 0.05;
     const low  = P.crouch ? 0.45 : 1;
@@ -2379,8 +1600,7 @@ function sensesStep(dt){
   }
 
   // sound: gait against wet floodplain
-  const noise = P.speed===0 ? 0 : (P.crouch ? HUNT.sense.noiseCrouch
-                                      : P.run ? HUNT.sense.noiseRun : HUNT.sense.noiseWalk);
+  const noise = P.speed===0 ? 0 : (P.crouch ? 9 : P.run ? 46 : 22);
   if(noise>0 && dist < noise) gain += (1 - dist/noise) * 0.85;
 
   if(gain > 0) A.alert += gain*dt;
@@ -2395,12 +1615,12 @@ function sensesStep(dt){
     else if(A.alert > 0.42) A.state = 'alert';
     else A.state = 'graze';
   }
-  if(was==='graze' && A.state==='alert') say(HUNT.alertUp);
-  if(was==='alert' && A.state==='graze') say(HUNT.settled);
+  if(was==='graze' && A.state==='alert') say("He's got his head up. Don't move.");
+  if(was==='alert' && A.state==='graze') say("He's settled. Go now, and go low.");
 
   // behaviour per state
   if(A.state==='graze'){
-    A.speed += (HUNT.grazeSpeed - A.speed)*Math.min(1,dt*1.2);
+    A.speed += (0.55 - A.speed)*Math.min(1,dt*1.2);
     A.graze -= dt;
     if(A.graze<=0){ A.graze = 4+Math.random()*7; A.yaw += (Math.random()-.5)*1.3; }
     if(A.speed>0.05){
@@ -2421,12 +1641,11 @@ function startFlee(away){
   if(A.state==='flee') return;
   A.state = 'flee';
   A.fleeYaw = Math.atan2(away.x, away.z);
-  if(A.runLeft<=0) A.runLeft = HUNT.unhurtRun;         // an unhurt animal leaves the area
-  say(A.wound ? HUNT.woundedRun : HUNT.blown);
+  if(A.runLeft<=0) A.runLeft = 120;                    // unhurt: he just leaves
+  say(A.wound ? "He's running. Mark where he goes in." : "He's blown out. He has your scent.");
 }
 function fleeStep(dt){
-  const top = A.wound && A.wound.lethal ? HUNT.lethalFleeSpeed
-    : (A.wound && A.hitZone==='leg' ? HUNT.legFleeSpeed : HUNT.fleeSpeed);
+  const top = A.wound && A.wound.lethal ? 8.2 : (A.wound && A.hitZone==='leg' ? 4.4 : 9.4);
   A.speed += (top - A.speed)*Math.min(1,dt*1.4);
   A.fleeYaw += Math.sin(performance.now()*0.0004)*dt*0.5;   // he doesn't run a straight line
   // turn away from the map edge
@@ -2444,17 +1663,17 @@ function fleeStep(dt){
     if(A.wound && A.wound.lethal){ goDown(); }
     else {
       A.state = 'alert'; A.speed = 0; A.alert = 0.9;
-      if(!A.wound) say(HUNT.stopped);
-      else say(HUNT.woundedStopped);
+      if(!A.wound) say("He's stopped. You can still work back onto him.");
+      else say("He's stopped, and he's still on his feet. You'll need another round.");
     }
   }
 }
 function goDown(){
   A.state='down'; A.speed=0;
   trike.root.rotation.z = 1.42;                        // over onto his side
-  trike.root.position.y = A.pos.y + HUNT.downLift;
+  trike.root.position.y = A.pos.y + 0.5;
   logLine("Animal down · "+Math.round(A.tracked)+" m tracked", true);
-  say("The animal is down. Walk up from behind.");
+  say("He's down. Walk up on him from behind.");
 }
 
 /* ============================================================
@@ -2565,371 +1784,40 @@ function rifleStep(dt, t){
   }
 }
 
-/* ============================================================
-   BALLISTICS
-   The old shot was a hitscan out of the screen centre tested against the
-   animal's hit boxes and nothing else. It went through hills and tree trunks,
-   it ignored the sights, and a miss told you nothing about where the round
-   had actually gone. This carries a real trajectory: line of sight, bore
-   offset, a zero, drop and time of flight, tested against the whole world.
-   ============================================================ */
-const BALL = {
-  v0   : 640,     // m/s at the muzzle — .700 Nitro Express, 1000 gr
-  g    : 9.81,
-  h    : 0.045,   // the bore sits 45 mm below the line of sight through the irons
-  zero : 100,     // and the irons are zeroed at 100 m
-  far  : 320      // how far the solution is carried before the round is spent
-};
-/* the bore is tipped up just enough that the path crosses the sight line at
-   the zero; everything after is the usual flat-fire parabola. */
-BALL.theta = (BALL.h + BALL.g*BALL.zero*BALL.zero/(2*BALL.v0*BALL.v0)) / BALL.zero;
-/* how far the round sits above (+) or below (-) the line of sight at range x */
-function pathAt(x){
-  return -BALL.h + x*BALL.theta - BALL.g*x*x/(2*BALL.v0*BALL.v0);
-}
-
-const shotRay = new THREE.Raycaster();
-const _WUP = new THREE.Vector3(0,1,0);
-const _sp = new THREE.Vector3(), _sc = new THREE.Vector3(), _sd = new THREE.Vector3();
-
-/* Solid geometry a round can stop against. The terrain is NOT in here: it is a
-   190x190 grid, and raycasting it thirty times a shot — let alone once a frame
-   for the range call — is far more expensive than just asking ground() where
-   the surface is. Same for the water, which is one flat plane at WATER_Y. */
-const WATER_Y = -1.55;
-const solidTargets = () => trike.zones.concat(SOLIDS);
-
-/* The hit boxes are nested and overlapping — the gut box alone is 2.1 x 1.6 x
-   2.2 m and wraps most of the barrel. Taking the first box the ray enters, as
-   the old code did, meant nearly every shot came back "gut", whatever you had
-   the sights on: a brain shot, a heart shot and a leg shot all reported the
-   same. What matters is the most vital thing the round actually passed
-   through, so gather every box on the path and rank them. */
-const ZPRI = {brain:0, spine:1, heart:2, lung:3, neck:4, leg:5, gut:6, frill:7};
-function pickZone(list){
-  if(!list.length) return null;
-  list.sort((u,v)=>u.d-v.d);
-  // nine feet of solid bone: if the frill is what the round met first, that is
-  // where it stopped, and nothing behind it was touched
-  if(list[0].zone === 'frill') return list[0];
-  let best = list[0];
-  for(const h of list) if(ZPRI[h.zone] < ZPRI[best.zone]) best = h;
-  // report the entry wound, not the vital's own box face
-  return {zone:best.zone, d:list[0].d, point:list[0].point};
-}
-
-/* march the trajectory in segments: raycast the solids, sample the heightfield */
-function traceShot(origin, dir){
-  const N = 24;
-  let prev = origin.clone().addScaledVector(_WUP, pathAt(0));
-  let travelled = 0;
-  for(let i=1;i<=N;i++){
-    const x = BALL.far * Math.pow(i/N, 1.4);        // fine near the muzzle
-    const cur = origin.clone().addScaledVector(dir, x).addScaledVector(_WUP, pathAt(x));
-    _sd.subVectors(cur, prev);
-    const len = _sd.length();
-    if(len < 1e-5){ prev = cur; continue; }
-    _sd.multiplyScalar(1/len);
-    shotRay.set(prev, _sd); shotRay.near = 0; shotRay.far = len;
-
-    // --- what would stop the round outright: timber, then dirt, then water
-    let block = null;
-    const sh = shotRay.intersectObjects(SOLIDS, false);
-    if(sh.length) block = {d:sh[0].distance, point:sh[0].point.clone(), obj:sh[0].object};
-
-    const SUB = 8, lim = block ? block.d : len;
-    let lo = 0, prevAbove = prev.y - ground(prev.x, prev.z);
-    for(let k=1;k<=SUB;k++){
-      const d = lim*k/SUB;
-      const px = prev.x + _sd.x*d, py = prev.y + _sd.y*d, pz = prev.z + _sd.z*d;
-      const above = py - ground(px,pz);
-      if(above <= 0){
-        // already under the surface at the start of the span? the strike is here
-        const f = prevAbove > 0 ? prevAbove/(prevAbove-above) : 0;
-        const dd = Math.max(0, lo + (d-lo)*f);
-        if(!block || dd < block.d)
-          block = {d:dd, point:prev.clone().addScaledVector(_sd,dd), obj:terrain};
-        break;
-      }
-      lo = d; prevAbove = above;
-    }
-    if(prev.y > WATER_Y && _sd.y < -1e-6){
-      const dw = (WATER_Y - prev.y)/_sd.y;
-      if(dw >= 0 && dw <= (block ? block.d : len)){
-        const pt = prev.clone().addScaledVector(_sd, dw);
-        if(ground(pt.x,pt.z) < WATER_Y && (!block || dw < block.d))
-          block = {d:dw, point:pt, obj:water};
-      }
-    }
-
-    // --- the animal: every box on this span, plus the rest of him
-    const zs = shotRay.intersectObjects(trike.zones, false);
-    const zh = [];
-    for(const h of zs){
-      if(block && h.distance > block.d) continue;
-      zh.push({zone:h.object.userData.zone, d:travelled+h.distance, point:h.point.clone()});
-    }
-    if(zh.length){
-      // he may straddle the segment boundary, so carry on through him with one
-      // straight ray — the drop over nine metres of animal is not measurable
-      zh.sort((u,v)=>u.d-v.d);
-      const on = new THREE.Raycaster(
-        zh[0].point.clone().addScaledVector(_sd,-0.02), _sd.clone(), 0, 16);
-      const seen = new Set(zs.map(h=>h.object.id));
-      for(const h of on.intersectObjects(trike.zones, false)){
-        if(seen.has(h.object.id)) continue;
-        zh.push({zone:h.object.userData.zone, d:zh[0].d + h.distance, point:h.point.clone()});
-      }
-      const pick = pickZone(zh);
-      return {hit:true, zone:pick.zone, point:pick.point, obj:null,
-              range:Math.max(0, pick.d)};
-    }
-    if(block) return {hit:true, zone:null, point:block.point, obj:block.obj,
-                      range:Math.max(0, travelled + block.d)};
-    travelled += len;
-    prev = cur;
-  }
-  return {hit:false, zone:null, point:prev.clone(), obj:null, range:travelled};
-}
-
-/* what the round is standing in front of, for the guide's range call while
-   shouldered. Drop is irrelevant to a range estimate, so this is one straight
-   ray — and hudStep only asks for it a few times a second. */
-function rangeUnderReticle(){
-  camera.updateMatrixWorld(true);
-  camera.getWorldDirection(_sc);
-  const o = camera.position;
-  shotRay.set(o, _sc); shotRay.near = 0; shotRay.far = BALL.far;
-  const hits = shotRay.intersectObjects(solidTargets(), false);
-  let best = hits.length ? hits[0].distance : Infinity;
-  for(let d=4; d<BALL.far; d += d<80?4:10){            // and a walk down the heightfield
-    const px = o.x+_sc.x*d, py = o.y+_sc.y*d, pz = o.z+_sc.z*d;
-    if(py <= ground(px,pz)){ best = Math.min(best, d); break; }
-    if(py <= WATER_Y && ground(px,pz) < WATER_Y){ best = Math.min(best, d); break; }
-  }
-  return isFinite(best) ? best : 0;
-}
-
-/* ============================================================
-   IMPACTS — you have to be able to see where the round went
-   ============================================================ */
-const fxG = new THREE.Group(); scene.add(fxG);
-
-/* one pooled puff of debris */
-const PUFFN = 26, PUFFS = [];
-const puffTex = (function(){
-  const c = cv(64,64), x = c.getContext('2d');
-  const g = x.createRadialGradient(32,32,0,32,32,32);
-  g.addColorStop(0,   'rgba(255,255,255,1)');
-  g.addColorStop(0.45,'rgba(255,255,255,.55)');
-  g.addColorStop(1,   'rgba(255,255,255,0)');
-  x.fillStyle = g; x.fillRect(0,0,64,64);
-  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
-})();
-for(let i=0;i<6;i++){
-  const pos = new Float32Array(PUFFN*3);
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  const m = new THREE.Points(g, new THREE.PointsMaterial({
-    color:0xffffff, size:.30, sizeAttenuation:true, transparent:true,
-    map:puffTex, alphaTest:0.02, opacity:0, depthWrite:false}));
-  m.frustumCulled = false; m.visible = false; fxG.add(m);
-  PUFFS.push({m, pos, vel:new Float32Array(PUFFN*3), org:new THREE.Vector3(), t:9, life:1, grav:9});
-}
-function puff(at, col, spread, size, life, grav, count, alpha){
-  const p = PUFFS.find(o=>o.t >= o.life) || PUFFS[0];
-  p.org.copy(at); p.t = 0; p.life = life; p.grav = grav;
-  p.alpha = alpha===undefined ? 0.85 : alpha;
-  p.m.material.color.copy(sRGB(col));
-  p.m.material.size = size;
-  p.m.visible = true;
-  const n = Math.min(PUFFN, count || PUFFN);
-  for(let i=0;i<PUFFN;i++){
-    const j = i*3;
-    if(i >= n){                                   // park the spares far away
-      p.pos[j]=0; p.pos[j+1]=-9999; p.pos[j+2]=0;
-      p.vel[j]=p.vel[j+1]=p.vel[j+2]=0;
-      continue;
-    }
-    p.pos[j]=at.x; p.pos[j+1]=at.y; p.pos[j+2]=at.z;
-    const a = Math.random()*6.283, u = Math.random(), r = spread*(0.25+u);
-    p.vel[j  ] = Math.cos(a)*r*Math.random();
-    p.vel[j+1] = spread*(0.55+Math.random()*0.9);
-    p.vel[j+2] = Math.sin(a)*r*Math.random();
-  }
-  p.m.geometry.attributes.position.needsUpdate = true;
-}
-function puffStep(dt){
-  for(const p of PUFFS){
-    if(p.t >= p.life){ if(p.m.visible) p.m.visible = false; continue; }
-    p.t += dt;
-    const k = Math.min(1, p.t/p.life);
-    for(let i=0;i<PUFFN;i++){
-      const j = i*3;
-      p.vel[j+1] -= p.grav*dt;
-      p.vel[j  ] *= 0.985; p.vel[j+2] *= 0.985;
-      p.pos[j  ] += p.vel[j  ]*dt;
-      p.pos[j+1] += p.vel[j+1]*dt;
-      p.pos[j+2] += p.vel[j+2]*dt;
-    }
-    p.m.geometry.attributes.position.needsUpdate = true;
-    p.m.material.opacity = (p.alpha===undefined?0.85:p.alpha)*(1-k)*(1-k);
-  }
-}
-
-/* the streak of the round in flight, so you can follow it out */
-const TRACERN = 3, TRACERS = [];
-{
-  const tg = new THREE.CylinderGeometry(.030,.008,1,6,1,true);
-  tg.rotateX(Math.PI/2); tg.translate(0,0,-.5);          // runs -Z from the origin
-  for(let i=0;i<TRACERN;i++){
-    const m = new THREE.Mesh(tg, new THREE.MeshBasicMaterial({
-      color:sRGB(0xffe6b0), transparent:true, opacity:0, depthWrite:false}));
-    m.visible = false; m.frustumCulled = false; fxG.add(m);
-    TRACERS.push({m, t:9, dur:1, from:new THREE.Vector3(), to:new THREE.Vector3(), onEnd:null});
-  }
-}
-function tracer(from, to, onEnd){
-  const t = TRACERS.find(o=>o.t >= o.dur) || TRACERS[0];
-  t.from.copy(from); t.to.copy(to); t.t = 0;
-  // slowed well below the real 640 m/s, or the streak would be gone in a frame
-  t.dur = Math.max(0.10, from.distanceTo(to)/430);
-  t.onEnd = onEnd;
-  t.m.visible = true;
-  return t;
-}
-function tracerStep(dt){
-  for(const t of TRACERS){
-    if(t.t >= t.dur){
-      if(t.m.visible){ t.m.visible = false; }
-      if(t.onEnd){ const f = t.onEnd; t.onEnd = null; f(); }
-      continue;
-    }
-    t.t += dt;
-    const k = Math.min(1, t.t/t.dur);
-    const d = t.from.distanceTo(t.to);
-    const head = t.from.clone().lerp(t.to, k);
-    t.m.position.copy(head);
-    t.m.lookAt(t.to);
-    t.m.scale.set(1,1, Math.min(d*k, d*0.22) + 0.6);
-    t.m.material.opacity = 0.55*(1-k*0.7);
-  }
-}
-
-/* a mark left on the ground where a round struck, so you can walk up on it */
-const marksG = new THREE.Group(); scene.add(marksG);
-const markGeo = new THREE.CircleGeometry(0.34, 10); markGeo.rotateX(-Math.PI/2);
-function groundMark(at){
-  const m = new THREE.Mesh(markGeo, new THREE.MeshBasicMaterial({
-    color:sRGB(0x2b2115), transparent:true, opacity:.55, depthWrite:false}));
-  m.position.set(at.x, ground(at.x,at.z)+0.03, at.z);
-  m.scale.setScalar(0.8+Math.random()*0.6);
-  marksG.add(m);
-}
-
-/* ============================================================
-   THE SHOT BOOK — every round, and where it went
-   ============================================================ */
-const SHOTS = [];
-const _lm = new THREE.Matrix4();
-/* the strike point, and the miss offset, expressed in the animal's own frame:
-   +z toward the nose, +y up, +x his left. That is the frame the shot chart
-   is drawn in, so a hit and a miss can be plotted the same way. */
-function animalLocal(worldPt){
-  trike.root.updateMatrixWorld(true);
-  _lm.copy(trike.root.matrixWorld).invert();
-  return worldPt.clone().applyMatrix4(_lm);
-}
-/* closest approach of the trajectory to the animal, for plotting a clean miss */
-function closestOnShot(origin, dir, target){
-  const v = new THREE.Vector3().subVectors(target, origin);
-  const t = Math.max(0, v.dot(dir));
-  return origin.clone().addScaledVector(dir, t).addScaledVector(_WUP, pathAt(t));
-}
-
+const ray = new THREE.Raycaster();
 function cycleBolt(){
   if(!started || P.chambered || P.rounds<=0 || P.cycling>0) return;
   P.cycling = 1.4;
   setTimeout(()=>{ if(P.rounds>0){ P.chambered = true; } }, 1400);
 }
-
 function fire(){
   if(!started || ended) return;
   if(!P.chambered){ say(P.rounds>0 ? "Empty chamber — work the bolt." : "You're out."); return; }
   P.chambered = false; P.rounds--; P.fired++;
+  P.recoilV += 2.6; P.recoil += 0.052;                 // muzzle climb
+  vmKickV += 9.0; vmKick += 0.16;                       // and the rifle jumps in your hands
+  const hf = document.getElementById('hit');
 
-  camera.updateMatrixWorld(true);                       // aim from where you are NOW
-  const eye = camera.position.clone();
-  const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
-  const muzzle = new THREE.Vector3(0,-.038,-1.15).applyMatrix4(camera.matrixWorld);
-
-  const res = traceShot(eye, dir);
-
-  P.recoilV += 2.6; P.recoil += 0.052;                  // muzzle climb
-  vmKickV += 9.0; vmKick += 0.16;                       // and the rifle jumps
-  const mf = document.getElementById('flash');
-  if(mf){ mf.classList.remove('go'); void mf.offsetWidth; mf.classList.add('go'); }
-  faunaAlarm(P.pos, 240, true);                         // the plain empties
-
-  // where the round passed relative to the animal, hit or miss
-  trike.root.updateMatrixWorld(true);
-  const centre = new THREE.Vector3(HUNT.aimCenter[0],HUNT.aimCenter[1],HUNT.aimCenter[2])
-    .applyMatrix4(trike.root.matrixWorld);
-  const near = res.zone ? res.point : closestOnShot(eye, dir, centre);
-  const local = animalLocal(near);
-  const rec = {n:P.fired, zone:res.zone, local:local,
-               range:Math.round(res.range),
-               dist:Math.round(P.pos.distanceTo(A.pos)),
-               kind: res.zone ? 'hit' : (res.obj === water ? 'water'
-                     : res.obj === terrain ? 'ground' : res.obj ? 'timber' : 'air')};
-  SHOTS.push(rec);
-  if(P.fired===1) P.shotDist = rec.dist;
-
-  const land = res.point.clone();
-  tracer(muzzle, land, ()=>resolveShot(res, rec, land));
-  setTimeout(()=>cycleBolt(), 260);
-  drawChart();
-}
-
-/* everything that happens when the round arrives */
-function resolveShot(res, rec, land){
-  const gs = Math.max(0.28, Math.min(2.6, land.distanceTo(camera.position)/40));
-  if(!res.zone){
-    if(rec.kind === 'water'){ puff(land, 0xcfe0e4, 5.5, .34*gs, .95, 11, 26, .7); }
-    else if(rec.kind === 'timber'){ puff(land, 0x53412a, 3.4, .16*gs, .8, 12, 18, .8); }
-    else if(rec.kind === 'ground'){ puff(land, 0x9c8a68, 4.6, .26*gs, 1.05, 11, 26, .6);
-                                    groundMark(land); }
-
-    const high = rec.local.y - HUNT.chartMidY, side = rec.local.x;
-    let where;
-    if(rec.kind === 'timber')      where = "Into a trunk. The round never got there.";
-    else if(rec.kind === 'water')  where = "Into the water short of him.";
-    else if(Math.abs(high) > 4 && Math.abs(side) > 4) where = "Nowhere near him.";
-    else if(high >  0.9)           where = "Over the top of him.";
-    else if(high < -0.9)           where = "Into the dirt underneath him.";
-    else if(side >  0.9)           where = "Past his off shoulder.";
-    else if(side < -0.9)           where = "Past his near shoulder.";
-    else                           where = "A hair off. That was close.";
-    logLine("Shot "+rec.n+" · miss · "+rec.range+" m");
-    say(where + " That's one round gone.");
-
+  ray.setFromCamera({x:0,y:0}, camera);
+  ray.far = 400;
+  const hits = ray.intersectObjects(trike.zones, false);
+  if(hits.length===0){
+    logLine("Shot "+P.fired+" · clean miss");
+    say("Over the top of him. That's one round gone.");
     if(A.state!=='flee'){
       const away = new THREE.Vector3().subVectors(A.pos,P.pos).setY(0).normalize();
       A.alert = 1.35; startFlee(away);
     }
-    drawChart();
+    setTimeout(()=>cycleBolt(), 260);
     return;
   }
-
-  const zone = res.zone;
+  const zone = hits[0].object.userData.zone;
   const w = WOUND[zone];
-  const dist = rec.dist;
-  const hf = document.getElementById('hit');
+  const dist = P.pos.distanceTo(A.pos);
+  if(P.fired===1) P.shotDist = dist;
+
   hf.classList.remove('go'); void hf.offsetWidth; hf.classList.add('go');
-  puff(land, zone==='frill' ? 0xd7cbb0 : 0x8e1c10,
-             zone==='frill' ? 3.0 : 3.6,
-             (zone==='frill' ? .16 : .20)*gs, .8, 10, 26, .8);
-  logLine("Shot "+rec.n+" · "+ZONE_LABEL[zone]+" · "+dist+" m", true);
+  logLine("Shot "+P.fired+" · "+ZONE_LABEL[zone]+" · "+Math.round(dist)+" m", true);
 
   // a later, better-placed round supersedes a poor first one
   if(!A.wound || (!A.wound.lethal && w.lethal) || (w.lethal && w.run < A.wound.run)){
@@ -2945,136 +1833,7 @@ function resolveShot(res, rec, land){
     const away = new THREE.Vector3().subVectors(A.pos,P.pos).setY(0).normalize();
     A.state='graze'; startFlee(away);
   }
-  drawChart();
-}
-
-/* ============================================================
-   SHOT CHART — a broadside plate of the bull with every round on it.
-   The zone rectangles are read straight off the live hit boxes, so the
-   diagram cannot drift out of step with what the rifle is actually hitting.
-   ============================================================ */
-const CHART = HUNT.chart;                              // px per metre, ground line
-const mx = z => CHART.cx + z*CHART.K;
-const my = y => CHART.cy - y*CHART.K;
-
-let zoneRects = null;
-function readZoneBoxes(){
-  if(zoneRects) return zoneRects;
-  trike.root.updateMatrixWorld(true);
-  const inv = new THREE.Matrix4().copy(trike.root.matrixWorld).invert();
-  const v = new THREE.Vector3(), m = new THREE.Matrix4();
-  const byZone = {};
-  for(const zm of trike.zones){
-    const pr = zm.geometry.parameters;
-    m.multiplyMatrices(inv, zm.matrixWorld);
-    let z0=1e9,z1=-1e9,y0=1e9,y1=-1e9;
-    for(let i=0;i<8;i++){
-      v.set((i&1?.5:-.5)*pr.width, (i&2?.5:-.5)*pr.height, (i&4?.5:-.5)*pr.depth)
-       .applyMatrix4(m);
-      z0=Math.min(z0,v.z); z1=Math.max(z1,v.z);
-      y0=Math.min(y0,v.y); y1=Math.max(y1,v.y);
-    }
-    const name = zm.userData.zone;
-    const r = {z0,z1,y0,y1};
-    if(byZone[name]){                                  // the legs are four boxes
-      byZone[name].z0=Math.min(byZone[name].z0,z0); byZone[name].z1=Math.max(byZone[name].z1,z1);
-      byZone[name].y0=Math.min(byZone[name].y0,y0); byZone[name].y1=Math.max(byZone[name].y1,y1);
-    } else byZone[name] = r;
-  }
-  // draw the small, decisive zones last so they sit on top
-  const order = ['frill','gut','leg','neck','spine','lung','heart','brain'];
-  zoneRects = order.filter(n=>byZone[n]).map(n=>Object.assign({zone:n}, byZone[n]));
-  return zoneRects;
-}
-
-/* Broadside outline, drawn in the animal's own metres and run through the same
-   mx()/my() mapping as the hit boxes, so the anatomy and the outline cannot
-   disagree. Nose to the right, ground at y = 0. */
-const BODY_PATH = HUNT.chart.body;
-const HEAD_PATH = HUNT.chart.head;
-const LEGS = HUNT.chart.legs;
-function pathPts(d){                                   // metres -> chart px
-  return d.replace(/(-?\d+\.?\d*),(-?\d+\.?\d*)/g,
-    (_,z,y)=>mx(parseFloat(z)).toFixed(1)+","+my(parseFloat(y)).toFixed(1));
-}
-function legRect(L, extra){
-  return '<rect x="'+mx(L.z-L.w/2).toFixed(1)+'" y="'+my(L.top).toFixed(1)+
-         '" width="'+(L.w*CHART.K).toFixed(1)+'" height="'+(L.top*CHART.K).toFixed(1)+
-         '" rx="8"'+(extra||'')+'/>';
-}
-
-const ZONE_FILL = {
-  heart:'#a3251a', lung:'#a3251a', brain:'#a3251a', spine:'#a3251a', neck:'#a3251a',
-  gut:'#7a6a2e', leg:'#7a6a2e', frill:'#5d5850'
-};
-let chartN = 0;
-function chartSVG(big){
-  const rects = readZoneBoxes();
-  const cid = 'chartclip'+(++chartN);
-  let out = '<svg viewBox="0 0 '+CHART.W+' '+CHART.H+'" class="chart'+(big?' big':'')+'" '+
-            'role="img" aria-label="Shot placement chart">';
-  // the hit boxes are drawn clipped to the animal, so the anatomy stays inside him
-  out += '<defs><clipPath id="'+cid+'">'+
-         '<path d="'+pathPts(BODY_PATH)+'"/><path d="'+pathPts(HEAD_PATH)+'"/>'+
-         LEGS.map(L=>legRect(L)).join('')+
-         '</clipPath></defs>';
-  out += '<line x1="8" y1="'+CHART.cy+'" x2="512" y2="'+CHART.cy+'" class="cgnd"/>';
-  out += LEGS.map(L=>legRect(L,' class="cbody"')).join('');
-  out += '<path d="'+pathPts(BODY_PATH)+'" class="cbody"/>';
-  out += '<path d="'+pathPts(HEAD_PATH)+'" class="cbody"/>';
-  out += '<g clip-path="url(#'+cid+')">';
-  for(const r of rects){
-    out += '<rect x="'+mx(r.z0).toFixed(1)+'" y="'+my(r.y1).toFixed(1)+
-           '" width="'+((r.z1-r.z0)*CHART.K).toFixed(1)+
-           '" height="'+((r.y1-r.y0)*CHART.K).toFixed(1)+
-           '" fill="'+(ZONE_FILL[r.zone]||'#666')+'" class="czone z-'+r.zone+'"/>';
-  }
-  out += '</g>';
-  // outline again on top, so the zone fills never bleed over the edge
-  out += '<path d="'+pathPts(BODY_PATH)+'" class="cline"/>';
-  out += '<path d="'+pathPts(HEAD_PATH)+'" class="cline"/>';
-
-  // the rounds
-  for(const sh of SHOTS){
-    const rx = mx(sh.local.z), ry = my(sh.local.y);
-    const X = Math.max(12, Math.min(CHART.W-12, rx));
-    const Y = Math.max(12, Math.min(CHART.H-12, ry));
-    const clipped = (X !== rx) || (Y !== ry);
-    if(sh.zone){
-      out += '<g class="cshot hit"><circle cx="'+X.toFixed(1)+'" cy="'+Y.toFixed(1)+'" r="7"/>'+
-             '<path d="M'+(X-12).toFixed(1)+','+Y.toFixed(1)+'h24M'+X.toFixed(1)+','+
-             (Y-12).toFixed(1)+'v24"/>'+
-             '<text x="'+(X+13).toFixed(1)+'" y="'+(Y-11).toFixed(1)+'">'+sh.n+'</text></g>';
-    } else {
-      out += '<g class="cshot miss'+(clipped?' off':'')+'">'+
-             '<circle cx="'+X.toFixed(1)+'" cy="'+Y.toFixed(1)+'" r="6.5"/>'+
-             '<text x="'+(X+11).toFixed(1)+'" y="'+(Y-9).toFixed(1)+'">'+sh.n+'</text></g>';
-    }
-  }
-  out += '</svg>';
-  return out;
-}
-function chartLegend(){
-  if(!SHOTS.length) return '';
-  return '<ul class="clist">' + SHOTS.map(s=>{
-    if(s.zone) return '<li><b>'+s.n+'</b> <i class="k hit"></i><span>'+ZONE_LABEL[s.zone]+
-                      '</span><em>'+s.dist+' m</em></li>';
-    const hi = s.local.y - HUNT.chartMidY, sd = s.local.x;
-    const vs = Math.abs(hi) < 0.15 ? 'level' :
-               (Math.abs(hi).toFixed(1)+' m '+(hi>0?'high':'low'));
-    const hs = Math.abs(sd) < 0.15 ? 'on line' :
-               (Math.abs(sd).toFixed(1)+' m '+(sd>0?'off side':'near side'));
-    const what = s.kind==='timber' ? 'timber' : s.kind==='water' ? 'water' :
-                 s.kind==='ground' ? 'dirt' : 'clean air';
-    return '<li><b>'+s.n+'</b> <i class="k miss"></i><span>'+vs+', '+hs+
-           '</span><em>'+what+' · '+s.range+' m</em></li>';
-  }).join('') + '</ul>';
-}
-function drawChart(){
-  const host = document.getElementById('chart');
-  if(!host) return;
-  host.innerHTML = '<h2>Shot placement</h2>' + chartSVG(false) + chartLegend();
-  host.classList.add('on');
+  setTimeout(()=>cycleBolt(), 260);
 }
 
 /* ============================================================
@@ -3082,7 +1841,7 @@ function drawChart(){
    ============================================================ */
 const $ = id => document.getElementById(id);
 const elGuide=$('guide'), elRoster=$('roster'), elTally=$('tally');
-let guideT = 0, logN = 0, rangeT = 0;
+let guideT = 0, logN = 0;
 function say(txt){
   elGuide.textContent = txt;
   elGuide.classList.add('on');
@@ -3129,7 +1888,7 @@ function hudStep(dt){
 
   // quarry alert meter — only once you can actually see him
   const q = $('quarry');
-  const visible = dist < HUNT.visibleDistance;
+  const visible = dist < 130;
   q.classList.toggle('on', visible && !ended);
   if(visible){
     const pct = Math.min(1, A.alert/1.0)*100;
@@ -3146,15 +1905,6 @@ function hudStep(dt){
   // breath bar rides the reticle
   $('retic').style.opacity = P.aim ? (P.breathing && P.gasp<=0 ? 1 : .8) : .5;
 
-  // the range call: what the round in the chamber is standing in front of.
-  // Sampled a few times a second — it walks the heightfield, so it is not free.
-  rangeT -= dt;
-  if(P.aim && rangeT <= 0 && !ended){
-    rangeT = 0.18;
-    const r = rangeUnderReticle();
-    $('rangev').textContent = r > 1 ? String(Math.round(r)) : "—";
-  } else if(!P.aim) rangeT = 0;
-
   if(guideT>0){ guideT-=dt; if(guideT<=0) elGuide.classList.remove('on'); }
 }
 
@@ -3168,7 +1918,7 @@ function finish(ok, head, para){
   $('endh').innerHTML = head;
   $('endp').textContent = para;
   const rows = [
-    ["Quarry",HUNT.quarry],
+    ["Quarry","Triceratops prorsus"],
     ["Shot placement", A.hitZone ? ZONE_LABEL[A.hitZone] : "—"],
     ["Shot distance", P.shotDist ? Math.round(P.shotDist)+" m" : "—"],
     ["Rounds fired", String(P.fired)],
@@ -3176,10 +1926,6 @@ function finish(ok, head, para){
     ["Time afield", fmtTime(clockT)]
   ];
   $('endstats').innerHTML = rows.map(r=>"<dt>"+r[0]+"</dt><dd>"+r[1]+"</dd>").join("");
-  $('endchart').innerHTML = SHOTS.length
-    ? '<div class="eyebrow">Where the rounds went</div>' + chartSVG(true) + chartLegend()
-    : '';
-  { const c = $('chart'); if(c) c.classList.remove('on'); }
   $('end').classList.add('on');
 }
 function fmtTime(s){
@@ -3192,14 +1938,14 @@ function checkEnd(){
   if(ended) return;
   const dist = P.pos.distanceTo(A.pos);
   if(A.state==='down' && dist < 8){
-    finish(true, "The animal is <i>down</i>", A.wound.note+" "+HUNT.success);
+    finish(true, "The animal is <i>down</i>", A.wound.note+" Nine tonnes of Triceratops, and the light going out of the floodplain behind you.");
   }
   // out of ammunition with a live, wounded animal
   if(P.rounds===0 && !P.chambered && A.state!=='down'){
     if(A.wound && !A.wound.lethal && A.state==='alert'){
-      finish(false, "You <i>wounded</i> the animal", A.wound.note+" "+HUNT.woundedEnd);
+      finish(false, "You <i>wounded</i> him", A.wound.note+" You have nothing left to finish it with. This is the outcome every hunter is supposed to fear, and it is on you.");
     } else if(!A.wound && A.state!=='flee' && A.alert<0.5){
-      finish(false, "Two rounds, <i>no</i> animal", HUNT.emptyEnd);
+      finish(false, "Two rounds, <i>no</i> animal", "You emptied the rifle into the floodplain. He is still out there, and he will not let you near him again.");
     }
   }
 }
@@ -3210,12 +1956,11 @@ function checkEnd(){
 let started = false, clockT = 0;
 $('enter').addEventListener('click', ()=>{
   $('gate').classList.add('off');
-  tryLock();
+  cv3.requestPointerLock();
   started = true;
   const b = bearing(A.pos.x - P.pos.x, A.pos.z - P.pos.z);
   logLine("Fresh sign · bearing "+card16(b)+" · "+Math.round(P.pos.distanceTo(A.pos))+" m");
-  say(HUNT.start.replace('{distance}',Math.round(P.pos.distanceTo(A.pos)))
-                .replace('{bearing}',card16(b)));
+  say("He's out there about "+Math.round(P.pos.distanceTo(A.pos))+" metres, bearing "+card16(b)+". Keep the wind in your face.");
 });
 addEventListener('resize', ()=>{
   camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
@@ -3244,26 +1989,12 @@ function tick(now){
     checkEnd();
   }
   animalStep(dt, t);
-  faunaStep(dt, t);
-  tracerStep(dt);
-  puffStep(dt);
   rifleStep(dt, t);
   sunStep();
   hudStep(dt);
   renderer.render(scene, camera);
 }
 requestAnimationFrame(tick);
-
-/* a handle for driving the game from a test harness */
-window.__hunt = {P,A,SHOTS,TRACERS,PUFFS,HERD,PTERO,FLOCKS,trike,scene,camera,
-  fire:()=>fire(), trace:(o,d)=>traceShot(o,d), ground:(x,z)=>ground(x,z),
-  step:(n,dt)=>{ dt = dt||1/60;
-    for(let i=0;i<(n||1);i++){
-      playerStep(dt); sensesStep(dt); animalStep(dt, performance.now()*0.001);
-      tracerStep(dt); puffStep(dt); rifleStep(dt, performance.now()*0.001); hudStep(dt);
-    } },
-  go:()=>{document.getElementById('gate').classList.add('off');started=true;},
-  get started(){return started;}, get ended(){return ended;}};
 
 })();
 </script>

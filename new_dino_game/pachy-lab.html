@@ -143,14 +143,6 @@
   }
   #enter:hover{background:#fff; transform:translateY(-1px)}
   #enter:focus-visible{outline:2px solid var(--rust); outline-offset:3px}
-  #contracts{display:flex; flex-wrap:wrap; gap:8px; margin-top:20px}
-  #contracts a{
-    font-family:var(--sans); font-weight:600; font-size:11px; letter-spacing:.14em;
-    text-transform:uppercase; text-decoration:none; color:rgba(232,223,201,.62);
-    border:1px solid var(--hair); padding:8px 11px; transition:color .2s ease,border-color .2s ease,background .2s ease;
-  }
-  #contracts a:hover{color:var(--paper); border-color:var(--bone)}
-  #contracts a.active{color:var(--paper); border-color:var(--rust); background:rgba(166,75,33,.18)}
   #plate .fine{margin-top:14px; font-family:var(--mono); font-size:11px; color:rgba(232,223,201,.45)}
 
   /* ---------- touch ---------- */
@@ -186,9 +178,7 @@
   /* vignette while shouldered */
   #scope{position:fixed; inset:0; z-index:4; pointer-events:none; opacity:0;
     transition:opacity .18s ease;
-    /* you have to be able to SEE the animal while the sights are on him —
-       the old falloff went almost solid black at three quarters of the frame */
-    background:radial-gradient(circle at 50% 50%,transparent 42%,rgba(8,7,5,.34) 66%,rgba(8,7,5,.90) 92%)}
+    background:radial-gradient(circle at 50% 50%,transparent 26%,rgba(8,7,5,.55) 52%,rgba(8,7,5,.97) 76%)}
   body.aim #scope{opacity:1}
 
   /* wind + ammo readout */
@@ -226,12 +216,6 @@
     max-width:min(560px,86vw); text-align:center; line-height:1.45; pointer-events:none}
   #guide.on{opacity:1}
 
-  /* muzzle flash — a blink, so it never sits in the sight picture */
-  #flash{position:fixed; inset:0; z-index:8; pointer-events:none; opacity:0;
-    background:radial-gradient(ellipse 40% 30% at 50% 78%,rgba(255,232,178,.55),transparent 70%)}
-  #flash.go{animation:mzf .11s ease-out}
-  @keyframes mzf{0%{opacity:1}100%{opacity:0}}
-
   /* hit flash */
   #hit{position:fixed; inset:0; z-index:8; pointer-events:none; opacity:0;
     background:radial-gradient(circle at 50% 50%,rgba(166,75,33,.16),transparent 62%)}
@@ -256,11 +240,9 @@
     letter-spacing:.18em; text-transform:uppercase; color:var(--bone)}
   .chart{width:100%; height:auto; display:block; overflow:visible}
   .chart .cgnd{stroke:rgba(201,188,152,.20); stroke-width:1; stroke-dasharray:3 4}
-  .chart .cbody{fill:rgba(232,223,201,.13); stroke:rgba(232,223,201,.30); stroke-width:1.2;
+  .chart .cbody{fill:rgba(232,223,201,.13); stroke:rgba(232,223,201,.42); stroke-width:1.4;
     stroke-linejoin:round}
-  .chart .cline{fill:none; stroke:rgba(232,223,201,.60); stroke-width:1.5;
-    stroke-linejoin:round}
-  .chart .czone{opacity:.46}
+  .chart .czone{opacity:.42}
   .chart .cshot circle{fill:none; stroke-width:2}
   .chart .cshot path{stroke-width:1.2}
   .chart .cshot text{font-family:var(--mono); font-size:13px}
@@ -271,12 +253,10 @@
   .chart .off circle{stroke:var(--rust)}
   .clist{list-style:none; margin:7px 0 0; padding:0}
   .clist li{display:flex; align-items:baseline; gap:6px; font-family:var(--mono);
-    font-size:11px; color:rgba(232,223,201,.78); padding:3px 0;
+    font-size:11px; color:rgba(232,223,201,.78); padding:2px 0;
     border-bottom:1px solid rgba(201,188,152,.10)}
-  .clist li b{color:var(--paper); min-width:12px; flex:none}
-  .clist li span{flex:1; min-width:0}
-  .clist li em{flex:none; font-style:normal; color:var(--bone); font-size:10px;
-    padding-left:8px; white-space:nowrap}
+  .clist li b{color:var(--paper); min-width:12px}
+  .clist li em{margin-left:auto; font-style:normal; color:var(--bone); font-size:10px}
   .clist .k{width:7px; height:7px; border-radius:50%; display:inline-block; flex:none}
   .clist .k.hit{background:#F2E4C2}
   .clist .k.miss{border:1px solid rgba(232,223,201,.5)}
@@ -332,7 +312,7 @@
   </div>
 
   <div id="quarry">
-    <span class="eyebrow" id="quarry-name">Bull Triceratops</span>
+    <span class="eyebrow">Bull Triceratops</span>
     <div class="bar"><i id="alertbar"></i></div>
     <div class="st" id="alertst">Grazing</div>
   </div>
@@ -352,7 +332,6 @@
 </div>
 <div id="scope"></div>
 <div id="hit"></div>
-<div id="flash"></div>
 
 <div id="end"><div class="sheet">
   <div class="eyebrow">Contract closed</div>
@@ -366,21 +345,17 @@
 
 <div id="gate">
   <div id="plate">
-    <div class="eyebrow" id="contract-eyebrow">Chartered take · Lancian faunal stage · 66.0 Ma</div>
-    <h1 id="contract-title">You have one <i>bull</i>, and two rounds</h1>
+    <div class="eyebrow">Chartered take · Lancian faunal stage · 66.0 Ma</div>
+    <h1>You have one <i>bull</i>, and two rounds</h1>
     <div class="rule"></div>
-    <p id="contract-intro">A humid coastal floodplain in what is now eastern Montana. Somewhere out along the
+    <p>A humid coastal floodplain in what is now eastern Montana. Somewhere out along the
       channel is a mature bull <i>Triceratops prorsus</i> — nine tonnes, and the most common
       large animal in this formation. He is licensed to you. Nothing else here is.</p>
-    <p class="flora" id="contract-stalk">He will smell you long before he sees you. Watch the wind, keep it in your
+    <p class="flora">He will smell you long before he sees you. Watch the wind, keep it in your
       face, and stay low. A bull that is merely alert can be settled by standing still. A bull
       that has your scent is gone.</p>
-    <p class="flora" id="contract-shot">Put the first round through the lungs, behind the shoulder. A gut shot
+    <p class="flora">Put the first round through the lungs, behind the shoulder. A gut shot
       will not stop him — it will just make you walk a very long way.</p>
-    <nav id="contracts" aria-label="Choose a hunting contract">
-      <a href="?quarry=trike" data-contract="trike">04 · Triceratops</a>
-      <a href="?quarry=thescelo" data-contract="thescelo">05 · Thescelosaurus</a>
-    </nav>
     <button id="enter">Begin the stalk</button>
     <div class="fine">WASD move · ctrl crouch · RMB shoulder · LMB fire · space hold breath</div>
   </div>
@@ -471,78 +446,6 @@ const SPECIES = {
     ]}
 };
 const ORDER = ["trex","trike","edmonto","anky","dakota","anzu","pachy","thescelo"];
-
-/* ============================================================
-   CONTRACTS — keep quarry-specific facts out of the shared hunt systems
-   Add ?quarry=thescelo to hunt Thescelosaurus; Triceratops stays the default.
-   ============================================================ */
-const QUARRY_KEY = new URLSearchParams(location.search).get('quarry') === 'thescelo'
-  ? 'thescelo' : 'trike';
-const HUNTS = {
-  trike:{
-    contract:'04', strip:'one bull <i>Triceratops</i>', hud:'Bull Triceratops',
-    quarry:'Triceratops prorsus', title:'You have one <i>bull</i>, and two rounds',
-    intro:'A humid coastal floodplain in what is now eastern Montana. Somewhere out along the channel is a mature bull <i>Triceratops prorsus</i> — nine tonnes, and the most common large animal in this formation. He is licensed to you. Nothing else here is.',
-    stalk:'He will smell you long before he sees you. Watch the wind, keep it in your face, and stay low. A bull that is merely alert can be settled by standing still. A bull that has your scent is gone.',
-    shot:'Put the first round through the lungs, behind the shoulder. A gut shot will not stop him — it will just make you walk a very long way.',
-    start:'He\'s out there about {distance} metres, bearing {bearing}. Keep the wind in your face.',
-    alertUp:'He\'s got his head up. Don\'t move.', settled:'He\'s settled. Go now, and go low.',
-    blown:'He\'s blown out. He has your scent.', woundedRun:'He\'s running. Mark where he goes in.',
-    stopped:'He\'s stopped. You can still work back onto him.', woundedStopped:'He\'s stopped, and he\'s still on his feet. You\'ll need another round.',
-    success:'Nine tonnes of Triceratops, and the light going out of the floodplain behind you.',
-    woundedEnd:'You have nothing left to finish it with. This is the outcome every hunter is supposed to fear, and it is on you.',
-    emptyEnd:'You emptied the rifle into the floodplain. He is still out there, and he will not let you near him again.',
-    bodyY:1.86, aimCenter:[0,1.86,.60], chartMidY:1.90, slopeSpan:2.4,
-    spawnMin:88, spawnMax:110, visibleDistance:130, grazeSpeed:.55,
-    fleeSpeed:9.4, lethalFleeSpeed:8.2, legFleeSpeed:4.4, unhurtRun:120, downLift:.50,
-    gaitWalk:.26, gaitFlee:.42, gaitRate:2.0, gaitSpeedRate:.9, bob:.035,
-    poses:{down:[.55,.20],graze:[.46,.30],alert:[-.22,-.16],flee:[-.05,.10]},
-    sense:{scent:78,sight:95,noiseWalk:22,noiseRun:46,noiseCrouch:9},
-    chart:{W:520,H:300,K:46,cx:250,cy:250,
-      body:'M1.60,2.90 C0.95,3.14 0.10,3.10 -0.55,3.02 C-1.25,2.98 -1.80,2.92 -2.45,2.58 L-3.60,2.16 L-4.95,1.72 L-3.50,1.76 L-2.40,1.56 C-1.80,1.22 -0.20,1.02 0.80,1.04 C1.35,1.08 1.66,1.20 1.78,1.38 C1.90,1.70 1.94,2.20 1.96,2.44 Z',
-      head:'M1.18,3.24 L2.36,3.06 C2.52,2.86 2.62,2.66 2.74,2.54 L3.64,3.40 L2.98,2.34 L3.30,2.62 L3.16,2.08 L3.60,1.80 L3.30,1.44 L2.52,1.62 L1.84,1.86 L1.12,2.04 Z',
-      legs:[{z:1.20,w:.62,top:1.44},{z:-1.55,w:.78,top:1.80}]}
-  },
-  thescelo:{
-    contract:'05', strip:'one adult <i>Thescelosaurus</i>', hud:'Adult Thescelosaurus',
-    quarry:'Thescelosaurus neglectus', title:'You have one <i>adult</i>, and two rounds',
-    intro:'A humid coastal floodplain in what is now eastern Montana. Somewhere in the fern breaks is an adult <i>Thescelosaurus neglectus</i> — three and a half metres long, compact, wary, and licensed to you. Nothing else here is.',
-    stalk:'It is smaller than the brush and built to run. Keep the wind in your face, move only when its head is down, and do not mistake the unlicensed animals on the floodplain for your quarry.',
-    shot:'Wait for a broadside angle and place the first round through the lungs, just behind the forelimb. The vital area is much smaller than the Triceratops contract.',
-    start:'The tracker put it about {distance} metres out, bearing {bearing}. Look low beneath the fern tops.',
-    alertUp:'Its head is up. Freeze.', settled:'It has gone back to feeding. Move while the head is down.',
-    blown:'It has blown out into the cover.', woundedRun:'It is running. Mark the last place you saw it.',
-    stopped:'It has stopped in the cover. Work back onto it carefully.', woundedStopped:'It has stopped, but it is still standing. You need a second round.',
-    success:'A cleanly recovered Thescelosaurus at the edge of the fern break.',
-    woundedEnd:'You have nothing left to finish it with. A wounded animal is still somewhere in the cover.',
-    emptyEnd:'Both rounds are gone. The Thescelosaurus has vanished into the fern breaks.',
-    bodyY:0, aimCenter:[0,1.06,.10], chartMidY:1.02, slopeSpan:1.25,
-    spawnMin:58, spawnMax:78, visibleDistance:96, grazeSpeed:.72,
-    fleeSpeed:10.8, lethalFleeSpeed:8.7, legFleeSpeed:5.2, unhurtRun:165, downLift:.18,
-    gaitWalk:.43, gaitFlee:.67, gaitRate:2.8, gaitSpeedRate:1.15, bob:.026,
-    poses:{down:[.68,.28],graze:[.38,.22],alert:[-.34,-.10],flee:[-.08,.04]},
-    sense:{scent:70,sight:108,noiseWalk:24,noiseRun:50,noiseCrouch:10},
-    chart:{W:520,H:300,K:88,cx:285,cy:260,
-      body:'M0.82,1.33 C0.48,1.52 -0.05,1.55 -0.58,1.43 C-0.92,1.36 -1.18,1.22 -1.40,1.08 L-2.05,.88 L-1.48,.82 L-.92,.91 C-.48,.78 .12,.76 .62,.84 C.92,.90 1.04,1.04 1.04,1.18 Z',
-      head:'M.72,1.38 L1.20,1.44 L1.52,1.32 L1.62,1.17 L1.42,1.08 L1.05,1.12 L.78,1.23 Z',
-      legs:[{z:-.18,w:.30,top:1.04}]}
-  }
-};
-const HUNT = HUNTS[QUARRY_KEY];
-
-(function applyContractCopy(){
-  const set = (id,html) => { const e=document.getElementById(id); if(e) e.innerHTML=html; };
-  document.title = HUNT.quarry+' · The Lancian Contract';
-  set('clock','Contract '+HUNT.contract+' · '+HUNT.strip);
-  set('quarry-name',HUNT.hud);
-  set('contract-eyebrow','Chartered take · Contract '+HUNT.contract+' · Lancian faunal stage · 66.0 Ma');
-  set('contract-title',HUNT.title); set('contract-intro',HUNT.intro);
-  set('contract-stalk',HUNT.stalk); set('contract-shot',HUNT.shot);
-  document.querySelectorAll('[data-contract]').forEach(a=>{
-    const on=a.dataset.contract===QUARRY_KEY; a.classList.toggle('active',on);
-    if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
-  });
-})();
 
 /* ============================================================
    PROCEDURAL TEXTURES  (no external assets — CSP-safe)
@@ -865,7 +768,7 @@ scene.fog = new THREE.FogExp2(0x93a189, 0.0058);   // open it up; we need to see
 const MAPR = 205;                                   // playable radius
 const clampMap = v => Math.max(-MAPR, Math.min(MAPR, v));
 
-const TRIKE_WOUND = {
+const WOUND = {
   brain:{run:0,   lethal:true,  instant:true, rate:0,   col:0xb02318, blood:"—",                          note:"Straight through the braincase."},
   spine:{run:0,   lethal:true,  instant:true, rate:0,   col:0xb02318, blood:"—",                          note:"Spine severed over the shoulder."},
   heart:{run:44,  lethal:true,  rate:4.6, col:0xc02a18, blood:"bright arterial, pumping",                 note:"Through the heart. He did not go far."},
@@ -875,18 +778,7 @@ const TRIKE_WOUND = {
   leg:{  run:135, lethal:false, rate:1.5, col:0x8a2415, blood:"thin and smeared where the leg swings",    note:"You broke a leg. He can still travel."},
   frill:{run:190, lethal:false, rate:0,   col:0x8a2415, blood:"none — solid bone",                        note:"The round flattened on the frill. Nine feet of solid bone."}
 };
-const THESCELO_WOUND = {
-  brain:{run:0,   lethal:true,  instant:true, rate:0,   col:0xb02318, blood:"—",                          note:"Straight through the braincase."},
-  spine:{run:0,   lethal:true,  instant:true, rate:0,   col:0xb02318, blood:"—",                          note:"The spine was severed over the shoulder."},
-  heart:{run:18,  lethal:true,  rate:4.8, col:0xc02a18, blood:"bright arterial, pumping",                 note:"Through the heart. It covered only a few strides."},
-  lung:{ run:42,  lethal:true,  rate:3.5, col:0xb02318, blood:"bright and frothy — lung",                 note:"Both lungs. The froth in the blood confirmed the hit."},
-  neck:{ run:14,  lethal:true,  rate:5.0, col:0xc02a18, blood:"heavy, arterial",                          note:"Through the neck."},
-  gut:{  run:145, lethal:false, rate:1.1, col:0x53180f, blood:"dark, thin, stinking of stomach",          note:"A gut shot. It made the deep cover."},
-  leg:{  run:105, lethal:false, rate:1.5, col:0x8a2415, blood:"thin and smeared where the leg swings",    note:"The leg is broken, but the animal can still travel."}
-};
-const WOUND = QUARRY_KEY==='thescelo' ? THESCELO_WOUND : TRIKE_WOUND;
-const ZONE_LABEL = {brain:"Braincase",spine:"Spine",heart:"Heart",lung:"Lungs",neck:"Neck",gut:"Gut",
-                    leg:QUARRY_KEY==='thescelo'?"Leg":"Foreleg",frill:"Frill (bone)"};
+const ZONE_LABEL = {brain:"Braincase",spine:"Spine",heart:"Heart",lung:"Lungs",neck:"Neck",gut:"Gut",leg:"Foreleg",frill:"Frill (bone)"};
 
 /* ============================================================
    VEGETATION — cover, and most of what sells the place
@@ -1620,9 +1512,7 @@ function buildTrike(){
   return {root, body, neck, skull, tail, legs, zones};
 }
 
-// Keep the historic variable name as an adapter: all shared ballistics and
-// tracking code can address either quarry through the same shape contract.
-const trike = QUARRY_KEY==='thescelo' ? buildHuntThescelo() : buildTrike();
+const trike = buildTrike();
 scene.add(trike.root);
 
 /* ============================================================
@@ -1635,16 +1525,15 @@ const A = {
   wound:null, hitZone:null, runLeft:0, tracked:0,
   bleedAcc:0, settle:0, lastBlood:new THREE.Vector3()
 };
-// Place the selected quarry on a random bearing, clear of the channel.
+// place him 95 m out on a random bearing, clear of the channel
 (function place(){
   for(let i=0;i<300;i++){
-    const a = Math.random()*Math.PI*2,
-          d = HUNT.spawnMin+Math.random()*(HUNT.spawnMax-HUNT.spawnMin);
+    const a = Math.random()*Math.PI*2, d = 88+Math.random()*22;
     const x = Math.cos(a)*d, z = Math.sin(a)*d;
     if(Math.abs(z-RIVER(x)) < 20) continue;          // not standing in the river
     A.pos.set(x, ground(x,z), z); A.yaw = Math.random()*Math.PI*2; return;
   }
-  A.pos.set(HUNT.spawnMax-5, ground(HUNT.spawnMax-5,20), 20);
+  A.pos.set(90, ground(90,20), 20);
 })();
 
 /* ============================================================
@@ -1653,8 +1542,6 @@ const A = {
    ambient: it cannot be shot and it cannot hurt you, but it reacts to the
    rifle, and a band that blows out beside your bull will cost you the stalk.
    ============================================================ */
-function sRGB(hex){ return new THREE.Color(hex).convertSRGBToLinear(); }
-
 /* cylinder running +Z from the origin, for necks, bills and tails */
 function fsegZ(r0,r1,len,mat){
   const g = new THREE.CylinderGeometry(r0,r1,len,8);
@@ -1671,50 +1558,50 @@ function fsegY(r0,r1,len,mat){
 /* ---- Thescelosaurus neglectus: 3.5 m, 1 m at the hip -------------------- */
 function buildThescelo(){
   const g = new THREE.Group();
-  const hide = new THREE.MeshStandardMaterial({color:sRGB(0x7b6d47), roughness:.94});
-  const dark = new THREE.MeshStandardMaterial({color:sRGB(0x4c4229), roughness:.95});
-  const pale = new THREE.MeshStandardMaterial({color:sRGB(0xa39167), roughness:.92});
+  const hide = new THREE.MeshStandardMaterial({color:0x7b6d47, roughness:.94});
+  const dark = new THREE.MeshStandardMaterial({color:0x4c4229, roughness:.95});
+  const pale = new THREE.MeshStandardMaterial({color:0xa39167, roughness:.92});
 
   const body = new THREE.Mesh(new THREE.SphereGeometry(.5,14,10), hide);
-  body.scale.set(.74,.82,1.50); body.position.set(0,1.12,0); g.add(body);
+  body.scale.set(.74,.82,1.50); body.position.set(0,.98,0); g.add(body);
   const back = new THREE.Mesh(new THREE.SphereGeometry(.5,12,9), dark);
-  back.scale.set(.50,.46,1.42); back.position.set(0,1.36,-.05); g.add(back);
+  back.scale.set(.50,.46,1.42); back.position.set(0,1.24,-.05); g.add(back);
   const belly= new THREE.Mesh(new THREE.SphereGeometry(.42,12,9), pale);
-  belly.scale.set(.62,.50,1.32); belly.position.set(0,.92,.02); g.add(belly);
+  belly.scale.set(.62,.50,1.32); belly.position.set(0,.76,.02); g.add(belly);
 
-  const neck = new THREE.Group(); neck.position.set(0,1.32,.58); g.add(neck);
+  const neck = new THREE.Group(); neck.position.set(0,1.16,.58); g.add(neck);
   neck.add(fsegZ(.15,.11,.60,hide));
   const head = new THREE.Group(); head.position.set(0,.05,.58); neck.add(head);
   const skull= new THREE.Mesh(new THREE.SphereGeometry(.15,10,8), hide);
   skull.scale.set(.88,.95,1.45); head.add(skull);
   const snout= fsegZ(.10,.055,.30,hide); snout.position.set(0,-.03,.13); head.add(snout);
   const beak = fsegZ(.055,.02,.10,pale); beak.position.set(0,-.03,.42); head.add(beak);
-  const eyeM = new THREE.MeshStandardMaterial({color:sRGB(0x14100a), roughness:.35});
+  const eyeM = new THREE.MeshStandardMaterial({color:0x14100a, roughness:.35});
   for(const sx of [-1,1]){
     const e = new THREE.Mesh(new THREE.SphereGeometry(.028,6,5), eyeM);
     e.position.set(sx*.115,.05,.09); head.add(e);
   }
 
   // the tail is a rigid balance beam - ossified tendons, so barely any droop
-  const tail = new THREE.Group(); tail.position.set(0,1.16,-.70); tail.rotation.y = Math.PI; g.add(tail);
+  const tail = new THREE.Group(); tail.position.set(0,1.02,-.70); tail.rotation.y = Math.PI; g.add(tail);
   tail.add(fsegZ(.21,.12,1.05,hide));
   const tail2 = new THREE.Group(); tail2.position.set(0,0,1.05); tail.add(tail2);
   tail2.add(fsegZ(.12,.03,.95,dark));
 
   const legs = [];
   for(const sx of [-1,1]){
-    const hip = new THREE.Group(); hip.position.set(sx*.28,1.06,-.08); g.add(hip);
-    hip.add(fsegY(.17,.12,.40,hide));
-    const knee = new THREE.Group(); knee.position.y=-.40; hip.add(knee);
-    knee.add(fsegY(.10,.065,.38,hide));
-    const ankle = new THREE.Group(); ankle.position.y=-.38; knee.add(ankle);
-    ankle.add(fsegY(.055,.045,.18,dark));
+    const hip = new THREE.Group(); hip.position.set(sx*.28,.94,-.08); g.add(hip);
+    hip.add(fsegY(.17,.12,.52,hide));
+    const knee = new THREE.Group(); knee.position.y=-.52; hip.add(knee);
+    knee.add(fsegY(.10,.065,.50,hide));
+    const ankle = new THREE.Group(); ankle.position.y=-.50; knee.add(ankle);
+    ankle.add(fsegY(.055,.045,.26,dark));
     const foot = new THREE.Mesh(new THREE.BoxGeometry(.17,.07,.34), dark);
-    foot.position.set(0,-.20,.08); ankle.add(foot);
+    foot.position.set(0,-.29,.09); ankle.add(foot);
     legs.push({hip,knee,ankle,sx});
   }
   for(const sx of [-1,1]){                      // short forelimbs, palms inward
-    const sh = new THREE.Group(); sh.position.set(sx*.26,1.18,.34); g.add(sh);
+    const sh = new THREE.Group(); sh.position.set(sx*.26,1.06,.34); g.add(sh);
     sh.rotation.set(.55,0,sx*.22); sh.add(fsegY(.07,.045,.32,hide));
     const el = new THREE.Group(); el.position.y=-.32; sh.add(el);
     el.rotation.x = -1.05; el.add(fsegY(.045,.028,.24,hide));
@@ -1723,47 +1610,12 @@ function buildThescelo(){
   return {root:g, neck, head, tail, tail2, legs};
 }
 
-/* Promote the field-guide/ambient animal to a full hunt quarry. The wrapper
-   supplies the same articulated interface as buildTrike(), plus raycast-only
-   vital boxes. That lets the shared stalk, ballistics and tracking systems run
-   unchanged while the silhouette and anatomy stay Thescelosaurus-sized. */
-function buildHuntThescelo(){
-  const m = buildThescelo();
-  const root = new THREE.Group(), body = new THREE.Group();
-  root.add(body); body.add(m.root);
-
-  const zones = [];
-  const ZM = new THREE.MeshBasicMaterial({visible:false});
-  function zone(name,w,h,d,x,y,z,parent){
-    const q = new THREE.Mesh(new THREE.BoxGeometry(w,h,d),ZM);
-    q.position.set(x,y,z); q.userData.zone=name;
-    (parent||m.root).add(q); zones.push(q); return q;
-  }
-  // Local +Z is forward. Boxes deliberately overlap: pickZone() resolves the
-  // most vital structure crossed by the bullet instead of the first box face.
-  zone('spine', .56,.18,1.18, 0,1.36,-.02);
-  zone('lung',  .58,.48,.62, 0,1.13, .34);
-  zone('heart', .42,.32,.32, 0, .91, .42);
-  zone('gut',   .66,.54,.78, 0,1.02,-.24);
-  zone('neck',  .30,.34,.44, 0,1.37, .76);
-  zone('brain', .19,.17,.22, 0, .04, .02,m.head);
-  for(const l of m.legs) zone('leg',.24,.76,.28,l.hip.position.x,.59,l.hip.position.z);
-
-  const legs = m.legs.map(l=>({
-    L:{hip:l.hip,j:[l.hip,l.knee,l.ankle]}, s:l.sx, fore:false, base:0
-  }));
-  return {
-    root,body,neck:m.neck,skull:m.head,
-    tail:{joints:[m.tail,m.tail2]},legs,zones
-  };
-}
-
 /* ---- an azhdarchid pterosaur, roughly 5 m across the wings -------------- */
 function buildPtero(){
   const g = new THREE.Group();
-  const skin  = new THREE.MeshStandardMaterial({color:sRGB(0x6a5c46), roughness:.90});
-  const memb  = new THREE.MeshStandardMaterial({color:sRGB(0x5b4e3b), roughness:.96, side:THREE.DoubleSide});
-  const crestM= new THREE.MeshStandardMaterial({color:sRGB(0x8d5a34), roughness:.85, side:THREE.DoubleSide});
+  const skin  = new THREE.MeshStandardMaterial({color:0x6a5c46, roughness:.90});
+  const memb  = new THREE.MeshStandardMaterial({color:0x5b4e3b, roughness:.96, side:THREE.DoubleSide});
+  const crestM= new THREE.MeshStandardMaterial({color:0x8d5a34, roughness:.85, side:THREE.DoubleSide});
 
   const body = new THREE.Mesh(new THREE.SphereGeometry(.3,10,8), skin);
   body.scale.set(.60,.68,1.95); g.add(body);
@@ -1807,7 +1659,7 @@ const birdWingGeo = (function(){
 })();
 function buildBird(col, sc){
   const g = new THREE.Group();
-  const m = new THREE.MeshStandardMaterial({color:sRGB(col), roughness:.90, side:THREE.DoubleSide});
+  const m = new THREE.MeshStandardMaterial({color:col, roughness:.90, side:THREE.DoubleSide});
   const b = new THREE.Mesh(new THREE.SphereGeometry(.10,7,5), m);
   b.scale.set(.80,.80,2.30); g.add(b);
   const hd = new THREE.Mesh(new THREE.SphereGeometry(.062,6,5), m); hd.position.set(0,.045,.22); g.add(hd);
@@ -1838,10 +1690,7 @@ const HERD = {c:new THREE.Vector3(), drift:Math.random()*6.283, run:0,
     if(bankDist(x,z) < 16) continue;
     HERD.c.set(x,0,z); break;
   }
-  // When Thescelosaurus is the licensed quarry, remove the non-interactive
-  // lookalike band so the player never aims at an animal the rifle cannot hit.
-  const herdSize = QUARRY_KEY==='thescelo' ? 0 : 9;
-  for(let i=0;i<herdSize;i++){
+  for(let i=0;i<9;i++){
     const m = buildThescelo();
     const a = Math.random()*6.283, r = rnd(2,14);
     m.off = new THREE.Vector2(Math.cos(a)*r, Math.sin(a)*r);
@@ -1906,7 +1755,7 @@ const bugPos = new Float32Array(BUGN*3), bugVel = new Float32Array(BUGN*3);
 const bugGeo = new THREE.BufferGeometry();
 bugGeo.setAttribute('position', new THREE.BufferAttribute(bugPos,3));
 const bugs = new THREE.Points(bugGeo, new THREE.PointsMaterial({
-  color:sRGB(0x2b2a1c), size:.045, sizeAttenuation:true, transparent:true,
+  color:0x2b2a1c, size:.045, sizeAttenuation:true, transparent:true,
   opacity:.55, depthWrite:false}));
 bugs.frustumCulled = false; scene.add(bugs);
 for(let i=0;i<BUGN;i++){
@@ -1920,7 +1769,7 @@ const ringGeo = new THREE.RingGeometry(.55,.72,20);
 ringGeo.rotateX(-Math.PI/2);
 for(let i=0;i<10;i++){
   const m = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({
-    color:sRGB(0xbfd3d8), transparent:true, opacity:0, depthWrite:false}));
+    color:0xbfd3d8, transparent:true, opacity:0, depthWrite:false}));
   m.visible = false; scene.add(m);
   RINGS.push({m, t:99});
 }
@@ -2126,16 +1975,15 @@ function animalStep(dt, t){
   A.pos.y = ground(A.pos.x, A.pos.z);
   trike.root.position.copy(A.pos);
   trike.root.rotation.y = A.yaw;
-  const span=HUNT.slopeSpan;
-  const fx = A.pos.x + Math.sin(A.yaw)*span, fz = A.pos.z + Math.cos(A.yaw)*span;
-  const bx = A.pos.x - Math.sin(A.yaw)*span, bz = A.pos.z - Math.cos(A.yaw)*span;
-  trike.root.rotation.x = Math.atan2(ground(bx,bz)-ground(fx,fz), span*2) * 0.8;
+  const fx = A.pos.x + Math.sin(A.yaw)*2.4, fz = A.pos.z + Math.cos(A.yaw)*2.4;
+  const bx = A.pos.x - Math.sin(A.yaw)*2.4, bz = A.pos.z - Math.cos(A.yaw)*2.4;
+  trike.root.rotation.x = Math.atan2(ground(bx,bz)-ground(fx,fz), 4.8) * 0.8;
 
   // --- gait
   const moving = A.speed > .05;
   if(moving){
-    A.phase += dt * (HUNT.gaitRate + A.speed*HUNT.gaitSpeedRate);
-    const amp = A.state==='flee' ? HUNT.gaitFlee : HUNT.gaitWalk;
+    A.phase += dt * (2.0 + A.speed*0.9);
+    const amp = A.state==='flee' ? .42 : .26;
     trike.legs.forEach((g,i)=>{
       const off = [0, Math.PI, Math.PI*1.15, Math.PI*0.15][i];  // diagonal couplets
       const p = A.phase + off;
@@ -2143,21 +1991,22 @@ function animalStep(dt, t){
       g.L.j[1].rotation.x = (Math.sin(p-1.0)*.5+.5) * amp*1.15;
       g.L.j[2].rotation.x = -Math.sin(p+.6)*amp*.45;
     });
-    trike.body.position.y = HUNT.bodyY + Math.sin(A.phase*2)*HUNT.bob*(A.speed*0.4+0.5);
+    trike.body.position.y = 1.86 + Math.sin(A.phase*2)*0.035*(A.speed*0.4+0.5);
   } else {
     trike.legs.forEach(g=>{
       g.L.j[0].rotation.x += (g.base - g.L.j[0].rotation.x)*Math.min(1,dt*4);
       g.L.j[1].rotation.x += (0 - g.L.j[1].rotation.x)*Math.min(1,dt*4);
       g.L.j[2].rotation.x += (0 - g.L.j[2].rotation.x)*Math.min(1,dt*4);
     });
-    trike.body.position.y += (HUNT.bodyY - trike.body.position.y)*Math.min(1,dt*4);
+    trike.body.position.y += (1.86 - trike.body.position.y)*Math.min(1,dt*4);
   }
 
   // --- head carriage reads the state at a glance
   let wantNeck, wantSkull;
-  const pose = HUNT.poses[A.state] || HUNT.poses.flee;
-  wantNeck=pose[0]; wantSkull=pose[1];
-  if(A.state==='graze') wantNeck += Math.sin(t*0.5)*(QUARRY_KEY==='thescelo'?.11:.16);
+  if(A.state==='down'){ wantNeck = 0.55; wantSkull = 0.2; }
+  else if(A.state==='graze'){ wantNeck = 0.46 + Math.sin(t*0.5)*0.16; wantSkull = 0.30; }
+  else if(A.state==='alert'){ wantNeck = -0.22; wantSkull = -0.16; }
+  else { wantNeck = -0.05; wantSkull = 0.10; }
   trike.neck.rotation.x  += (wantNeck  - trike.neck.rotation.x )*Math.min(1,dt*2.2);
   trike.skull.rotation.x += (wantSkull - trike.skull.rotation.x)*Math.min(1,dt*2.2);
   trike.tail.joints[0].rotation.y = Math.sin(t*0.8)*0.10;
@@ -2362,16 +2211,16 @@ function sensesStep(dt){
 
   // scent: the wind carries you to him. dominant sense, works blind.
   const scentAlign = Math.max(0, -windVec.dot(dir));   // wind blowing you -> him
-  if(dist < HUNT.sense.scent){
-    const prox = 1 - dist/HUNT.sense.scent;
+  if(dist < 78){
+    const prox = 1 - dist/78;
     gain += scentAlign * prox * (0.85 + W.spd*0.10) * 1.55;
   }
 
   // sight: laterally-set eyes, wide arc, poor at picking out a still shape
   const fwd = new THREE.Vector3(Math.sin(A.yaw),0,Math.cos(A.yaw));
   const cone = fwd.dot(dir);                           // 1 = dead ahead
-  if(cone > -0.25 && dist < HUNT.sense.sight){
-    const prox = 1 - dist/HUNT.sense.sight;
+  if(cone > -0.25 && dist < 95){
+    const prox = 1 - dist/95;
     const arc  = Math.max(0, (cone+0.25)/1.25);
     const mot  = P.speed>4 ? 1.0 : P.speed>1.8 ? 0.55 : P.speed>0 ? 0.28 : 0.05;
     const low  = P.crouch ? 0.45 : 1;
@@ -2379,8 +2228,7 @@ function sensesStep(dt){
   }
 
   // sound: gait against wet floodplain
-  const noise = P.speed===0 ? 0 : (P.crouch ? HUNT.sense.noiseCrouch
-                                      : P.run ? HUNT.sense.noiseRun : HUNT.sense.noiseWalk);
+  const noise = P.speed===0 ? 0 : (P.crouch ? 9 : P.run ? 46 : 22);
   if(noise>0 && dist < noise) gain += (1 - dist/noise) * 0.85;
 
   if(gain > 0) A.alert += gain*dt;
@@ -2395,12 +2243,12 @@ function sensesStep(dt){
     else if(A.alert > 0.42) A.state = 'alert';
     else A.state = 'graze';
   }
-  if(was==='graze' && A.state==='alert') say(HUNT.alertUp);
-  if(was==='alert' && A.state==='graze') say(HUNT.settled);
+  if(was==='graze' && A.state==='alert') say("He's got his head up. Don't move.");
+  if(was==='alert' && A.state==='graze') say("He's settled. Go now, and go low.");
 
   // behaviour per state
   if(A.state==='graze'){
-    A.speed += (HUNT.grazeSpeed - A.speed)*Math.min(1,dt*1.2);
+    A.speed += (0.55 - A.speed)*Math.min(1,dt*1.2);
     A.graze -= dt;
     if(A.graze<=0){ A.graze = 4+Math.random()*7; A.yaw += (Math.random()-.5)*1.3; }
     if(A.speed>0.05){
@@ -2421,12 +2269,11 @@ function startFlee(away){
   if(A.state==='flee') return;
   A.state = 'flee';
   A.fleeYaw = Math.atan2(away.x, away.z);
-  if(A.runLeft<=0) A.runLeft = HUNT.unhurtRun;         // an unhurt animal leaves the area
-  say(A.wound ? HUNT.woundedRun : HUNT.blown);
+  if(A.runLeft<=0) A.runLeft = 120;                    // unhurt: he just leaves
+  say(A.wound ? "He's running. Mark where he goes in." : "He's blown out. He has your scent.");
 }
 function fleeStep(dt){
-  const top = A.wound && A.wound.lethal ? HUNT.lethalFleeSpeed
-    : (A.wound && A.hitZone==='leg' ? HUNT.legFleeSpeed : HUNT.fleeSpeed);
+  const top = A.wound && A.wound.lethal ? 8.2 : (A.wound && A.hitZone==='leg' ? 4.4 : 9.4);
   A.speed += (top - A.speed)*Math.min(1,dt*1.4);
   A.fleeYaw += Math.sin(performance.now()*0.0004)*dt*0.5;   // he doesn't run a straight line
   // turn away from the map edge
@@ -2444,17 +2291,17 @@ function fleeStep(dt){
     if(A.wound && A.wound.lethal){ goDown(); }
     else {
       A.state = 'alert'; A.speed = 0; A.alert = 0.9;
-      if(!A.wound) say(HUNT.stopped);
-      else say(HUNT.woundedStopped);
+      if(!A.wound) say("He's stopped. You can still work back onto him.");
+      else say("He's stopped, and he's still on his feet. You'll need another round.");
     }
   }
 }
 function goDown(){
   A.state='down'; A.speed=0;
   trike.root.rotation.z = 1.42;                        // over onto his side
-  trike.root.position.y = A.pos.y + HUNT.downLift;
+  trike.root.position.y = A.pos.y + 0.5;
   logLine("Animal down · "+Math.round(A.tracked)+" m tracked", true);
-  say("The animal is down. Walk up from behind.");
+  say("He's down. Walk up on him from behind.");
 }
 
 /* ============================================================
@@ -2740,7 +2587,7 @@ function puff(at, col, spread, size, life, grav, count, alpha){
   const p = PUFFS.find(o=>o.t >= o.life) || PUFFS[0];
   p.org.copy(at); p.t = 0; p.life = life; p.grav = grav;
   p.alpha = alpha===undefined ? 0.85 : alpha;
-  p.m.material.color.copy(sRGB(col));
+  p.m.material.color.setHex(col);
   p.m.material.size = size;
   p.m.visible = true;
   const n = Math.min(PUFFN, count || PUFFN);
@@ -2784,7 +2631,7 @@ const TRACERN = 3, TRACERS = [];
   tg.rotateX(Math.PI/2); tg.translate(0,0,-.5);          // runs -Z from the origin
   for(let i=0;i<TRACERN;i++){
     const m = new THREE.Mesh(tg, new THREE.MeshBasicMaterial({
-      color:sRGB(0xffe6b0), transparent:true, opacity:0, depthWrite:false}));
+      color:0xffe6b0, transparent:true, opacity:0, depthWrite:false}));
     m.visible = false; m.frustumCulled = false; fxG.add(m);
     TRACERS.push({m, t:9, dur:1, from:new THREE.Vector3(), to:new THREE.Vector3(), onEnd:null});
   }
@@ -2821,7 +2668,7 @@ const marksG = new THREE.Group(); scene.add(marksG);
 const markGeo = new THREE.CircleGeometry(0.34, 10); markGeo.rotateX(-Math.PI/2);
 function groundMark(at){
   const m = new THREE.Mesh(markGeo, new THREE.MeshBasicMaterial({
-    color:sRGB(0x2b2115), transparent:true, opacity:.55, depthWrite:false}));
+    color:0x2b2115, transparent:true, opacity:.55, depthWrite:false}));
   m.position.set(at.x, ground(at.x,at.z)+0.03, at.z);
   m.scale.setScalar(0.8+Math.random()*0.6);
   marksG.add(m);
@@ -2862,19 +2709,18 @@ function fire(){
   const eye = camera.position.clone();
   const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
   const muzzle = new THREE.Vector3(0,-.038,-1.15).applyMatrix4(camera.matrixWorld);
+  const smokeAt = new THREE.Vector3(0,-.05,-3.2).applyMatrix4(camera.matrixWorld);
 
   const res = traceShot(eye, dir);
 
   P.recoilV += 2.6; P.recoil += 0.052;                  // muzzle climb
   vmKickV += 9.0; vmKick += 0.16;                       // and the rifle jumps
-  const mf = document.getElementById('flash');
-  if(mf){ mf.classList.remove('go'); void mf.offsetWidth; mf.classList.add('go'); }
+  puff(smokeAt, 0xcfc0a2, 1.1, .13, .70, .5, 11, .26);  // muzzle smoke, downrange
   faunaAlarm(P.pos, 240, true);                         // the plain empties
 
   // where the round passed relative to the animal, hit or miss
   trike.root.updateMatrixWorld(true);
-  const centre = new THREE.Vector3(HUNT.aimCenter[0],HUNT.aimCenter[1],HUNT.aimCenter[2])
-    .applyMatrix4(trike.root.matrixWorld);
+  const centre = new THREE.Vector3(0,1.86,0.6).applyMatrix4(trike.root.matrixWorld);
   const near = res.zone ? res.point : closestOnShot(eye, dir, centre);
   const local = animalLocal(near);
   const rec = {n:P.fired, zone:res.zone, local:local,
@@ -2893,14 +2739,12 @@ function fire(){
 
 /* everything that happens when the round arrives */
 function resolveShot(res, rec, land){
-  const gs = Math.max(0.28, Math.min(2.6, land.distanceTo(camera.position)/40));
   if(!res.zone){
-    if(rec.kind === 'water'){ puff(land, 0xcfe0e4, 5.5, .34*gs, .95, 11, 26, .7); }
-    else if(rec.kind === 'timber'){ puff(land, 0x53412a, 3.4, .16*gs, .8, 12, 18, .8); }
-    else if(rec.kind === 'ground'){ puff(land, 0x9c8a68, 4.6, .26*gs, 1.05, 11, 26, .6);
-                                    groundMark(land); }
+    if(rec.kind === 'water'){ puff(land, 0xcfe0e4, 5.5, .34, .95, 11); }
+    else if(rec.kind === 'timber'){ puff(land, 0x53412a, 3.4, .16, .8, 12); }
+    else if(rec.kind === 'ground'){ puff(land, 0x9c8a68, 4.6, .26, 1.05, 11); groundMark(land); }
 
-    const high = rec.local.y - HUNT.chartMidY, side = rec.local.x;
+    const high = rec.local.y - 1.9, side = rec.local.x;
     let where;
     if(rec.kind === 'timber')      where = "Into a trunk. The round never got there.";
     else if(rec.kind === 'water')  where = "Into the water short of him.";
@@ -2928,7 +2772,7 @@ function resolveShot(res, rec, land){
   hf.classList.remove('go'); void hf.offsetWidth; hf.classList.add('go');
   puff(land, zone==='frill' ? 0xd7cbb0 : 0x8e1c10,
              zone==='frill' ? 3.0 : 3.6,
-             (zone==='frill' ? .16 : .20)*gs, .8, 10, 26, .8);
+             zone==='frill' ? .16 : .20, .8, 10);
   logLine("Shot "+rec.n+" · "+ZONE_LABEL[zone]+" · "+dist+" m", true);
 
   // a later, better-placed round supersedes a poor first one
@@ -2953,7 +2797,7 @@ function resolveShot(res, rec, land){
    The zone rectangles are read straight off the live hit boxes, so the
    diagram cannot drift out of step with what the rifle is actually hitting.
    ============================================================ */
-const CHART = HUNT.chart;                              // px per metre, ground line
+const CHART = {W:520, H:300, K:46, cx:250, cy:250};   // px per metre, ground line
 const mx = z => CHART.cx + z*CHART.K;
 const my = y => CHART.cy - y*CHART.K;
 
@@ -2987,68 +2831,62 @@ function readZoneBoxes(){
   return zoneRects;
 }
 
-/* Broadside outline, drawn in the animal's own metres and run through the same
-   mx()/my() mapping as the hit boxes, so the anatomy and the outline cannot
-   disagree. Nose to the right, ground at y = 0. */
-const BODY_PATH = HUNT.chart.body;
-const HEAD_PATH = HUNT.chart.head;
-const LEGS = HUNT.chart.legs;
+/* hand-drawn broadside outline, in the animal's own metres */
+const BODY_PATH =
+  "M1.60,2.90 C0.95,3.14 0.10,3.10 -0.55,3.02 C-1.25,2.98 -1.80,2.92 -2.45,2.58 "+
+  "L-3.60,2.16 L-4.95,1.72 L-3.50,1.76 L-2.40,1.56 "+
+  "C-1.80,1.22 -0.20,1.02 0.80,1.04 C1.35,1.08 1.66,1.20 1.78,1.38 "+
+  "C1.90,1.70 1.94,2.20 1.96,2.44 Z";
+const HEAD_PATH =
+  "M1.18,3.24 L2.36,3.06 C2.52,2.86 2.62,2.66 2.74,2.54 "+
+  "L3.64,3.40 L2.98,2.34 L3.30,2.62 L3.16,2.08 "+
+  "L3.60,1.80 L3.30,1.44 L2.52,1.62 L1.84,1.86 L1.12,2.04 Z";
+const LEGS = [
+  {z:1.20, w:0.62, top:1.44},   // foreleg
+  {z:-1.55,w:0.78, top:1.80}    // hind leg
+];
 function pathPts(d){                                   // metres -> chart px
   return d.replace(/(-?\d+\.?\d*),(-?\d+\.?\d*)/g,
     (_,z,y)=>mx(parseFloat(z)).toFixed(1)+","+my(parseFloat(y)).toFixed(1));
-}
-function legRect(L, extra){
-  return '<rect x="'+mx(L.z-L.w/2).toFixed(1)+'" y="'+my(L.top).toFixed(1)+
-         '" width="'+(L.w*CHART.K).toFixed(1)+'" height="'+(L.top*CHART.K).toFixed(1)+
-         '" rx="8"'+(extra||'')+'/>';
 }
 
 const ZONE_FILL = {
   heart:'#a3251a', lung:'#a3251a', brain:'#a3251a', spine:'#a3251a', neck:'#a3251a',
   gut:'#7a6a2e', leg:'#7a6a2e', frill:'#5d5850'
 };
-let chartN = 0;
 function chartSVG(big){
   const rects = readZoneBoxes();
-  const cid = 'chartclip'+(++chartN);
   let out = '<svg viewBox="0 0 '+CHART.W+' '+CHART.H+'" class="chart'+(big?' big':'')+'" '+
             'role="img" aria-label="Shot placement chart">';
-  // the hit boxes are drawn clipped to the animal, so the anatomy stays inside him
-  out += '<defs><clipPath id="'+cid+'">'+
-         '<path d="'+pathPts(BODY_PATH)+'"/><path d="'+pathPts(HEAD_PATH)+'"/>'+
-         LEGS.map(L=>legRect(L)).join('')+
-         '</clipPath></defs>';
   out += '<line x1="8" y1="'+CHART.cy+'" x2="512" y2="'+CHART.cy+'" class="cgnd"/>';
-  out += LEGS.map(L=>legRect(L,' class="cbody"')).join('');
-  out += '<path d="'+pathPts(BODY_PATH)+'" class="cbody"/>';
-  out += '<path d="'+pathPts(HEAD_PATH)+'" class="cbody"/>';
-  out += '<g clip-path="url(#'+cid+')">';
   for(const r of rects){
     out += '<rect x="'+mx(r.z0).toFixed(1)+'" y="'+my(r.y1).toFixed(1)+
            '" width="'+((r.z1-r.z0)*CHART.K).toFixed(1)+
            '" height="'+((r.y1-r.y0)*CHART.K).toFixed(1)+
            '" fill="'+(ZONE_FILL[r.zone]||'#666')+'" class="czone z-'+r.zone+'"/>';
   }
-  out += '</g>';
-  // outline again on top, so the zone fills never bleed over the edge
-  out += '<path d="'+pathPts(BODY_PATH)+'" class="cline"/>';
-  out += '<path d="'+pathPts(HEAD_PATH)+'" class="cline"/>';
+  for(const L of LEGS){
+    out += '<rect x="'+mx(L.z-L.w/2).toFixed(1)+'" y="'+my(L.top).toFixed(1)+
+           '" width="'+(L.w*CHART.K).toFixed(1)+'" height="'+(L.top*CHART.K).toFixed(1)+
+           '" rx="7" class="cbody"/>';
+  }
+  out += '<path d="'+pathPts(BODY_PATH)+'" class="cbody"/>';
+  out += '<path d="'+pathPts(HEAD_PATH)+'" class="cbody"/>';
 
   // the rounds
-  for(const sh of SHOTS){
-    const rx = mx(sh.local.z), ry = my(sh.local.y);
-    const X = Math.max(12, Math.min(CHART.W-12, rx));
-    const Y = Math.max(12, Math.min(CHART.H-12, ry));
-    const clipped = (X !== rx) || (Y !== ry);
-    if(sh.zone){
+  for(const s of SHOTS){
+    const X = Math.max(10, Math.min(CHART.W-10, mx(s.local.z)));
+    const Y = Math.max(10, Math.min(CHART.H-10, my(s.local.y)));
+    const clipped = X !== mx(s.local.z) || Y !== my(s.local.y);
+    if(s.zone){
       out += '<g class="cshot hit"><circle cx="'+X.toFixed(1)+'" cy="'+Y.toFixed(1)+'" r="7"/>'+
-             '<path d="M'+(X-12).toFixed(1)+','+Y.toFixed(1)+'h24M'+X.toFixed(1)+','+
-             (Y-12).toFixed(1)+'v24"/>'+
-             '<text x="'+(X+13).toFixed(1)+'" y="'+(Y-11).toFixed(1)+'">'+sh.n+'</text></g>';
+             '<path d="M'+(X-11).toFixed(1)+','+Y.toFixed(1)+'h22M'+X.toFixed(1)+','+
+             (Y-11).toFixed(1)+'v22"/>'+
+             '<text x="'+(X+12).toFixed(1)+'" y="'+(Y-10).toFixed(1)+'">'+s.n+'</text></g>';
     } else {
       out += '<g class="cshot miss'+(clipped?' off':'')+'">'+
              '<circle cx="'+X.toFixed(1)+'" cy="'+Y.toFixed(1)+'" r="6.5"/>'+
-             '<text x="'+(X+11).toFixed(1)+'" y="'+(Y-9).toFixed(1)+'">'+sh.n+'</text></g>';
+             '<text x="'+(X+11).toFixed(1)+'" y="'+(Y-9).toFixed(1)+'">'+s.n+'</text></g>';
     }
   }
   out += '</svg>';
@@ -3057,17 +2895,17 @@ function chartSVG(big){
 function chartLegend(){
   if(!SHOTS.length) return '';
   return '<ul class="clist">' + SHOTS.map(s=>{
-    if(s.zone) return '<li><b>'+s.n+'</b> <i class="k hit"></i><span>'+ZONE_LABEL[s.zone]+
-                      '</span><em>'+s.dist+' m</em></li>';
-    const hi = s.local.y - HUNT.chartMidY, sd = s.local.x;
+    if(s.zone) return '<li><b>'+s.n+'</b> <i class="k hit"></i>'+ZONE_LABEL[s.zone]+
+                      ' <em>'+s.dist+' m</em></li>';
+    const hi = s.local.y - 1.90, sd = s.local.x;
     const vs = Math.abs(hi) < 0.15 ? 'level' :
                (Math.abs(hi).toFixed(1)+' m '+(hi>0?'high':'low'));
     const hs = Math.abs(sd) < 0.15 ? 'on line' :
                (Math.abs(sd).toFixed(1)+' m '+(sd>0?'off side':'near side'));
     const what = s.kind==='timber' ? 'timber' : s.kind==='water' ? 'water' :
                  s.kind==='ground' ? 'dirt' : 'clean air';
-    return '<li><b>'+s.n+'</b> <i class="k miss"></i><span>'+vs+', '+hs+
-           '</span><em>'+what+' · '+s.range+' m</em></li>';
+    return '<li><b>'+s.n+'</b> <i class="k miss"></i>'+vs+', '+hs+
+           ' <em>'+what+' · '+s.range+' m</em></li>';
   }).join('') + '</ul>';
 }
 function drawChart(){
@@ -3129,7 +2967,7 @@ function hudStep(dt){
 
   // quarry alert meter — only once you can actually see him
   const q = $('quarry');
-  const visible = dist < HUNT.visibleDistance;
+  const visible = dist < 130;
   q.classList.toggle('on', visible && !ended);
   if(visible){
     const pct = Math.min(1, A.alert/1.0)*100;
@@ -3168,7 +3006,7 @@ function finish(ok, head, para){
   $('endh').innerHTML = head;
   $('endp').textContent = para;
   const rows = [
-    ["Quarry",HUNT.quarry],
+    ["Quarry","Triceratops prorsus"],
     ["Shot placement", A.hitZone ? ZONE_LABEL[A.hitZone] : "—"],
     ["Shot distance", P.shotDist ? Math.round(P.shotDist)+" m" : "—"],
     ["Rounds fired", String(P.fired)],
@@ -3179,7 +3017,6 @@ function finish(ok, head, para){
   $('endchart').innerHTML = SHOTS.length
     ? '<div class="eyebrow">Where the rounds went</div>' + chartSVG(true) + chartLegend()
     : '';
-  { const c = $('chart'); if(c) c.classList.remove('on'); }
   $('end').classList.add('on');
 }
 function fmtTime(s){
@@ -3192,14 +3029,14 @@ function checkEnd(){
   if(ended) return;
   const dist = P.pos.distanceTo(A.pos);
   if(A.state==='down' && dist < 8){
-    finish(true, "The animal is <i>down</i>", A.wound.note+" "+HUNT.success);
+    finish(true, "The animal is <i>down</i>", A.wound.note+" Nine tonnes of Triceratops, and the light going out of the floodplain behind you.");
   }
   // out of ammunition with a live, wounded animal
   if(P.rounds===0 && !P.chambered && A.state!=='down'){
     if(A.wound && !A.wound.lethal && A.state==='alert'){
-      finish(false, "You <i>wounded</i> the animal", A.wound.note+" "+HUNT.woundedEnd);
+      finish(false, "You <i>wounded</i> him", A.wound.note+" You have nothing left to finish it with. This is the outcome every hunter is supposed to fear, and it is on you.");
     } else if(!A.wound && A.state!=='flee' && A.alert<0.5){
-      finish(false, "Two rounds, <i>no</i> animal", HUNT.emptyEnd);
+      finish(false, "Two rounds, <i>no</i> animal", "You emptied the rifle into the floodplain. He is still out there, and he will not let you near him again.");
     }
   }
 }
@@ -3214,8 +3051,7 @@ $('enter').addEventListener('click', ()=>{
   started = true;
   const b = bearing(A.pos.x - P.pos.x, A.pos.z - P.pos.z);
   logLine("Fresh sign · bearing "+card16(b)+" · "+Math.round(P.pos.distanceTo(A.pos))+" m");
-  say(HUNT.start.replace('{distance}',Math.round(P.pos.distanceTo(A.pos)))
-                .replace('{bearing}',card16(b)));
+  say("He's out there about "+Math.round(P.pos.distanceTo(A.pos))+" metres, bearing "+card16(b)+". Keep the wind in your face.");
 });
 addEventListener('resize', ()=>{
   camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
@@ -3256,14 +3092,419 @@ requestAnimationFrame(tick);
 
 /* a handle for driving the game from a test harness */
 window.__hunt = {P,A,SHOTS,TRACERS,PUFFS,HERD,PTERO,FLOCKS,trike,scene,camera,
-  fire:()=>fire(), trace:(o,d)=>traceShot(o,d), ground:(x,z)=>ground(x,z),
-  step:(n,dt)=>{ dt = dt||1/60;
-    for(let i=0;i<(n||1);i++){
-      playerStep(dt); sensesStep(dt); animalStep(dt, performance.now()*0.001);
-      tracerStep(dt); puffStep(dt); rifleStep(dt, performance.now()*0.001); hudStep(dt);
-    } },
+  fire:()=>fire(), trace:(o,d)=>traceShot(o,d),
   go:()=>{document.getElementById('gate').classList.add('off');started=true;},
   get started(){return started;}, get ended(){return ended;}};
 
+/* ===== PACHYCEPHALOSAURUS — BEGIN =========================================
+   Pachycephalosaurus wyomingensis, adult. Hell Creek, latest Maastrichtian —
+   the same formation and the same few thousand years as the Triceratops, so
+   he belongs on this floodplain.
+
+   Built to ~4.4 m nose to tail, 1.56 m at the hip, head carried near 1.8 m,
+   370-450 kg: the largest known pachycephalosaur, but still a fraction of the
+   trike's mass. Bipedal, with a broad pelvis carrying a deep fermentation gut,
+   very short arms, long hind limbs and a tail held stiff and horizontal.
+
+   Limb proportions follow the skeleton rather than the eye: the tibia is
+   LONGER than the femur, which is the cursorial signature of a small-bodied
+   ornithischian and the main thing that keeps him from reading as a scaled
+   down theropod.
+
+   Depends only on the shared helper layer: loft / taper / chain / leg / ball /
+   hideBall / bulge / hideSet, the hornM / beakM / hoofM / eyeM / irisM
+   materials and TUV. Nothing here reaches into the hunt logic — he is ambient
+   life on the floodplain, not the contract.
+
+   Growth stages are deliberately left parameterised. "Dracorex hogwartsia" and
+   "Stygimoloch spinifer" are now widely read as juveniles of this animal
+   (Horner & Goodwin 2009): the dome inflates and the squamosal spikes resorb
+   with age. Driving DOME/SPIKE from an age term would give that series
+   without restructuring anything here.
+   ========================================================================= */
+
+const PACHY = {
+  DOME : 1.00,   // 0 = flat "Dracorex" skull roof, 1 = full adult dome
+  SPIKE: 0.28,   // 1 = long "Stygimoloch" squamosal horns, adult ≈ 0.3
+  HIP  : 1.56,   // height of the body pivot above the ground
+  // Standing pose of the hind limb. These three angles are what actually put
+  // the foot on the ground: they must agree with HIP and the HIND segment
+  // lengths or the animal sinks into the terrain. Solved so the sole lands at
+  // y=0 with the femur only ~19 deg off vertical, which is the posture a
+  // cursorial ornithischian stands in — not the deep bird-like crouch that
+  // falls out of simply shortening the leg.
+  FEMUR: -0.33, KNEE: 0.66, ANKLE: -0.34
+};
+
+/* His own hide. Two animals sharing one skin is the quickest way to make a
+   scene look cheap, and hideSet() is fully parameterised, so a distinct
+   palette costs nothing but the texture build: greyer, colder and darker than
+   the trike's warm tan, which also helps him disappear into scrub the way a
+   smaller prey animal should. */
+const PHIDE = hideSet('#847c66','#453f30','#a2977c');
+const pHideM = new THREE.MeshStandardMaterial({
+  map:PHIDE.map, normalMap:PHIDE.norm, roughnessMap:PHIDE.rough,
+  roughness:1.0, metalness:0, vertexColors:true
+});
+pHideM.normalScale.set(1.15, 1.15);
+
+const pLoft  = (s,m)=>loft(s, m, 40, TUV);
+const pTaper = (len,r0,r1,m,sq,bow,n)=>taper(len,r0,r1,m,sq||1,bow||0,n||8,30,TUV);
+
+function buildPachy(){
+  const M = pHideM;
+  const root = new THREE.Group();
+  const body = new THREE.Group(); body.position.y = PACHY.HIP; root.add(body);
+
+  /* ---- torso. The signature ornithischian shape: a deep, barrel-sided gut
+     slung between wide hips. Pachycephalosaurs had one of the broadest pelves
+     of any dinosaur — a big fermentation chamber for low-grade plant food —
+     so the widest point sits well behind the ribcage, not at the shoulder.
+     The belly is carried slightly low and the back is nearly level: a gut that
+     size does not tuck up the way a predator's does. */
+  /* Muscle masses are put in as section MODIFIERS rather than as separate
+     ellipsoids stuck on the flank. A ball that protrudes through the hide
+     leaves a hard intersection ring and reads as a growth; bulge() deforms
+     the torso surface itself, so the swelling is part of the same continuous
+     skin and there is no seam to see. */
+  const HIPB = bulge(0.090, 0.02, 0.90);            // ilium + thigh mass, lateral
+  const CAUD = bulge(0.075, 0.30, 0.85);            // caudofemoralis, at the tail base
+  const PECT = bulge(0.070, 0.92, 0.85);            // scapular mass, upper flank
+  body.add(pLoft([
+    {z:-0.95, rx:.27, ry:.32, y: .05, mod:CAUD},
+    {z:-0.72, rx:.38, ry:.45, y: .01, mod:CAUD},
+    {z:-0.46, rx:.46, ry:.55, y:-.03, mod:HIPB},
+    {z:-0.16, rx:.48, ry:.57, y:-.05, mod:HIPB},    // widest: the gut
+    {z: 0.14, rx:.46, ry:.55, y:-.05},
+    {z: 0.44, rx:.41, ry:.49, y:-.01, mod:PECT},
+    {z: 0.70, rx:.35, ry:.42, y: .03, mod:PECT},
+    {z: 0.92, rx:.28, ry:.34, y: .05}
+  ], M));
+
+  /* ---- tail. Pachycephalosaur tails carried a basketwork of ossified
+     myorhabdoid tendons — a feature otherwise almost unknown in dinosaurs.
+     The tail was a rigid counterbalance, not a whip: update() below holds it
+     nearly straight and lets it sway only slightly.
+
+     The base is deliberately heavy. The caudofemoralis, the main retractor
+     that pulls the femur back on every stride, anchors here, and a tail that
+     tapers straight off the hip makes a biped look like it is running on
+     nothing. */
+  const tailLinks = [{len:.46,r0:.32,r1:.25},{len:.44,r0:.25,r1:.18},
+                     {len:.40,r0:.18,r1:.12},{len:.34,r0:.12,r1:.055}];
+  const tail = chain(tailLinks, M, .94, 30, TUV);
+  tail.root.rotation.y = Math.PI;                    // run it backwards
+  tail.root.position.set(0, .06, -0.92);
+  body.add(tail.root);
+  // A restrained hint of the tendon bundles running back along the tail. These
+  // sit along a narrow tail rather than protruding through a fat torso, so a
+  // slim ellipsoid reads as a ridge here instead of as a lump.
+  for(const s of [-1,1]){
+    const t = hideBall(.042, M, .50, .62, 4.6);
+    t.position.set(s*.16, .09, -.40); tail.joints[0].add(t);
+  }
+
+  /* ---- neck. Genuinely short and thick — barely longer than the skull is
+     deep. The dome is heavy and cantilevered forward of the shoulders, so
+     whatever it was used for, this neck had to carry it. Keeping it short is
+     also what stops the animal reading as a small hadrosaur. */
+  const neck = new THREE.Group();
+  neck.position.set(0, .05, 0.90); neck.rotation.x = -0.34; body.add(neck);
+  // The nuchal musculature that holds that heavy head up is built into the
+  // cross-sections — deep at the base, tapering forward — rather than added as
+  // a lump on top of a tube.
+  neck.add(pLoft([
+    {z:-.05, rx:.280, ry:.345, y: .02},
+    {z: .10, rx:.266, ry:.312, y: .04},
+    {z: .24, rx:.248, ry:.272, y: .05},
+    {z: .36, rx:.230, ry:.242, y: .06}
+  ], M));
+
+  /* ---- skull. 60 cm occiput to snout tip. The dome is not an ornament sat
+     on top of the head — it IS the back half of the skull, up to 25 cm of
+     solid bone. So the loft itself carries the domed profile: deep and tall
+     over the braincase, falling away sharply to a short, narrow face.
+     Rendered in hide rather than keratin: there is no evidence either way for
+     a horny cover, and skin over bone is the conservative reading. */
+  const D = PACHY.DOME;
+  const skull = new THREE.Group();
+  skull.position.set(0, .06, .36); skull.rotation.x = 0.22; neck.add(skull);
+
+  skull.add(pLoft([
+    {z:-0.15, rx:.150, ry:.135 + .022*D, y: .026 + .014*D},   // occiput
+    {z:-0.04, rx:.170, ry:.148 + .030*D, y: .038 + .022*D},   // dome, rear
+    {z: 0.08, rx:.172, ry:.148 + .030*D, y: .038 + .022*D},   // dome, crown
+    {z: 0.19, rx:.150, ry:.138,          y: .018},            // brow and orbits
+    {z: 0.29, rx:.115, ry:.110,          y: .002},            // maxilla
+    {z: 0.38, rx:.082, ry:.084,          y:-.015},            // premaxilla
+    {z: 0.45, rx:.052, ry:.058,          y:-.025}             // tip
+  ], M));
+
+  /* The dome proper. It has to stand visibly PROUD of the skull roof rather
+     than blending into a long hump — that abrupt rounded boss behind the eyes
+     is the one silhouette that identifies the animal at any distance. The
+     loft above is kept deliberately shallow so this cap reads as relief; it
+     still overlaps far enough to merge into a single mass. */
+  const dome = hideBall(.150*(0.62+0.38*D), M, 1.04, 0.92+0.38*D, 1.18);
+  dome.position.set(0, .075 + .045*D, .010); skull.add(dome);
+
+  /* A ring of bony knobs runs round the back and sides of the dome, with a
+     second cluster of nasal bosses on the snout. These are modest tubercles
+     in an adult, not the horns of a juvenile. */
+  for(let i=0;i<13;i++){
+    const a = -1.05 + i*(2.10/12);                   // arc across the rear margin
+    const r = .174, k = .019 + .008*Math.cos(a);
+    const n = ball(k, hornM);
+    n.position.set(Math.sin(a)*r*0.98,
+                   .045 + .050*D + Math.cos(a)*.052,
+                   -.128 - Math.cos(a)*.042);
+    skull.add(n);
+  }
+  for(const s of [-1,1]){
+    // Squamosal spikes. Long and sharp in "Stygimoloch"; in a full adult they
+    // have largely resorbed into blunt bosses, which is what SPIKE≈0.3 gives.
+    for(let i=0;i<2;i++){
+      const len = (.052 + i*.020) * (0.45 + 1.55*PACHY.SPIKE);
+      const sp = pTaper(len, .028, .015 + .009*(1-PACHY.SPIKE), hornM, 1, 0, 4);
+      sp.position.set(s*.140, .030 - i*.042, -.155);
+      sp.rotation.set(-0.35 + i*0.22, s*0.50, 0);
+      skull.add(sp);
+    }
+    // Nasal bosses along the top of the snout.
+    for(let i=0;i<3;i++){
+      const nb = ball(.016 - i*.003, hornM);
+      nb.position.set(s*(.042 - i*.009), .088 - i*.014, .258 + i*.058);
+      skull.add(nb);
+    }
+    // A heavy brow over the orbit. This is what makes the eye read as set
+    // into a skull rather than stuck onto a surface.
+    const brow = hideBall(.058, M, .62, .52, 1.55);
+    brow.position.set(s*.120, .080, .190); skull.add(brow);
+    // Eyes: small, set forward and high, shaded by the dome's overhang.
+    const e = ball(.028, eyeM);
+    e.position.set(s*.132, .040, .195); skull.add(e);
+    const ir = ball(.015, irisM);
+    ir.position.set(s*.146, .042, .206); skull.add(ir);
+    // Nostril, set well back from the tip as in the skull.
+    const nos = ball(.013, eyeM);
+    nos.position.set(s*.050, .016, .372); skull.add(nos);
+    // Cheek / jaw muscle mass, and the tooth row it covers.
+    const ck = hideBall(.062, M, .58, .82, 1.30);
+    ck.position.set(s*.098, -.038, .215); skull.add(ck);
+  }
+
+  /* Jaw and beak. Pachycephalosaurs were heterodont — small pointed teeth at
+     the front of the premaxilla and leaf-shaped, coarsely serrated cheek
+     teeth behind. That combination reads as an omnivore rather than a
+     dedicated browser, so the face keeps a narrow nipping tip. */
+  const jaw = pLoft([
+    {z:-.02, rx:.098, ry:.046},{z: .14, rx:.100, ry:.050},
+    {z: .28, rx:.082, ry:.042},{z: .39, rx:.054, ry:.031},
+    {z: .45, rx:.033, ry:.021}
+  ], M);
+  jaw.position.set(0, -.092, .006); skull.add(jaw);
+  const beak = pTaper(.062, .036, .010, beakM, .86, 0, 4);
+  beak.position.set(0, -.032, .418); beak.rotation.x = 0.32; skull.add(beak);
+
+  /* ---- limbs. Tibia longer than femur: he is built to run, and the whole
+     animal balances over the hips. The forelimbs are genuinely tiny — barely
+     a third the length of the hind — and are carried folded against the
+     chest, taking no part in the gait. */
+  const legs = [];
+  const HIND = [{len:.58,r0:.27,r1:.185},{len:.62,r0:.185,r1:.125},{len:.32,r0:.125,r1:.095}];
+  const FORE = [{len:.21,r0:.062,r1:.048},{len:.19,r0:.048,r1:.037},{len:.09,r0:.039,r1:.031}];
+  for(const s of [-1,1]){
+    // The thigh mass has to blend into that wide pelvis or the leg reads as a
+    // rod stuck on the side of a barrel.
+    const th = hideBall(.26, M, .76, 1.02, 1.00);
+    th.position.set(s*.33, -.09, -.52); body.add(th);
+    // Three weight-bearing toes; the first digit is small and clear of the ground.
+    const L = leg(M, HIND, .34, .30, 3, 28, TUV, hoofM);
+    L.hip.position.set(s*.28, -.10, -.50);
+    // Gastrocnemius and ankle pads, so the shank is a muscled limb rather
+    // than two cones meeting at a point.
+    const calf = hideBall(.155, M, .88, .82, 1.40);
+    calf.position.set(0, 0, .26); L.j[1].add(calf);
+    const ank = hideBall(.095, M, .92, .86, 1.15);
+    ank.position.set(0, 0, .22); L.j[2].add(ank);
+    body.add(L.hip); legs.push({L, s, fore:false, base:0});
+  }
+  for(const s of [-1,1]){
+    const L = leg(M, FORE, .11, .11, 5, 20, TUV, hoofM);
+    L.hip.position.set(s*.25, -.04, .58);
+    L.hip.rotation.set(1.05, 0, s*0.24);              // held folded against the chest
+    body.add(L.hip); legs.push({L, s, fore:true, base:0});
+  }
+
+  root.traverse(o=>{ if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
+  dressAnimal(root, 1.85, 0.55);
+
+  /* ---- animation. sp is 0..1 of a flat-out run. Ambient behaviour only:
+     browse, walk, and a bounding flee. */
+  let ph = 0;
+  function update(dt, t, sp){
+    sp = Math.max(0, Math.min(1, sp||0));
+    ph += dt * (2.4 + sp*5.4);
+
+    legs.forEach(g=>{
+      const j = g.L.j, lead = g.s>0 ? 0 : Math.PI;
+      const sw = Math.sin(ph + lead), li = Math.cos(ph + lead);
+      if(g.fore){
+        // The arms barely move: they are too short to contribute to the gait.
+        g.L.hip.rotation.x = 1.05 + sw*0.08*sp;
+        j[1].rotation.x = -0.85 - li*0.06*sp;
+      } else {
+        j[0].rotation.x = PACHY.FEMUR + sw*(0.16 + 0.42*sp);
+        j[1].rotation.x = PACHY.KNEE  - li*(0.12 + 0.40*sp);
+        j[2].rotation.x = PACHY.ANKLE + sw*(0.10 + 0.26*sp);
+      }
+    });
+
+    // Bipedal bob: the whole body rises and falls twice per stride.
+    body.position.y = PACHY.HIP + Math.sin(ph*2)*(0.010 + 0.050*sp);
+    // Pitched forward at speed so the tail counterbalances the head.
+    body.rotation.x = 0.06*sp + Math.sin(ph*2)*0.012;
+
+    // The stiffened tail sways as one piece rather than rippling.
+    tail.joints.forEach((j,i)=>{
+      j.rotation.y = Math.sin(ph*0.5 - i*0.16) * (0.020 + 0.045*sp);
+      j.rotation.x = i===0 ? -0.10 - 0.16*sp : -0.012;
+    });
+
+    // Browsing when still; head up and level when running.
+    const browse = (1-sp) * (0.5 + 0.5*Math.sin(t*0.31));
+    neck.rotation.x = -0.34 + browse*0.50 - sp*0.14;
+    neck.rotation.y = (1-sp) * Math.sin(t*0.23) * 0.22;
+    skull.rotation.x = 0.22 - browse*0.18 + sp*0.10;
+  }
+
+  return {root, body, neck, skull, tail, legs, update};
+}
+
+/* Countershading, sun-bleach and dried silt, keyed to the animal's own height
+   so it works for a 1.9 m biped as well as a 3 m ceratopsian. This is
+   dressTrike() with the hard-coded 3.1 and 0.80 lifted out as arguments;
+   at integration the two should collapse into this one function. */
+function dressAnimal(root, spineH, mudH){
+  spineH = spineH || 3.1; mudH = mudH || 0.80;
+  root.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
+  const mm = new THREE.Matrix4(), nm = new THREE.Matrix3();
+  const v = new THREE.Vector3(), n = new THREE.Vector3();
+  root.traverse(o=>{
+    if(!o.isMesh || !o.material.vertexColors) return;
+    const g = o.geometry;
+    if(g.userData.dressed) return;
+    g.userData.dressed = true;
+    mm.multiplyMatrices(inv, o.matrixWorld);
+    nm.getNormalMatrix(mm);
+    const p = g.attributes.position, nrm = g.attributes.normal;
+    const col = new Float32Array(p.count*3);
+    for(let i=0;i<p.count;i++){
+      v.fromBufferAttribute(p,i).applyMatrix4(mm);
+      n.set(0,1,0);
+      if(nrm){ n.fromBufferAttribute(nrm,i).applyMatrix3(nm).normalize(); }
+      const hgt = THREE.MathUtils.clamp(v.y/spineH, 0, 1);
+      const up = n.y*0.5+0.5;
+      let k = 0.90 + hgt*0.20 - up*0.05;
+      k -= (1-hgt)*(1-hgt)*0.14;
+      const bleach = Math.max(0, up-0.72)*0.40*hgt;
+      let r = k*(1+bleach*0.16), gg = k*(1+bleach*0.12), b = k*(1-bleach*0.04);
+      const mud = Math.max(0, 1 - v.y/mudH) * 0.34;
+      r += (0.98-r)*mud; gg += (0.88-gg)*mud; b += (0.70-b)*mud;
+      col[i*3]=r; col[i*3+1]=gg; col[i*3+2]=b;
+    }
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col,3));
+  });
+}
+/* ===== PACHYCEPHALOSAURUS — END ========================================== */
+
+/* ================= PACHY LAB HARNESS (not for integration) ============== */
+(function lab(){
+  var hide = document.querySelectorAll('#gate,#hud,.hud,#log,#compass,#reticle,#vig,#stick');
+  for(var i=0;i<hide.length;i++) hide[i].style.display='none';
+  try{ rifle.visible = false; }catch(e){}
+  try{ trike.root.visible = false; }catch(e){}
+  started = false;                       // keeps playerStep from driving the camera
+
+  var CX = 0, CZ = 0, GY = ground(CX, CZ);
+  var pachy = buildPachy();
+  pachy.root.position.set(CX, GY, CZ);
+  scene.add(pachy.root);
+
+  var ang = 0.7, dist = 7.0, hgt = 1.75, look = 1.15, sp = 0, spin = true, last = 0;
+  var frozen = null;                     // fixed t, so measurements are repeatable
+  var fx = 0, fz = 0;                    // orbit-centre offset, for framing a part
+
+  // Drive the camera immediately before each render so the game's own tick()
+  // cannot overwrite it.
+  var _render = renderer.render.bind(renderer);
+  renderer.render = function(s, c){
+    var now = performance.now(), dt = last ? Math.min(0.05, (now-last)/1000) : 0.016;
+    last = now;
+    if(spin) ang += dt * 0.35;
+    pachy.update(frozen === null ? dt : 0, frozen === null ? now*0.001 : frozen, sp);
+    // fx/fz shift the orbit centre so a part (head, hip, foot) can be framed.
+    camera.position.set(CX + fx + Math.sin(ang)*dist, GY + hgt, CZ + fz + Math.cos(ang)*dist);
+    camera.lookAt(CX + fx, GY + look, CZ + fz);
+    _render(s, c);
+  };
+
+  window.__lab = {
+    pachy: pachy,
+    PACHY: PACHY,                        // live-tunable pose / dome / spike
+    // How far the hind feet sit above (+) or below (-) the ground plane.
+    footY: function(){
+      var w = new THREE.Vector3(), out = [];
+      pachy.legs.forEach(function(g){
+        if(g.fore) return;
+        g.L.foot.getWorldPosition(w);
+        out.push(+(w.y - pachy.root.position.y).toFixed(3));
+      });
+      return out;
+    },
+    tris: function(){ var n=0; pachy.root.traverse(function(o){
+      if(o.isMesh && o.geometry.index) n += o.geometry.index.count/3; }); return Math.round(n); },
+    size: function(){
+      var b = new THREE.Box3().setFromObject(pachy.root), s = new THREE.Vector3();
+      b.getSize(s);
+      // Landmarks matter more than the box: quote head and hip height directly.
+      var w = new THREE.Vector3();
+      pachy.skull.getWorldPosition(w);
+      var hipY = pachy.body.getWorldPosition(new THREE.Vector3()).y - GY;
+      return {len:+s.z.toFixed(2), wid:+s.x.toFixed(2), boxHgt:+s.y.toFixed(2),
+              headY:+(w.y-GY).toFixed(2), hipY:+hipY.toFixed(2)};
+    },
+    set: function(o){
+      if(o.sp   !== undefined) sp   = o.sp;
+      if(o.dist !== undefined) dist = o.dist;
+      if(o.hgt  !== undefined) hgt  = o.hgt;
+      if(o.look !== undefined) look = o.look;
+      if(o.spin !== undefined) spin = o.spin;
+      if(o.ang  !== undefined){ ang = o.ang; spin = false; }
+      if(o.freeze !== undefined) frozen = o.freeze;
+      if(o.fx !== undefined) fx = o.fx;
+      if(o.fz !== undefined) fz = o.fz;
+      if(o.at !== undefined){
+        CX = o.at[0]; CZ = o.at[1]; GY = ground(CX, CZ);
+        pachy.root.position.set(CX, GY, CZ);
+      }
+      return 'ok';
+    },
+    // Find flat open ground: low slope, away from the river channel.
+    findFlat: function(){
+      var best = null;
+      for(var r=14; r<46; r+=4) for(var a=0; a<Math.PI*2; a+=0.20){
+        var x = Math.cos(a)*r, z = Math.sin(a)*r;
+        if(Math.abs(z - RIVER(x)) < 22) continue;
+        var g0 = ground(x,z);
+        var sl = Math.max(Math.abs(ground(x+2,z)-g0), Math.abs(ground(x,z+2)-g0));
+        if(!best || sl < best.sl) best = {x:+x.toFixed(1), z:+z.toFixed(1), sl:+sl.toFixed(3)};
+      }
+      return best;
+    }
+  };
+})();
+/* ================= END LAB HARNESS ====================================== */
 })();
 </script>
