@@ -401,7 +401,7 @@ import { createWorld, RIVER, channel, ground, SIZE, SEG } from '../core/scene.js
 import { cv, tex, noiseInto, groundTex, scaleTex, plumeTex, featherTex,
          frondTex, barkTex, dataTex, colTex, normalFromHeight } from '../core/textures.js';
 import { loft, taper, chain, ball, box, leg, feather,
-         sRGB, fsegZ, fsegY, RAD } from '../core/loft.js';
+         sRGB, fsegZ, RAD } from '../core/loft.js';
 import { hideSet, hideMaterial, hideBall, bulge, TUV,
          hornM, beakM, hoofM, eyeM, irisM } from '../core/hides.js';
 import { SPECIES, ORDER } from '../species/records.js';
@@ -758,49 +758,6 @@ const A = {
    ambient: it cannot be shot and it cannot hurt you, but it reacts to the
    rifle, and a band that blows out beside your bull will cost you the stalk.
    ============================================================ */
-/* ---- an azhdarchid pterosaur, roughly 5 m across the wings -------------- */
-function buildPtero(){
-  const g = new THREE.Group();
-  const skin  = new THREE.MeshStandardMaterial({color:sRGB(0x6a5c46), roughness:.90});
-  const memb  = new THREE.MeshStandardMaterial({color:sRGB(0x5b4e3b), roughness:.96, side:THREE.DoubleSide});
-  const crestM= new THREE.MeshStandardMaterial({color:sRGB(0x8d5a34), roughness:.85, side:THREE.DoubleSide});
-
-  const body = new THREE.Mesh(new THREE.SphereGeometry(.3,10,8), skin);
-  body.scale.set(.60,.68,1.95); g.add(body);
-
-  const neck = new THREE.Group(); neck.position.set(0,.12,.46); neck.rotation.x=-.30; g.add(neck);
-  neck.add(fsegZ(.10,.075,.72,skin));
-  const head = new THREE.Group(); head.position.set(0,0,.72); head.rotation.x=.42; neck.add(head);
-  head.add(fsegZ(.085,.018,1.10,skin));
-  const crest = new THREE.Mesh(new THREE.PlaneGeometry(.52,.40), crestM);
-  crest.rotation.y = Math.PI/2; crest.position.set(0,.20,.10); head.add(crest);
-
-  const tl = fsegZ(.09,.02,.46,skin); tl.rotation.y = Math.PI; g.add(tl);
-
-  const wings = [];
-  for(const sx of [-1,1]){
-    const sh = new THREE.Group(); sh.position.set(sx*.15,.13,.16); g.add(sh);
-    const sp = new THREE.Shape();
-    sp.moveTo(0,.16); sp.lineTo(1.15,.30); sp.lineTo(2.30,.08);
-    sp.lineTo(2.20,-.20); sp.lineTo(1.00,-.62); sp.lineTo(0,-.52); sp.closePath();
-    const wg = new THREE.ShapeGeometry(sp); wg.rotateX(-Math.PI/2);
-    const inner = new THREE.Mesh(wg, memb); inner.scale.x = sx; sh.add(inner);
-
-    const wr = new THREE.Group(); wr.position.set(sx*2.25,0,0); sh.add(wr);
-    const sp2 = new THREE.Shape();
-    sp2.moveTo(0,.10); sp2.lineTo(1.05,.02); sp2.lineTo(1.65,-.12);
-    sp2.lineTo(1.00,-.32); sp2.lineTo(0,-.46); sp2.closePath();
-    const wg2 = new THREE.ShapeGeometry(sp2); wg2.rotateX(-Math.PI/2);
-    const outer = new THREE.Mesh(wg2, memb); outer.scale.x = sx; wr.add(outer);
-    wings.push({sh, wr, sx});
-  }
-  for(const sx of [-1,1]){                      // legs tucked up under the body
-    const l = fsegY(.05,.03,.55,skin);
-    l.position.set(sx*.11,-.05,-.10); l.rotation.x = -1.15; g.add(l);
-  }
-  return {root:g, wings, neck, head};
-}
-
 /* ---- a small bird: Avisaurus, and the Ichthyornis-grade shorebirds ------ */
 const birdWingGeo = (function(){
   const g = new THREE.PlaneGeometry(.44,.18); g.translate(.22,0,0); g.rotateX(-Math.PI/2); return g;
@@ -890,12 +847,13 @@ function pachyBolt(m, from, secs){
 /* ---- pterosaurs riding the thermals over the channel -------------------- */
 const PTERO = [];
 for(let i=0;i<6;i++){
-  const p = buildPtero();
+  const p = buildQuetzal();
+  p.state.fly = 1;                                      // spawn on the wing
   p.cx = rnd(-90,90); p.cz = rnd(-90,90);
   p.r  = rnd(38,105); p.alt = rnd(34,74);
   p.a  = Math.random()*6.283; p.w = (Math.random()<.5?-1:1)*rnd(.035,.075);
   p.ph = Math.random()*6.283; p.flapT = rnd(1,10); p.flap = 0;
-  p.root.scale.setScalar(rnd(.85,1.5));
+  p.root.scale.setScalar(rnd(.8,1.1));                  // ~8-11 m across the wings
   fauna.add(p.root); PTERO.push(p);
 }
 
@@ -1094,14 +1052,8 @@ function faunaStep(dt, t){
     p.root.rotation.z = (p.w>0 ? -1 : 1) * 0.30;
     p.flapT -= dt;
     if(p.flapT < 0){ p.flap = rnd(1.6,3.4); p.flapT = rnd(7,20); }
-    let amp = 0.06;
-    if(p.flap > 0){ p.flap -= dt; amp = 0.62; }
-    const f = Math.sin(t*(p.flap>0?3.4:0.9) + p.ph)*amp;
-    for(const w of p.wings){
-      w.sh.rotation.z = w.sx * (f + 0.06);
-      w.wr.rotation.z = w.sx * (-f*0.55 - 0.10);
-    }
-    p.neck.rotation.x = -0.30 + Math.sin(t*0.5+p.ph)*0.05;
+    if(p.flap > 0) p.flap -= dt;
+    p.update(dt, {fly:1, flap: p.flap > 0 ? 1 : 0});
   }
 
   /* --- flocks ------------------------------------------------------------ */
