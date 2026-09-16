@@ -334,8 +334,7 @@ function dressAnimal(root, spineH, mudH){
    tibia pivots, so they follow the stride instead of hanging where the leg
    was when the animal was built. The folded forelimbs are left out of the
    gait entirely. */
-function buildHuntPachy(){
-  const m = buildPachy();
+function pachyZones(m){
   const zones = [];
   const ZM = new THREE.MeshBasicMaterial({visible:false});
   function zone(name, w,h,d, x,y,z, parent){
@@ -356,11 +355,19 @@ function buildHuntPachy(){
   // Up to 25 cm of solid bone. A round that meets it first stops there.
   zone('dome',  .32,.14,.36,  0, .165, .00, m.skull);
 
-  const hind = m.legs.filter(g=>!g.fore);
-  for(const g of hind){
+  for(const g of m.legs.filter(g=>!g.fore)){
     // leg frame: the chain runs along local +Z, down the bone
     zone('leg', .30,.34,.62, 0,0,.30, g.L.j[0]);
     zone('leg', .22,.24,.64, 0,0,.32, g.L.j[1]);
+  }
+  return zones;
+}
+
+function buildHuntPachy(){
+  const m = buildPachy();
+  const zones = pachyZones(m);
+  const hind = m.legs.filter(g=>!g.fore);
+  for(const g of hind){
     g.rest = [PACHY.FEMUR, PACHY.KNEE, PACHY.ANKLE];
     g.base = PACHY.FEMUR;
     g.rest.forEach((r,i)=>{ g.L.j[i].rotation.x = r; });   // stand from the first frame
@@ -369,4 +376,4 @@ function buildHuntPachy(){
           tail:m.tail, legs:hind, zones};
 }
 
-export { buildPachy, buildHuntPachy, PACHY };
+export { buildPachy, buildHuntPachy, pachyZones, PACHY };

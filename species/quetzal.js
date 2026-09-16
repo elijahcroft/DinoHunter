@@ -301,7 +301,7 @@ function buildQuetzal(){
   }
 
   update(0, {});
-  return {root, pivot, head, neck, state, update, legs:L};
+  return {root, pivot, torso, head, neck, state, update, legs:L};
 }
 
 /* ---- dynamic membrane strips ---------------------------------------- */

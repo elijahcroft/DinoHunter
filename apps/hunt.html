@@ -406,8 +406,8 @@ import { hideSet, hideMaterial, hideBall, bulge, TUV,
          hornM, beakM, hoofM, eyeM, irisM } from '../core/hides.js';
 import { SPECIES, ORDER } from '../species/records.js';
 import { buildTrike } from '../species/trike.js';
-import { buildThescelo, buildHuntThescelo } from '../species/thescelo.js';
-import { buildPachy, buildHuntPachy } from '../species/pachy.js';
+import { buildThescelo, buildHuntThescelo, thesceloZones } from '../species/thescelo.js';
+import { buildPachy, buildHuntPachy, pachyZones } from '../species/pachy.js';
 import { buildQuetzal } from '../species/quetzal.js';
 
 /* The floodplain itself. Terrain and light both live in core/scene.js;
@@ -755,7 +755,8 @@ const A = {
 /* ============================================================
    FAUNA — the rest of the living floodplain
    Hell Creek was not one bull standing alone on a lawn. Everything below is
-   ambient: it cannot be shot and it cannot hurt you, but it reacts to the
+   ambient: it is not licensed and it cannot hurt you, but it carries hit
+   boxes like the quarry, so a stray round can drop it, it reacts to the
    rifle, and a band that blows out beside your bull will cost you the stalk.
    ============================================================ */
 /* ---- a small bird: Avisaurus, and the Ichthyornis-grade shorebirds ------ */
@@ -783,6 +784,19 @@ function buildBird(col, sc){
 
 const fauna = new THREE.Group(); scene.add(fauna);
 
+/* every ambient hit box, each tagged with the animal it belongs to */
+const FAUNA_ZONES = [];
+const ZONE_M = new THREE.MeshBasicMaterial({visible:false});
+function tagZones(zones, animal, kind){
+  animal.kind = kind; animal.hp = 2; animal.dead = false;
+  for(const z of zones){ z.userData.owner = animal; FAUNA_ZONES.push(z); }
+}
+function boxZone(name, w,h,d, x,y,z, parent){
+  const q = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), ZONE_M);
+  q.position.set(x,y,z); q.userData.zone = name; parent.add(q);
+  return q;
+}
+
 /* ---- the Thescelosaurus band ------------------------------------------- */
 const HERD = {c:new THREE.Vector3(), drift:Math.random()*6.283, run:0,
               flee:new THREE.Vector3(1,0,0), members:[], warned:0};
@@ -806,6 +820,7 @@ const HERD = {c:new THREE.Vector3(), drift:Math.random()*6.283, run:0,
     m.yaw = Math.random()*6.283; m.speed = 0; m.phase = Math.random()*6.283;
     m.graze = Math.random()*6; m.head = 0; m.down = Math.random()<.5;
     m.root.scale.setScalar(rnd(.82,1.12));
+    tagZones(thesceloZones(m), m, 'thescelo');
     fauna.add(m.root); HERD.members.push(m);
   }
 })();
@@ -832,6 +847,7 @@ const PACHYS = [];
       m.yaw = Math.random()*6.283; m.speed = PACHY_BROWSE;
       m.bout = rnd(2,8); m.ambling = false;
       m.run = 0; m.flee = new THREE.Vector3(1,0,0); m.warned = 0;
+      tagZones(pachyZones(m), m, 'pachy');
       fauna.add(m.root); PACHYS.push(m);
       break;
     }
@@ -845,6 +861,23 @@ function pachyBolt(m, from, secs){
 }
 
 /* ---- pterosaurs riding the thermals over the channel -------------------- */
+/* the bones are groups that run +Z, re-aimed every frame, so boxes hung on
+   them follow the wing beat */
+function quetzalZones(p){
+  const z = [];
+  z.push(boxZone('lung',  .56,.56,.90, 0, .02, .05, p.torso));
+  z.push(boxZone('heart', .34,.30,.30, 0,-.08, .22, p.torso));
+  z.push(boxZone('spine', .20,.14,.95, 0, .24, .00, p.torso));
+  z.push(boxZone('brain', .16,.20,.40, 0, .03, .05, p.head));
+  z.push(boxZone('beak',  .08,.12,1.10, 0,-.01,1.50, p.head));
+  for(const b of p.neck) z.push(boxZone('neck', .20,.20, .5, 0,0,.25, b));
+  for(const w of p.legs){
+    z.push(boxZone('wing', .16,.16,.62, 0,0,.30, w.hum));
+    z.push(boxZone('wing', .12,.12,.92, 0,0,.46, w.uln));
+    z.push(boxZone('wing', .10,.10,1.25,0,0,.62, w.mc));
+  }
+  return z;
+}
 const PTERO = [];
 for(let i=0;i<6;i++){
   const p = buildQuetzal();
@@ -854,6 +887,8 @@ for(let i=0;i<6;i++){
   p.a  = Math.random()*6.283; p.w = (Math.random()<.5?-1:1)*rnd(.035,.075);
   p.ph = Math.random()*6.283; p.flapT = rnd(1,10); p.flap = 0;
   p.root.scale.setScalar(rnd(.8,1.1));                  // ~8-11 m across the wings
+  tagZones(quetzalZones(p), p, 'ptero');
+  p.vel = new THREE.Vector3();
   fauna.add(p.root); PTERO.push(p);
 }
 
@@ -867,6 +902,8 @@ function makeFlock(n, col, sc, landed){
     b.pos = new THREE.Vector3(); b.vel = new THREE.Vector3();
     b.off = new THREE.Vector3(rnd(-7,7), rnd(-2.5,2.5), rnd(-9,3));
     b.ph = Math.random()*6.283; b.yaw = 0;
+    tagZones([boxZone('lung', .22,.22,.55, 0,0,0, b.root)], b, 'bird');
+    b.flock = f;
     fauna.add(b.root); f.birds.push(b);
   }
   FLOCKS.push(f); return f;
@@ -938,6 +975,50 @@ function faunaAlarm(pos, radius, hard){
   }
 }
 
+/* ---- a round into something you have no licence for ------------------- */
+const FAUNA_NAME = {thescelo:'Thescelosaurus', pachy:'Pachycephalosaurus',
+                    ptero:'Quetzalcoatlus', bird:'bird'};
+const FAUNA_VITAL = {brain:true, spine:true, heart:true, lung:true, neck:true};
+const FAUNA_KILLS = [];
+/* returns what the player is told */
+function faunaHit(m, zone){
+  const name = FAUNA_NAME[m.kind];
+  if(m.dead) return "Into the dead "+name+".";
+  if(BONE[zone]){
+    pachyBolt(m, P.pos, 14);
+    return "Off the "+name+"'s dome. It is running.";
+  }
+  m.hp -= FAUNA_VITAL[zone] ? 2 : 1;
+  if(m.hp <= 0){
+    m.dead = true; m.tip = 0; m.side = Math.random()<.5 ? -1 : 1;
+    m.vel = m.kind==='bird' ? m.vel.clone()
+          : m.kind==='ptero' ? new THREE.Vector3(-Math.sin(m.a)*m.r*m.w, 0, Math.cos(m.a)*m.r*m.w)
+          : new THREE.Vector3();
+    FAUNA_KILLS.push(name);
+    return "You dropped a "+name+". It was not on your licence.";
+  }
+  // wounded: it goes, and it goes hard
+  if(m.kind==='pachy') pachyBolt(m, P.pos, 14);
+  if(m.kind==='ptero'){ m.alt += 25; m.r *= 1.3; m.w *= 1.6; m.flap = 6; }
+  return "You hit a "+name+" in the "+zone+". It is wounded, and it is leaving.";
+}
+/* dead things fall, tip over and lie where they land */
+const FAUNA_REST = {thescelo:0, pachy:0, ptero:.35, bird:.08};
+function carcassStep(m, dt){
+  const r = m.root;
+  const floor = Math.max(ground(r.position.x, r.position.z), WATER_Y) + FAUNA_REST[m.kind];
+  if(r.position.y > floor + 1e-3 || m.vel.lengthSq() > 0){
+    m.vel.y -= 9.8*dt;
+    m.vel.x *= Math.pow(.6, dt); m.vel.z *= Math.pow(.6, dt);
+    r.position.addScaledVector(m.vel, dt);
+    if(r.position.y <= floor){ r.position.y = floor; m.vel.set(0,0,0); }
+  }
+  m.tip = Math.min(1, m.tip + dt*1.4);
+  const k = m.tip*m.tip;                                // falls slow, lands hard
+  if(m.kind==='ptero'){ r.rotation.z += (m.side*.15 - r.rotation.z)*Math.min(1, dt*2); r.rotation.x = 0; }
+  else r.rotation.z = m.side * Math.PI/2 * k;
+}
+
 function faunaStep(dt, t){
   /* --- the band: drift while grazing, bolt in a line when alarmed -------- */
   if(HERD.run > 0){
@@ -952,6 +1033,7 @@ function faunaStep(dt, t){
   }
   const running = HERD.run > 0;
   for(const m of HERD.members){
+    if(m.dead){ carcassStep(m, dt); continue; }
     const tx = HERD.c.x + m.off.x, tz = HERD.c.z + m.off.y;
     const dx = tx - m.pos.x, dz = tz - m.pos.z;
     const d  = Math.hypot(dx,dz);
@@ -1005,6 +1087,7 @@ function faunaStep(dt, t){
 
   /* --- thick-heads: browse, amble, bolt from anyone who walks up on them -- */
   for(const m of PACHYS){
+    if(m.dead){ carcassStep(m, dt); continue; }
     if(started && !ended && m.run <= 0){
       const pd = Math.hypot(P.pos.x-m.pos.x, P.pos.z-m.pos.z);
       if(pd < (P.crouch ? 11 : P.speed > 4 ? 34 : 22)) pachyBolt(m, P.pos, 7);
@@ -1043,6 +1126,7 @@ function faunaStep(dt, t){
 
   /* --- pterosaurs -------------------------------------------------------- */
   for(const p of PTERO){
+    if(p.dead){ carcassStep(p, dt); p.update(dt, {fly:1, flap:0}); continue; }
     p.a += p.w * dt;
     const x = p.cx + Math.cos(p.a)*p.r, z = p.cz + Math.sin(p.a)*p.r;
     const y = p.alt + Math.sin(t*0.31 + p.ph)*3.4;
@@ -1061,6 +1145,7 @@ function faunaStep(dt, t){
     if(f.flush > 0) f.flush -= dt;
     if(f.landed){
       for(const b of f.birds){
+        if(b.dead){ carcassStep(b, dt); continue; }
         b.root.position.copy(b.pos);
         b.root.rotation.order = 'YXZ';
         b.root.rotation.y = b.yaw + Math.sin(t*0.4 + b.ph)*0.5;
@@ -1084,6 +1169,7 @@ function faunaStep(dt, t){
     if(f.home && f.flush <= 0 && f.lead.distanceTo(f.tgt) < 2.2){
       f.landed = true;
       for(const b of f.birds){
+        if(b.dead) continue;
         b.pos.set(f.home.x+b.off.x*.5, 0, f.home.z+b.off.z*.4);
         b.pos.y = ground(b.pos.x,b.pos.z)+.30;
         b.root.rotation.set(0,0,0);
@@ -1091,6 +1177,7 @@ function faunaStep(dt, t){
       continue;
     }
     for(const b of f.birds){
+      if(b.dead){ carcassStep(b, dt); continue; }
       const want = f.lead.clone().add(b.off);
       want.y += Math.sin(t*1.6 + b.ph)*0.6;
       b.vel.lerp(want.sub(b.pos).multiplyScalar(1.9), Math.min(1,dt*2.6));
@@ -1973,7 +2060,7 @@ const _sp = new THREE.Vector3(), _sc = new THREE.Vector3(), _sd = new THREE.Vect
    for the range call — is far more expensive than just asking ground() where
    the surface is. Same for the water, which is one flat plane at WATER_Y. */
 const WATER_Y = -1.55;
-const solidTargets = () => trike.zones.concat(SOLIDS);
+const solidTargets = () => trike.zones.concat(SOLIDS, FAUNA_ZONES);
 
 /* The hit boxes are nested and overlapping — the gut box alone is 2.1 x 1.6 x
    2.2 m and wraps most of the barrel. Taking the first box the ray enters, as
@@ -1981,7 +2068,7 @@ const solidTargets = () => trike.zones.concat(SOLIDS);
    the sights on: a brain shot, a heart shot and a leg shot all reported the
    same. What matters is the most vital thing the round actually passed
    through, so gather every box on the path and rank them. */
-const ZPRI = {brain:0, spine:1, heart:2, lung:3, neck:4, leg:5, gut:6, frill:7, dome:7};
+const ZPRI = {brain:0, spine:1, heart:2, lung:3, neck:4, leg:5, wing:5, gut:6, beak:7, frill:7, dome:7};
 function pickZone(list){
   if(!list.length) return null;
   list.sort((u,v)=>u.d-v.d);
@@ -2044,6 +2131,17 @@ function traceShot(origin, dir){
     for(const h of zs){
       if(block && h.distance > block.d) continue;
       zh.push({zone:h.object.userData.zone, d:travelled+h.distance, point:h.point.clone()});
+    }
+    zh.sort((u,v)=>u.d-v.d);
+    // --- anything else alive that is in the way first
+    const fz = shotRay.intersectObjects(FAUNA_ZONES, false)
+      .filter(h => !block || h.distance <= block.d);
+    if(fz.length && (!zh.length || travelled + fz[0].distance < zh[0].d)){
+      const owner = fz[0].object.userData.owner;
+      const pick = pickZone(fz.filter(h => h.object.userData.owner === owner)
+        .map(h => ({zone:h.object.userData.zone, d:travelled+h.distance, point:h.point.clone()})));
+      return {hit:true, zone:null, fauna:{owner, zone:pick.zone}, point:pick.point, obj:null,
+              range:Math.max(0, pick.d)};
     }
     if(zh.length){
       // he may straddle the segment boundary, so carry on through him with one
@@ -2276,7 +2374,8 @@ function fire(){
   const rec = {n:P.fired, zone:res.zone, local:local,
                range:Math.round(res.range),
                dist:Math.round(P.pos.distanceTo(A.pos)),
-               kind: res.zone ? 'hit' : (res.obj === water ? 'water'
+               animal: res.fauna ? FAUNA_NAME[res.fauna.owner.kind] : null,
+               kind: res.zone ? 'hit' : res.fauna ? 'animal' : (res.obj === water ? 'water'
                      : res.obj === terrain ? 'ground' : res.obj ? 'timber' : 'air')};
   SHOTS.push(rec);
   if(P.fired===1) P.shotDist = rec.dist;
@@ -2295,10 +2394,12 @@ function resolveShot(res, rec, land){
     else if(rec.kind === 'timber'){ puff(land, 0x53412a, 3.4, .16*gs, .8, 12, 18, .8); }
     else if(rec.kind === 'ground'){ puff(land, 0x9c8a68, 4.6, .26*gs, 1.05, 11, 26, .6);
                                     groundMark(land); }
+    else if(rec.kind === 'animal'){ puff(land, 0x8e1c10, 3.6, .20*gs, .8, 10, 26, .8); }
 
     const high = rec.local.y - HUNT.chartMidY, side = rec.local.x;
     let where;
-    if(rec.kind === 'timber')      where = "Into a trunk. The round never got there.";
+    if(rec.kind === 'animal')      where = faunaHit(res.fauna.owner, res.fauna.zone);
+    else if(rec.kind === 'timber') where = "Into a trunk. The round never got there.";
     else if(rec.kind === 'water')  where = "Into the water short of him.";
     else if(Math.abs(high) > 4 && Math.abs(side) > 4) where = "Nowhere near him.";
     else if(high >  0.9)           where = "Over the top of him.";
@@ -2306,8 +2407,8 @@ function resolveShot(res, rec, land){
     else if(side >  0.9)           where = "Past his off shoulder.";
     else if(side < -0.9)           where = "Past his near shoulder.";
     else                           where = "A hair off. That was close.";
-    logLine("Shot "+rec.n+" · miss · "+rec.range+" m");
-    say(where + " That's one round gone.");
+    logLine("Shot "+rec.n+" · "+(rec.animal ? rec.animal : "miss")+" · "+rec.range+" m");
+    say(rec.animal ? where : where + " That's one round gone.");
 
     if(A.state!=='flee'){
       const away = new THREE.Vector3().subVectors(A.pos,P.pos).setY(0).normalize();
@@ -2442,6 +2543,7 @@ function chartSVG(big){
 
   // the rounds
   for(const sh of SHOTS){
+    if(sh.kind === 'animal') continue;            // it never came near him
     const rx = mx(sh.local.z), ry = my(sh.local.y);
     const X = Math.max(12, Math.min(CHART.W-12, rx));
     const Y = Math.max(12, Math.min(CHART.H-12, ry));
@@ -2465,6 +2567,8 @@ function chartLegend(){
   return '<ul class="clist">' + SHOTS.map(s=>{
     if(s.zone) return '<li><b>'+s.n+'</b> <i class="k hit"></i><span>'+ZONE_LABEL[s.zone]+
                       '</span><em>'+s.dist+' m</em></li>';
+    if(s.kind==='animal') return '<li><b>'+s.n+'</b> <i class="k miss"></i><span>hit a '+s.animal+
+                                 '</span><em>unlicensed · '+s.range+' m</em></li>';
     const hi = s.local.y - HUNT.chartMidY, sd = s.local.x;
     const vs = Math.abs(hi) < 0.15 ? 'level' :
                (Math.abs(hi).toFixed(1)+' m '+(hi>0?'high':'low'));
@@ -2584,6 +2688,7 @@ function finish(ok, head, para){
     ["Shot placement", A.hitZone ? ZONE_LABEL[A.hitZone] : "—"],
     ["Shot distance", P.shotDist ? Math.round(P.shotDist)+" m" : "—"],
     ["Rounds fired", String(P.fired)],
+    ...(FAUNA_KILLS.length ? [["Unlicensed kills", FAUNA_KILLS.join(", ")]] : []),
     ["Distance tracked", Math.round(A.tracked)+" m"],
     ["Time afield", fmtTime(clockT)]
   ];

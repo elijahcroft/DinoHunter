@@ -66,15 +66,9 @@ function buildThescelo(){
   return {root:g, neck, head, tail, tail2, legs};
 }
 
-/* Promote the field-guide/ambient animal to a full hunt quarry. The wrapper
-   supplies the same articulated interface as buildTrike(), plus raycast-only
-   vital boxes. That lets the shared stalk, ballistics and tracking systems run
-   unchanged while the silhouette and anatomy stay Thescelosaurus-sized. */
-function buildHuntThescelo(){
-  const m = buildThescelo();
-  const root = new THREE.Group(), body = new THREE.Group();
-  root.add(body); body.add(m.root);
-
+/* raycast-only hit boxes, hung on the model's own parts. Shared by the hunt
+   quarry and the ambient band, so both are shot the same way. */
+function thesceloZones(m){
   const zones = [];
   const ZM = new THREE.MeshBasicMaterial({visible:false});
   function zone(name,w,h,d,x,y,z,parent){
@@ -91,6 +85,18 @@ function buildHuntThescelo(){
   zone('neck',  .30,.34,.44, 0,1.37, .76);
   zone('brain', .19,.17,.22, 0, .04, .02,m.head);
   for(const l of m.legs) zone('leg',.24,.76,.28,l.hip.position.x,.59,l.hip.position.z);
+  return zones;
+}
+
+/* Promote the field-guide/ambient animal to a full hunt quarry. The wrapper
+   supplies the same articulated interface as buildTrike(), plus raycast-only
+   vital boxes. That lets the shared stalk, ballistics and tracking systems run
+   unchanged while the silhouette and anatomy stay Thescelosaurus-sized. */
+function buildHuntThescelo(){
+  const m = buildThescelo();
+  const root = new THREE.Group(), body = new THREE.Group();
+  root.add(body); body.add(m.root);
+  const zones = thesceloZones(m);
 
   const legs = m.legs.map(l=>({
     L:{hip:l.hip,j:[l.hip,l.knee,l.ankle]}, s:l.sx, fore:false, base:0
@@ -101,4 +107,4 @@ function buildHuntThescelo(){
   };
 }
 
-export { buildThescelo, buildHuntThescelo };
+export { buildThescelo, buildHuntThescelo, thesceloZones };
