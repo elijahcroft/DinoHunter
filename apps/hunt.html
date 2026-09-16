@@ -344,7 +344,7 @@
   <div id="keys" class="panel">
     move<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · crouch<kbd>ctrl</kbd><br>
     run<kbd>shift</kbd> · shoulder<kbd>RMB</kbd> · fire<kbd>LMB</kbd><br>
-    hold breath<kbd>space</kbd> · bolt / reload<kbd>R</kbd>
+    hold breath<kbd>space</kbd> · bolt / reload<kbd>R</kbd><span id="claimkey" hidden> · claim<kbd>E</kbd></span>
   </div>
 
   <div id="guide"></div>
@@ -765,6 +765,49 @@ function placeQuarry(q){
   }
   q.pos.set(H.spawnMax-5, ground(H.spawnMax-5,20), 20);
 }
+/* Coat mutations, open season only. Most animals carry the ordinary hide; a few
+   roll a rare colour morph, recoloured in the shader so the hide pattern still
+   reads through. p is the chance per animal. */
+const COATS = [
+  {name:'Albino',     p:.03, sat:.05, to:[.95,.86,.82], k:.80, eye:0xa01a14},
+  {name:'Melanistic', p:.05, sat:.30, to:[.025,.024,.028], k:.75},
+  {name:'Leucistic',  p:.07, sat:.20, to:[.86,.84,.78], k:.65}
+];
+function rollCoat(){
+  let r = Math.random();
+  for(const c of COATS){ if(r < c.p) return c; r -= c.p; }
+  return null;
+}
+function coatMaterial(src, coat){
+  if(src === irisM){
+    if(!coat.eye) return src;
+    const m = src.clone(); m.color.setHex(coat.eye); return m;
+  }
+  if(!src.map) return src;                           // horn, hoof, eye: leave them
+  const m = src.clone();
+  m.onBeforeCompile = sh=>{
+    sh.uniforms.coatTo  = {value:new THREE.Vector3(...coat.to)};
+    sh.uniforms.coatK   = {value:coat.k};
+    sh.uniforms.coatSat = {value:coat.sat};
+    sh.fragmentShader = 'uniform vec3 coatTo;\nuniform float coatK, coatSat;\n'
+      + sh.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
+  float coatL = dot(diffuseColor.rgb, vec3(.2126,.7152,.0722));
+  vec3 coatC = mix(vec3(coatL), diffuseColor.rgb, coatSat);
+  diffuseColor.rgb = mix(coatC, coatTo*clamp(coatL*4.0, .35, 1.3), coatK);`);
+  };
+  m.customProgramCacheKey = ()=>'coat';
+  return m;
+}
+function applyCoat(root, coat){
+  const done = new Map();                            // the builders share materials
+  root.traverse(o=>{
+    if(!o.isMesh || !o.material.visible) return;    // skip the hit boxes
+    if(!done.has(o.material)) done.set(o.material, coatMaterial(o.material, coat));
+    o.material = done.get(o.material);
+  });
+}
+const coatName = q => (q.coat ? q.coat.name+' ' : '')+speciesName(q);
+
 function makeQuarry(key){
   const m = BUILDERS[key]();
   scene.add(m.root);
@@ -774,8 +817,10 @@ function makeQuarry(key){
     state:'graze',            // graze | alert | flee | down
     alert:0, phase:0, graze:Math.random()*6,
     wound:null, hitZone:null, runLeft:0, tracked:0,
-    bleedAcc:0, settle:0, downT:0, recovered:false, lastBlood:new THREE.Vector3()
+    bleedAcc:0, settle:0, downT:0, recovered:false, lastBlood:new THREE.Vector3(),
+    coat: FREE ? rollCoat() : null
   };
+  if(q.coat) applyCoat(m.root, q.coat);
   for(const z of m.zones){ z.userData.q = q; QZONES.push(z); }
   QUARRIES.push(q);
   placeQuarry(q);
@@ -1407,6 +1452,7 @@ const keys = {};
 addEventListener('keydown', e=>{
   keys[e.code]=true;
   if(e.code==='KeyR') workRifle();
+  if(e.code==='KeyE' && FREE && started && !ended) claimNearest();
   if(e.code==='KeyV'){ const c=document.getElementById('chart'); if(c) c.classList.toggle('on'); }
   if(e.code.indexOf('Arrow')===0) e.preventDefault();
   if(e.code==='Space'){ P.breathing = true; e.preventDefault(); }
@@ -2787,14 +2833,15 @@ function hudStep(dt){
   const visible = dist < F.H.visibleDistance;
   q.classList.toggle('on', visible && !ended);
   if(visible){
-    if(FREE) $('quarry-name').textContent = F.H.hud;
+    if(FREE) $('quarry-name').textContent = F.coat ? F.coat.name+' '+F.H.hud : F.H.hud;
     const pct = Math.min(1, F.alert/1.0)*100;
     $('alertbar').style.width = pct+"%";
     q.classList.toggle('warn', F.alert>0.42 && F.alert<1);
     q.classList.toggle('spook', F.alert>=1);
     $('alertst').textContent =
       F.recovered      ? "Recovered · "+Math.round(dist)+" m" :
-      F.state==='down' ? "Down · "+Math.round(dist)+" m" :
+      F.state==='down' ? (FREE && dist < CLAIM_R ? "Down · press E to claim"
+                                                 : "Down · "+Math.round(dist)+" m") :
       F.state==='flee' ? "Running · "+Math.round(dist)+" m" :
       F.state==='alert'? "Alert · "+Math.round(dist)+" m" :
                          "Grazing · "+Math.round(dist)+" m";
@@ -2834,6 +2881,7 @@ function finish(ok, head, para){
   const rows = FREE ? [
     ["Bag", BAG.length ? bagLine() : "—"],
     ["Animals taken", String(BAG.length)],
+    ...(BAG.some(b=>b.includes(' ')) ? [["Rare coats", BAG.filter(b=>b.includes(' ')).join(", ")]] : []),
     ["Rounds fired", String(P.fired)],
     ...(FAUNA_KILLS.length ? [["Unlicensed kills", FAUNA_KILLS.join(", ")]] : []),
     ["Distance tracked", Math.round(QUARRIES.reduce((a,q)=>a+q.tracked,0))+" m"],
@@ -2880,16 +2928,24 @@ function checkEnd(){
 }
 
 /* Open season: nothing ends the day but an empty belt. Each animal you put
-   down has to be walked up before it counts. */
-function checkFree(){
-  for(const q of QUARRIES){
-    if(q.recovered || q.state !== 'down') continue;
-    if(P.pos.distanceTo(q.pos) > 8) continue;
-    q.recovered = true;
-    BAG.push(speciesName(q));
-    logLine("Recovered · "+speciesName(q)+" · "+BAG.length+" in the bag", true);
-    say(q.wound.note+" "+q.H.success);
+   down has to be walked up and claimed (E) before it counts. */
+const CLAIM_R = 8;
+function claimNearest(){
+  let q = null, bd = CLAIM_R;
+  for(const o of QUARRIES){
+    if(o.recovered || o.state !== 'down') continue;
+    const d = P.pos.distanceTo(o.pos);
+    if(d < bd){ bd = d; q = o; }
   }
+  if(!q) return;
+  q.recovered = true;
+  BAG.push(coatName(q));
+  logLine("Claimed · "+coatName(q)+" · "+BAG.length+" in the bag", true);
+  say((q.coat ? q.coat.name+" — a rare one. " : "")+q.wound.note+" "+q.H.success);
+}
+function checkFree(){
+  $('claimkey').hidden = !QUARRIES.some(q=>q.state==='down' && !q.recovered
+                                         && P.pos.distanceTo(q.pos) < CLAIM_R);
   if(outOfAmmo() && !QUARRIES.some(q=>q.state==='down' && !q.recovered)){
     if(BAG.length) finish(true, BAG.length+(BAG.length>1?" animals":" animal")+" in the <i>bag</i>",
       "The belt is empty and the light is going. You take "+bagLine()+" off the floodplain.");
