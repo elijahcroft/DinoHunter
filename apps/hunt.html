@@ -2608,6 +2608,9 @@ function resolveShot(res, rec, land, q){
              (BONE[zone] ? .16 : .20)*gs, .8, 10, 26, .8);
   logLine("Shot "+rec.n+" · "+(FREE ? speciesName(q)+" · " : "")+zoneLabel(q,zone)+" · "+dist+" m", true);
 
+  // he's already down: the round changes nothing
+  if(q.state === 'down'){ spookOnShot(q); drawChart(); return; }
+
   // a later, better-placed round supersedes a poor first one
   if(!q.wound || (!q.wound.lethal && w.lethal) || (w.lethal && w.run < q.wound.run)){
     q.wound = w; q.hitZone = zone;
