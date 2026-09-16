@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quetzalcoatlus · Specimen Viewer</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦅</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600&family=Spectral:ital,wght@0,300;0,400;1,400&display=swap">
+<style>
+  :root{ --ink:#17150F; --paper:#E8DFC9; --bone:#C9BC98; --rust:#A64B21; --hair:rgba(201,188,152,.30);
+    --sans:"Archivo Narrow",Arial,sans-serif; --serif:"Spectral",Georgia,serif; }
+  html,body{margin:0; height:100%; overflow:hidden; background:var(--ink); color:var(--paper); font-family:var(--serif)}
+  canvas{display:block; cursor:grab}
+  #panel{position:fixed; left:16px; top:16px; max-width:340px; padding:16px 18px;
+    background:rgba(23,21,15,.82); border:1px solid var(--hair)}
+  .eyebrow{font-family:var(--sans); font-weight:600; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--bone)}
+  h1{margin:6px 0 2px; font-weight:400; font-size:24px; font-style:italic}
+  .say{font-family:var(--sans); font-size:12px; color:var(--bone)}
+  p{font-size:14px; line-height:1.5; margin:10px 0}
+  dl{display:grid; grid-template-columns:auto 1fr; gap:2px 12px; font-size:13px; margin:8px 0}
+  dt{color:var(--bone)} dd{margin:0}
+  ul{padding-left:18px; margin:6px 0 0; font-size:13px; line-height:1.45}
+  #modes{display:flex; gap:6px; margin-top:12px}
+  button{flex:1; font-family:var(--sans); font-weight:600; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 0; background:transparent; color:var(--paper); border:1px solid var(--hair); cursor:pointer}
+  button.on{border-color:var(--rust); background:rgba(166,75,33,.25)}
+  a{color:var(--bone)}
+  @media (max-width:600px){ #panel{right:16px; max-width:none} ul,dl{display:none} }
+</style>
+<div id="panel">
+  <div class="eyebrow">Specimen viewer · not yet on the floodplain</div>
+  <h1 id="name"></h1>
+  <div class="say" id="say"></div>
+  <p id="mean"></p>
+  <dl id="stats"></dl>
+  <ul id="notes"></ul>
+  <div id="modes">
+    <button data-m="stand">Stand</button>
+    <button data-m="walk">Walk</button>
+    <button data-m="fly">Fly</button>
+  </div>
+  <p class="say">Drag to orbit · wheel to zoom · <a href="../index.html">back</a></p>
+</div>
+<script type="module">
+import * as THREE from '../vendor/three.module.js';
+import { camera, renderer } from '../core/renderer.js';
+import { createWorld, ground } from '../core/scene.js';
+import { SPECIES } from '../species/records.js';
+import { buildQuetzal } from '../species/quetzal.js';
+
+const { scene, sun } = createWorld('fieldStation');
+
+const s = SPECIES.quetzal;
+document.getElementById('name').textContent = s.name;
+document.getElementById('say').textContent = s.say + ' · ' + s.common;
+document.getElementById('mean').textContent = s.mean;
+document.getElementById('stats').innerHTML = s.stats.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+document.getElementById('notes').innerHTML = s.notes.map(n=>`<li>${n}</li>`).join('');
+
+const q = buildQuetzal();
+scene.add(q.root);
+
+// start on dry ground, clear of the channel
+const C = new THREE.Vector3(40, 0, -60);
+let mode = new URLSearchParams(location.search).get('mode') || 'stand';
+const btns = [...document.querySelectorAll('#modes button')];
+function setMode(m){ mode = m; btns.forEach(b=>b.classList.toggle('on', b.dataset.m===m)); }
+btns.forEach(b=>b.onclick = ()=>setMode(b.dataset.m));
+setMode(mode);
+
+// orbit camera
+let yaw = 2.3, pitch = .18, dist = 11, drag = null;
+const target = new THREE.Vector3();
+renderer.domElement.addEventListener('pointerdown', e=>{ drag = [e.clientX, e.clientY]; renderer.domElement.setPointerCapture(e.pointerId); });
+addEventListener('pointerup', ()=>drag = null);
+addEventListener('pointermove', e=>{
+  if(!drag) return;
+  yaw -= (e.clientX-drag[0])*.006;
+  pitch = Math.min(1.3, Math.max(-.2, pitch + (e.clientY-drag[1])*.004));
+  drag = [e.clientX, e.clientY];
+});
+addEventListener('wheel', e=>{ dist = Math.min(60, Math.max(4, dist*(1+e.deltaY*.001))); }, {passive:true});
+
+let ang = 0, alt = 0, head = 0, last = performance.now(), first = true;
+const pos = C.clone();
+function tick(now){
+  requestAnimationFrame(tick);
+  const dt = Math.min(.05, (now-last)/1000); last = now;
+  const flying = mode==='fly';
+  const speed = mode==='walk' ? 1.3 : flying ? 9 : 0;
+  const R = flying ? 26 : 9;
+  ang += speed/R*dt;
+
+  pos.set(C.x + Math.cos(ang)*R, 0, C.z + Math.sin(ang)*R);
+  alt += ((flying ? 14 : 0) - alt) * Math.min(1, dt*.8);
+  const gy = ground(pos.x, pos.z);
+  q.root.position.set(pos.x, gy + alt, pos.z);
+  if(speed > 0) head = -ang;                          // tangent to the circle
+  q.root.rotation.order = 'YXZ';
+  q.root.rotation.y = head;
+  q.root.rotation.z += ((flying ? .28 : 0) - q.root.rotation.z) * Math.min(1, dt*2);
+  q.update(dt, {fly: alt > 1.5 || flying ? 1 : 0, speed: flying ? 0 : speed,
+                flap: flying && alt < 12 ? 1 : 0});
+
+  target.lerp(q.root.position.clone().add(new THREE.Vector3(0, flying ? 0 : 2.4, 0)), first ? 1 : Math.min(1, dt*3));
+  first = false;
+  camera.position.set(target.x + Math.sin(yaw)*Math.cos(pitch)*dist,
+                      target.y + Math.sin(pitch)*dist,
+                      target.z + Math.cos(yaw)*Math.cos(pitch)*dist);
+  camera.position.y = Math.max(camera.position.y, ground(camera.position.x, camera.position.z) + .5);
+  camera.lookAt(target);
+  sun.position.set(target.x-52, target.y+64, target.z+34); sun.target.position.copy(target);
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(tick);
+window.__quetzal = {q, scene, camera, setMode, view:(y,p,d)=>{ yaw=y; pitch=p; dist=d; }};
+</script>
+</html>

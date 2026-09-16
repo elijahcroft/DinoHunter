@@ -1,0 +1,9 @@
+# Playwright / browser-automation scratch output
+.playwright-mcp/
+
+# Screenshot and base64 dumps from debugging sessions
+*.bak
+*.bak[0-9]
+shot*.txt
+
+.DS_Store

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hell Creek · 66.0 Ma</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦕</text></svg>">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --ink:#17150F; --ink-2:#221F17; --paper:#E8DFC9; --bone:#C9BC98;
+    --rust:#A64B21; --hair:rgba(201,188,152,.30);
+    --sans:"Archivo Narrow","Helvetica Neue",Arial,sans-serif;
+    --serif:"Spectral",Georgia,"Times New Roman",serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; min-height:100vh; background:var(--ink); color:var(--paper); font-family:var(--serif);
+    background-image:radial-gradient(ellipse at 20% 0%,rgba(166,75,33,.12),transparent 55%)}
+  main{max-width:880px; margin:0 auto; padding:56px 16px 48px}
+  .eyebrow{font-family:var(--sans); font-weight:600; font-size:11px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--bone)}
+  h1{margin:10px 0 0; font-weight:300; font-size:clamp(38px,7vw,64px); line-height:1.02}
+  h1 i{color:var(--rust); font-weight:600}
+  .lede{max-width:560px; font-size:16px; line-height:1.6; color:rgba(232,223,201,.72); margin:18px 0 0}
+  h2{margin:44px 0 12px; padding-bottom:8px; border-bottom:1px solid var(--hair)}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:12px}
+  a.card{display:flex; flex-direction:column; gap:8px; padding:18px 18px 16px; min-height:170px;
+    text-decoration:none; color:inherit; background:var(--ink-2); border:1px solid var(--hair);
+    transition:border-color .2s ease, background .2s ease, transform .2s ease}
+  a.card:hover, a.card:focus-visible{border-color:var(--rust); background:rgba(166,75,33,.10); transform:translateY(-2px)}
+  a.card:focus-visible{outline:2px solid var(--bone); outline-offset:2px}
+  .num{font-family:var(--mono); font-size:12px; color:var(--rust)}
+  .card h3{margin:0; font-weight:400; font-size:24px; line-height:1.15}
+  .card h3 i{font-weight:400}
+  .card p{margin:0; font-size:14px; line-height:1.5; color:rgba(232,223,201,.66)}
+  .card .go{margin-top:auto; font-family:var(--sans); font-weight:600; font-size:11px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--bone)}
+  footer{margin-top:40px; font-family:var(--mono); font-size:11px; color:rgba(232,223,201,.45); line-height:1.7}
+  @media (prefers-reduced-motion: reduce){ a.card{transition:none} a.card:hover{transform:none} }
+</style>
+
+<main>
+  <div class="eyebrow">Hell Creek Formation · Eastern Montana · 66.0 Ma</div>
+  <h1>The <i>last</i> summer</h1>
+  <p class="lede">A humid coastal floodplain a few thousand years before the Chicxulub impact.
+    Walk it as a naturalist, or take one of the chartered contracts.</p>
+
+  <h2 class="eyebrow">Explore</h2>
+  <div class="grid">
+    <a class="card" href="apps/field-station.html">
+      <span class="num">Field station</span>
+      <h3>Walk the floodplain</h3>
+      <p>Eight species living side by side. Walk within 25 m of each to fill in the field log.</p>
+      <span class="go">Enter →</span>
+    </a>
+  </div>
+
+  <h2 class="eyebrow">Hunt · The Lancian Contract</h2>
+  <div class="grid">
+    <a class="card" href="apps/hunt.html?quarry=trike">
+      <span class="num">Contract 04</span>
+      <h3>One bull <i>Triceratops</i></h3>
+      <p>Nine tonnes. Watch the wind, and mind the frill: it stops a round cold.</p>
+      <span class="go">Take the contract →</span>
+    </a>
+    <a class="card" href="apps/hunt.html?quarry=thescelo">
+      <span class="num">Contract 05</span>
+      <h3>One adult <i>Thescelosaurus</i></h3>
+      <p>Small, wary and built to run. The vitals are a much smaller target.</p>
+      <span class="go">Take the contract →</span>
+    </a>
+    <a class="card" href="apps/hunt.html?quarry=pachy">
+      <span class="num">Contract 06</span>
+      <h3>One adult <i>Pachycephalosaurus</i></h3>
+      <p>It watches the skyline. Never take it head-on: the dome is solid bone.</p>
+      <span class="go">Take the contract →</span>
+    </a>
+  </div>
+
+  <footer>Hunt: WASD move · shift run · ctrl crouch · RMB shoulder · LMB fire · space hold breath · R bolt · V chart<br>
+    Field station: WASD move · shift run · mouse look · esc release cursor</footer>
+</main>
+</html>
