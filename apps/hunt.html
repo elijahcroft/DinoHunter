@@ -774,7 +774,7 @@ function makeQuarry(key){
     state:'graze',            // graze | alert | flee | down
     alert:0, phase:0, graze:Math.random()*6,
     wound:null, hitZone:null, runLeft:0, tracked:0,
-    bleedAcc:0, settle:0, recovered:false, lastBlood:new THREE.Vector3()
+    bleedAcc:0, settle:0, downT:0, recovered:false, lastBlood:new THREE.Vector3()
   };
   for(const z of m.zones){ z.userData.q = q; QZONES.push(z); }
   QUARRIES.push(q);
@@ -1188,8 +1188,10 @@ function faunaStep(dt, t){
     const y = p.alt + Math.sin(t*0.31 + p.ph)*3.4;
     p.root.position.set(x,y,z);
     p.root.rotation.order = 'YXZ';
-    p.root.rotation.y = -p.a + (p.w>0 ? -Math.PI/2 : Math.PI/2);
-    p.root.rotation.z = (p.w>0 ? -1 : 1) * 0.30;
+    // it travels along the tangent of the circle, so that is where the beak
+    // has to point: yaw from the velocity, not from the bearing to the centre
+    p.root.rotation.y = p.w > 0 ? -p.a : Math.PI - p.a;
+    p.root.rotation.z = (p.w>0 ? 1 : -1) * 0.30;   // and it banks into the turn
     p.flapT -= dt;
     if(p.flapT < 0){ p.flap = rnd(1.6,3.4); p.flapT = rnd(7,20); }
     if(p.flap > 0) p.flap -= dt;
@@ -1296,6 +1298,28 @@ function animalStep(q, dt, t){
   const A = q, HUNT = q.H, trike = q.m;
   // --- terrain follow + slope pitch
   A.pos.y = ground(A.pos.x, A.pos.z);
+
+  // --- down: roll it onto its side once and leave it there. The gait, the
+  // slope pitch and the ground clamp below all still ran on a carcass, which
+  // is what made a downed animal twitch and sink into the dirt.
+  if(A.state === 'down'){
+    A.downT = Math.min(1, A.downT + dt*1.6);            // ~0.6 s to go over
+    const e = A.downT*A.downT*(3-2*A.downT);
+    trike.root.position.set(A.pos.x, A.pos.y + HUNT.downLift*e, A.pos.z);
+    trike.root.rotation.set(0, A.yaw, 1.42*e);
+    trike.body.position.y += (HUNT.bodyY - trike.body.position.y)*Math.min(1,dt*4);
+    const lay = HUNT.poses.down;
+    trike.neck.rotation.x  += (lay[0] - trike.neck.rotation.x )*Math.min(1,dt*2.2);
+    trike.skull.rotation.x += (lay[1] - trike.skull.rotation.x)*Math.min(1,dt*2.2);
+    for(const g of trike.legs){                         // the legs settle, slowly
+      const r = g.rest || REST0;
+      g.L.j[0].rotation.x += (g.base - g.L.j[0].rotation.x)*Math.min(1,dt*1.2);
+      g.L.j[1].rotation.x += (r[1]   - g.L.j[1].rotation.x)*Math.min(1,dt*1.2);
+      g.L.j[2].rotation.x += (r[2]   - g.L.j[2].rotation.x)*Math.min(1,dt*1.2);
+    }
+    return;
+  }
+
   trike.root.position.copy(A.pos);
   trike.root.rotation.y = A.yaw;
   const span=HUNT.slopeSpan;
@@ -1631,9 +1655,7 @@ function fleeStep(q, dt){
 }
 function goDown(q){
   const A = q, HUNT = q.H, trike = q.m;
-  A.state='down'; A.speed=0;
-  trike.root.rotation.z = 1.42;                        // over onto his side
-  trike.root.position.y = A.pos.y + HUNT.downLift;
+  A.state='down'; A.speed=0; A.downT=0;               // animalStep rolls him over
   logLine((FREE ? speciesName(q)+" down · " : "Animal down · ")
           +Math.round(A.tracked)+" m tracked", true);
   qsay(q, "The animal is down. Walk up from behind.");
@@ -2380,6 +2402,25 @@ function animalLocal(q, worldPt){
   return worldPt.clone().applyMatrix4(_lm);
 }
 /* closest approach of the trajectory to the animal, for plotting a clean miss */
+/* On a miss there is no owner to read off a hit box, so the shot is measured
+   against whichever animal the sights were nearest to — not whichever one you
+   happen to be standing closest to. */
+const _ql = new THREE.Vector3();
+function quarryOnLine(origin, dir){
+  let best = focusQuarry(), bd = Infinity;
+  for(const q of QUARRIES){
+    q.m.root.updateMatrixWorld(true);
+    _ql.set(q.H.aimCenter[0], q.H.aimCenter[1], q.H.aimCenter[2])
+       .applyMatrix4(q.m.root.matrixWorld).sub(origin);
+    const along = _ql.dot(dir);
+    if(along <= 0) continue;                         // behind you
+    const off = _ql.addScaledVector(dir, -along).length();
+    const score = off + along*0.02;                  // the nearer of two on one line
+    if(score < bd){ bd = score; best = q; }
+  }
+  return best;
+}
+
 function closestOnShot(origin, dir, target){
   const v = new THREE.Vector3().subVectors(target, origin);
   const t = Math.max(0, v.dot(dir));
@@ -2431,7 +2472,7 @@ function fire(){
   faunaAlarm(P.pos, 240, true);                         // the plain empties
 
   // where the round passed relative to the animal it was aimed at, hit or miss
-  const q = res.quarry || focusQuarry();
+  const q = res.quarry || quarryOnLine(eye, dir);
   q.m.root.updateMatrixWorld(true);
   const centre = new THREE.Vector3(q.H.aimCenter[0],q.H.aimCenter[1],q.H.aimCenter[2])
     .applyMatrix4(q.m.root.matrixWorld);
@@ -2446,7 +2487,9 @@ function fire(){
   SHOTS.push(rec);
   if(P.fired===1) P.shotDist = rec.dist;
 
-  chartQ = q;
+  // an unlicensed animal has no plate of its own, and the round never came
+  // near yours: leave the diagram on the animal it was already about
+  if(!res.fauna) chartQ = q;
   const land = res.point.clone();
   tracer(muzzle, land, ()=>resolveShot(res, rec, land, q));
   setTimeout(()=>{ if(P.mag>0) cycleBolt(); else if(P.reserve>0) say("Magazine's dry — press R to reload."); }, 320);
@@ -2538,7 +2581,7 @@ function spookOnShot(target){
    The zone rectangles are read straight off the live hit boxes, so the
    diagram cannot drift out of step with what the rifle is actually hitting.
    ============================================================ */
-let chartQ = null;                                     // the animal on the plate
+let chartQ = QUARRIES[0];                              // the animal on the plate
 const chartOn = () => chartQ || QUARRIES[0];
 let CHART = HUNT.chart;                                // px per metre, ground line
 const mx = z => CHART.cx + z*CHART.K;
@@ -2678,7 +2721,8 @@ function chartLegend(){
 function drawChart(){
   const host = document.getElementById('chart');
   if(!host) return;
-  host.innerHTML = '<h2>Shot placement</h2>' + chartSVG(false) + chartLegend();
+  host.innerHTML = '<h2>Shot placement · '+speciesName(chartOn())+'</h2>'
+                 + chartSVG(false) + chartLegend();
   host.classList.add('on');
 }
 
@@ -2805,7 +2849,8 @@ function finish(ok, head, para){
   ];
   $('endstats').innerHTML = rows.map(r=>"<dt>"+r[0]+"</dt><dd>"+r[1]+"</dd>").join("");
   $('endchart').innerHTML = SHOTS.length
-    ? '<div class="eyebrow">Where the rounds went</div>' + chartSVG(true) + chartLegend()
+    ? '<div class="eyebrow">Where the rounds went · '+speciesName(chartOn())+'</div>'
+      + chartSVG(true) + chartLegend()
     : '';
   { const c = $('chart'); if(c) c.classList.remove('on'); }
   $('end').classList.add('on');
